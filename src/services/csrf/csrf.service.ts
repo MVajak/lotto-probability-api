@@ -89,7 +89,6 @@ export class CsrfService {
 
   private async getSessionCookie(url: string): Promise<Cookie | undefined> {
     const cookies = await this.jar.getCookies(url);
-    console.log(cookies);
     return cookies.find(c => c.key === '__Host-MYSESSIONCOOKIE');
   }
 

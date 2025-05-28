@@ -12,3 +12,7 @@ export interface NumberStat {
   count: number;
   probability: number;
 }
+
+export enum DateFormat {
+  European = 'dd.MM.yyyy',
+}

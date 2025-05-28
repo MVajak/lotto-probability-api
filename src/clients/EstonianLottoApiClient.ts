@@ -1,6 +1,8 @@
 import {BindingScope, injectable} from '@loopback/core';
 import axios, {AxiosInstance, AxiosRequestConfig, AxiosResponse} from 'axios';
 
+import {DateFormat} from '../common/types';
+import {formatDate} from '../common/utils/dates';
 import {EstonianLottoDrawDto} from '../models/EstonianLotto/EstonianLottoDrawDto';
 import {EstonianLottoDrawsResultDto} from '../models/EstonianLotto/EstonianLottoDrawsResultDto';
 import {EstonianLottoPayloadDto} from '../models/EstonianLotto/EstonianLottoPayloadDto';
@@ -60,6 +62,10 @@ export class EstonianLottoApiClient {
     let allDraws: EstonianLottoDrawDto[] = initialResponse.draws;
     const totalCount = initialResponse.drawCount;
 
+    if (!allDraws?.length) {
+      return [];
+    }
+
     if (totalCount > allDraws.length) {
       while (allDraws.length < totalCount) {
         pageIndex += 1;
@@ -90,10 +96,13 @@ export class EstonianLottoApiClient {
     data: PageableLottoSearchDto,
     csrfToken: string,
   ): EstonianLottoPayloadDto {
+    const dateTo = data.dateTo ? formatDate(data.dateTo, DateFormat.European) : '';
+    const dateFrom = data.dateFrom ? formatDate(data.dateFrom, DateFormat.European) : '';
+
     return new EstonianLottoPayloadDto({
       gameTypes: data.lottoType,
-      dateFrom: data.dateFrom ?? '',
-      dateTo: data.dateTo ?? '',
+      dateFrom,
+      dateTo,
       drawLabelFrom: '',
       drawLabelTo: '',
       pageIndex: data.pageIndex.toString(),

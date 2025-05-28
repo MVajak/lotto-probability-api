@@ -1,5 +1,5 @@
 import {inject} from '@loopback/core';
-import {get, requestBody, response} from '@loopback/rest';
+import {getModelSchemaRef, post, requestBody, response} from '@loopback/rest';
 
 import {LottoProbabilityDto} from '../models/LottoNumbers/LottoProbabilityDto';
 import {LottoSearchDto} from '../models/LottoNumbers/LottoSearchDto'; // You can use node-fetch or others too
@@ -11,19 +11,16 @@ export class LottoProbabilityController {
     private lottoProbabilityService: LottoProbabilityService,
   ) {}
 
-  @get('/lotto-probability')
+  @post('/lotto-probability')
   @response(200, {
-    description: 'Ping Response',
+    description: 'Calculated Lotto Probability',
     content: {
       'application/json': {
-        schema: {
-          type: 'object',
-          title: 'PingResponse',
-        },
+        schema: getModelSchemaRef(LottoProbabilityDto),
       },
     },
   })
-  async getLottoProbability(
+  async calculateLottoProbability(
     @requestBody({
       content: {
         'application/json': {
@@ -35,6 +32,6 @@ export class LottoProbabilityController {
     })
     data: LottoSearchDto,
   ): Promise<LottoProbabilityDto> {
-    return this.lottoProbabilityService.getProbability(data);
+    return this.lottoProbabilityService.calculateProbability(data);
   }
 }

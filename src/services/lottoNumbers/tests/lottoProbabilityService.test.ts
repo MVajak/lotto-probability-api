@@ -43,7 +43,7 @@ describe('LottoProbabilityService', () => {
       dateTo: '2023-01-31',
     };
 
-    const result = await service.getProbability(data);
+    const result = await service.calculateProbability(data);
 
     expect(result.lottoType).to.equal(LottoType.EURO);
     expect(result.probabilityNumbers).to.have.length(1);
@@ -70,7 +70,7 @@ describe('LottoProbabilityService', () => {
 
     apiClientStub.getAllEstonianLottoDraws.resolves([responseDraw]);
 
-    const result = await service.getProbability(data);
+    const result = await service.calculateProbability(data);
 
     expect(result.lottoType).to.equal(LottoType.JOKKER);
     expect(result.probabilityNumbers).to.have.length(1);
@@ -88,7 +88,7 @@ describe('LottoProbabilityService', () => {
 
     apiClientStub.getAllEstonianLottoDraws.resolves([]);
 
-    const result = await service.getProbability(data);
+    const result = await service.calculateProbability(data);
     expect(result.probabilityNumbers).to.deepEqual([]);
   });
 });

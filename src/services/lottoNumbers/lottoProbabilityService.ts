@@ -27,11 +27,11 @@ export class LottoProbabilityService {
     protected estonianLottoApiClient: EstonianLottoApiClient,
   ) {}
 
-  async getProbability(data: LottoSearchDto): Promise<LottoProbabilityDto> {
+  async calculateProbability(data: LottoSearchDto): Promise<LottoProbabilityDto> {
     const estonianLottoDraws: EstonianLottoDrawDto[] = await this.fetchEstonianLottoDraws(data);
 
     const {lottoType} = data;
-    const result = this.calculateProbability(estonianLottoDraws, lottoType);
+    const result = this.calculateProbabilityByType(estonianLottoDraws, lottoType);
 
     return this.buildLottoProbabilityDto(result, lottoType);
   }
@@ -43,7 +43,7 @@ export class LottoProbabilityService {
     return this.estonianLottoApiClient.getAllEstonianLottoDraws(data, csrfToken, client);
   }
 
-  private calculateProbability(
+  private calculateProbabilityByType(
     draws: EstonianLottoDrawDto[],
     lottoType: LottoType,
   ): LottoProbabilityNumbersDto[] {

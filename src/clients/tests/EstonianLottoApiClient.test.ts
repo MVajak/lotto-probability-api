@@ -157,6 +157,29 @@ describe('EstonianLottoApiClient', () => {
       sinon.assert.calledOnce(getDrawsStub);
     });
 
+    it('should return empty array if no data from response', async () => {
+      const firstPageResult: EstonianLottoDrawsResultDto = {
+        draws: [],
+        drawCount: 0,
+      };
+
+      getDrawsStub.resolves(firstPageResult);
+
+      const results = await lottoService.getAllEstonianLottoDraws(searchDto, csrfToken);
+
+      expect(results).deepEqual([]);
+      sinon.assert.calledOnce(getDrawsStub);
+    });
+
+    it('should return empty array if response gives null as draws', async () => {
+      getDrawsStub.resolves({draws: null});
+
+      const results = await lottoService.getAllEstonianLottoDraws(searchDto, csrfToken);
+
+      expect(results).deepEqual([]);
+      sinon.assert.calledOnce(getDrawsStub);
+    });
+
     it('should return combined results from multiple pages', async () => {
       const firstPage: EstonianLottoDrawsResultDto = {
         draws: [{gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []}],

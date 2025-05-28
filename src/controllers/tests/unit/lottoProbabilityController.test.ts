@@ -20,7 +20,7 @@ describe('LottoProbabilityController', () => {
     lottoProbabilityServiceStub = sinon.createStubInstance(LottoProbabilityService);
     controller = new LottoProbabilityController(lottoProbabilityServiceStub);
 
-    lottoProbabilityServiceStub.getProbability.resolves(expectedResponse);
+    lottoProbabilityServiceStub.calculateProbability.resolves(expectedResponse);
   });
 
   describe('getLottoProbability', () => {
@@ -31,9 +31,11 @@ describe('LottoProbabilityController', () => {
         dateTo: '2023-12-31',
       };
 
-      const result = await controller.getLottoProbability(input);
+      const result = await controller.calculateLottoProbability(input);
 
-      expect(lottoProbabilityServiceStub.getProbability.calledOnceWithExactly(input)).to.be.true();
+      expect(
+        lottoProbabilityServiceStub.calculateProbability.calledOnceWithExactly(input),
+      ).to.be.true();
       expect(result).to.deepEqual(expectedResponse);
     });
   });
