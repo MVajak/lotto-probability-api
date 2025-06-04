@@ -30,10 +30,11 @@ export class LottoProbabilityService {
   async calculateProbability(data: LottoSearchDto): Promise<LottoProbabilityDto> {
     const estonianLottoDraws: EstonianLottoDrawDto[] = await this.fetchEstonianLottoDraws(data);
 
+    const totalDraws = estonianLottoDraws.length;
     const {lottoType} = data;
     const result = this.calculateProbabilityByType(estonianLottoDraws, lottoType);
 
-    return this.buildLottoProbabilityDto(result, lottoType);
+    return this.buildLottoProbabilityDto(result, lottoType, totalDraws);
   }
 
   private async fetchEstonianLottoDraws(data: LottoSearchDto): Promise<EstonianLottoDrawDto[]> {
@@ -130,7 +131,8 @@ export class LottoProbabilityService {
   private buildLottoProbabilityDto(
     probabilityNumbers: LottoProbabilityNumbersDto[],
     lottoType: LottoType,
+    totalDraws: number,
   ) {
-    return new LottoProbabilityDto({lottoType, probabilityNumbers});
+    return new LottoProbabilityDto({lottoType, probabilityNumbers, totalDraws});
   }
 }

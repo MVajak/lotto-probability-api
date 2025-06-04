@@ -12,6 +12,7 @@ describe('LottoProbabilityController', () => {
   let lottoProbabilityServiceStub: sinon.SinonStubbedInstance<LottoProbabilityService>;
 
   const expectedResponse = new LottoProbabilityDto({
+    totalDraws: 2,
     lottoType: LottoType.EURO,
     probabilityNumbers: [],
   });

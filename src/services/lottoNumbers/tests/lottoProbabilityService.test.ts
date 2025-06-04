@@ -46,6 +46,7 @@ describe('LottoProbabilityService', () => {
     const result = await service.calculateProbability(data);
 
     expect(result.lottoType).to.equal(LottoType.EURO);
+    expect(result.totalDraws).to.equal(1);
     expect(result.probabilityNumbers).to.have.length(1);
     expect(result.probabilityNumbers[0].winClass).to.equal(0);
     expect(result.probabilityNumbers[0].winningNumbersCount).to.be.Array();
