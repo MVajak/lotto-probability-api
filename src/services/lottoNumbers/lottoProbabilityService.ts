@@ -12,10 +12,7 @@ import {LottoProbabilityNumbersDto} from '../../models/LottoNumbers/LottoProbabi
 import {LottoSearchDto} from '../../models/LottoNumbers/LottoSearchDto';
 import {CsrfService} from '../csrf/csrf.service';
 
-import {
-  countAllNumbersWithPositionalProbability,
-  countAllNumbersWithProbability,
-} from './helpers/calculateProbability';
+import {calculateNumberStats, calculatePositionalNumberStats} from './helpers/calculateProbability';
 import {OVERALL_PROBABILITY_LOTTO, POSITIONAL_PROBABILITY_LOTTO, WinningNumbers} from './types';
 
 @injectable({scope: BindingScope.SINGLETON})
@@ -75,11 +72,11 @@ export class LottoProbabilityService {
     return [
       new LottoProbabilityNumbersDto({
         winClass: null,
-        winningNumbersCount: countAllNumbersWithPositionalProbability(
+        winningNumbersCount: calculatePositionalNumberStats(
           allResults.map(result => result.winningNumbers),
           lottoType,
         ),
-        secWinningNumbersCount: countAllNumbersWithPositionalProbability(
+        secWinningNumbersCount: calculatePositionalNumberStats(
           allResults.map(result => result.secWinningNumbers),
           lottoType,
           true,
@@ -112,13 +109,13 @@ export class LottoProbabilityService {
 
       return new LottoProbabilityNumbersDto({
         winClass,
-        winningNumbersCount: countAllNumbersWithProbability(
+        winningNumbersCount: calculateNumberStats(
           combinedNumbers.winningNumbers,
           lottoType,
           false,
           winClass,
         ),
-        secWinningNumbersCount: countAllNumbersWithProbability(
+        secWinningNumbersCount: calculateNumberStats(
           combinedNumbers.secWinningNumbers,
           lottoType,
           true,

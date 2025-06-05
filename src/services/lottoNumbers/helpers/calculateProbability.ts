@@ -16,33 +16,42 @@ import {
   VIKING_PRIMARY_NUMBER_RANGE,
   VIKING_SECONDARY_NUMBER_RANGE,
 } from './constants';
+import {NumberRange} from './types';
 
-export function countAllNumbersWithProbability(
+export function calculateNumberStats(
   numbers: number[],
   lottoType: LottoType,
   useSecondaryNumbers?: boolean,
   winClass?: number,
 ): NumberStat[] {
+  const total = numbers.length;
   const countMap = new Map<number, number>();
-  const totalCount = numbers.length;
 
   for (const num of numbers) {
-    countMap.set(num, (countMap.get(num) ?? 0) + 1);
+    countMap.set(num, (countMap.get(num) || 0) + 1);
   }
 
-  const result: NumberStat[] = [];
+  const stats: NumberStat[] = [];
+  const {start, end} = getNumberRangeByType(lottoType, useSecondaryNumbers, winClass);
 
-  for (let i = 1; i <= getNumberRangeByType(lottoType, useSecondaryNumbers, winClass); i++) {
-    const count = countMap.get(i) ?? 0;
-    const probability = totalCount > 0 ? count / totalCount : 0;
-
-    result.push({position: null, digit: i, count, probability});
+  if (safeBig(end).eq(0)) {
+    return [];
   }
 
-  return result;
+  for (let digit = start; digit <= end; digit++) {
+    const count = countMap.get(digit) || 0;
+    stats.push({
+      position: null,
+      digit,
+      count,
+      probability: total > 0 ? count / total : 0,
+    });
+  }
+
+  return stats;
 }
 
-export function countAllNumbersWithPositionalProbability(
+export function calculatePositionalNumberStats(
   sets: number[][],
   lottoType: LottoType,
   useSecondaryNumbers?: boolean,
@@ -69,7 +78,8 @@ export function countAllNumbersWithPositionalProbability(
 
   for (let pos = 0; pos < setLength; pos++) {
     const totalAtPosition = sets.length;
-    for (let digit = 0; digit <= getNumberRangeByType(lottoType, useSecondaryNumbers); digit++) {
+    const {start, end} = getNumberRangeByType(lottoType, useSecondaryNumbers);
+    for (let digit = start; digit <= end; digit++) {
       const count = digitCounts[pos].get(digit) ?? 0;
       result.push({
         position: pos,
@@ -87,7 +97,7 @@ function getNumberRangeByType(
   lottoType: LottoType,
   useSecondaryNumbers?: boolean,
   winClass?: number,
-): number {
+): NumberRange {
   switch (lottoType) {
     case LottoType.EURO:
       return useSecondaryNumbers ? EURO_SECONDARY_NUMBER_RANGE : EURO_PRIMARY_NUMBER_RANGE;
@@ -120,5 +130,5 @@ function getNumberRangeByType(
     }
   }
 
-  return 0;
+  return {start: 0, end: 0};
 }
