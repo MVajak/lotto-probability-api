@@ -1,7 +1,7 @@
 import {expect} from '@loopback/testlab';
 
 import {LottoType} from '../../../../common/types';
-import {calculatePositionalNumberStats, calculateNumberStats} from '../calculateProbability';
+import {calculateNumberStats,calculatePositionalNumberStats} from '../calculateProbability';
 import {
   BINGO_CENTER_NUMBER_RANGE,
   BINGO_CENTER_SQUARE_GAME_WIN_CLASS,

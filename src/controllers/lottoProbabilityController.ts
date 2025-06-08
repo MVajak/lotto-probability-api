@@ -2,7 +2,7 @@ import {inject} from '@loopback/core';
 import {getModelSchemaRef, post, requestBody, response} from '@loopback/rest';
 
 import {LottoProbabilityDto} from '../models/LottoNumbers/LottoProbabilityDto';
-import {LottoSearchDto} from '../models/LottoNumbers/LottoSearchDto'; // You can use node-fetch or others too
+import {LottoSearchDto} from '../models/LottoNumbers/LottoSearchDto';
 import {LottoProbabilityService} from '../services/lottoNumbers/lottoProbabilityService';
 
 export class LottoProbabilityController {
