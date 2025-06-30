@@ -1,5 +1,5 @@
 {
-  "name": "lotto-api",
+  "name": "lotto-probability-api",
   "version": "0.0.1",
   "description": "Get data from Eesti Loto for different lottos",
   "keywords": [

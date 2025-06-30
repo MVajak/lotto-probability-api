@@ -1,4 +1,5 @@
 import {BindingScope, injectable} from '@loopback/core';
+import {HttpErrors} from '@loopback/rest';
 import axios, {AxiosInstance, AxiosRequestConfig, AxiosResponse} from 'axios';
 
 import {DateFormat} from '../common/types';
@@ -20,9 +21,13 @@ export class EstonianLottoApiClient {
   constructor() {}
 
   async getEstonianLottoResult(): Promise<AxiosResponse> {
-    return axios.get(ESTONIAN_LOTTO_RESULT_URL, {
-      headers: getEstonianLottoHeaders(),
-    });
+    try {
+      return await axios.get(ESTONIAN_LOTTO_RESULT_URL, {
+        headers: getEstonianLottoHeaders(),
+      });
+    } catch (error) {
+      throw new HttpErrors.BadRequest('Could not load results view. Issue on eestilotto.ee side.');
+    }
   }
 
   async getEstonianLottoDraws(
@@ -35,13 +40,17 @@ export class EstonianLottoApiClient {
       headers: headers ?? getEstonianLottoHeaders(),
     };
 
-    const response: AxiosResponse<EstonianLottoDrawsResultDto> = await clientInstance.post(
-      ESTONIAN_LOTTO_DRAWS_URL,
-      payload,
-      config,
-    );
+    try {
+      const response: AxiosResponse<EstonianLottoDrawsResultDto> = await clientInstance.post(
+        ESTONIAN_LOTTO_DRAWS_URL,
+        payload,
+        config,
+      );
 
-    return response.data;
+      return response.data;
+    } catch (error) {
+      throw new HttpErrors.BadRequest('Could not fetch lotto draws. Issue on eestilotto.ee side.');
+    }
   }
 
   async getAllEstonianLottoDraws(

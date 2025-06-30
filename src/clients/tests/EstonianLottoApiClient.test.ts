@@ -1,3 +1,4 @@
+import {HttpErrors} from '@loopback/rest';
 import {expect, sinon} from '@loopback/testlab';
 import axios, {AxiosInstance} from 'axios';
 import {omit} from 'lodash';
@@ -51,6 +52,15 @@ describe('EstonianLottoApiClient', () => {
       });
 
       expect(result).deepEqual(fakeResponse);
+    });
+
+    it('should throw HttpErrors.BadRequest when axios fails', async () => {
+      axiosGetStub.rejects(new Error('Network Error'));
+
+      await expect(lottoService.getEstonianLottoResult()).to.be.rejectedWith(
+        HttpErrors.BadRequest,
+        {message: 'Could not load results view. Issue on eestilotto.ee side.'},
+      );
     });
   });
 
@@ -121,6 +131,15 @@ describe('EstonianLottoApiClient', () => {
       );
 
       expect(result).deepEqual(fakeResponseData);
+    });
+
+    it('should throw HttpErrors.BadRequest when axios fails', async () => {
+      axiosPostStub.rejects(new Error('Network Error'));
+
+      await expect(lottoService.getEstonianLottoDraws(fakePayload)).to.be.rejectedWith(
+        HttpErrors.BadRequest,
+        {message: 'Could not fetch lotto draws. Issue on eestilotto.ee side.'},
+      );
     });
   });
 
