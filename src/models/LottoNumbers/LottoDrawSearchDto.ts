@@ -3,7 +3,7 @@ import {model, property} from '@loopback/repository';
 import {LottoType} from '../../common/types';
 
 @model()
-export class LottoSearchDto {
+export class LottoDrawSearchDto {
   @property({
     type: 'string',
     required: true,
@@ -14,11 +14,11 @@ export class LottoSearchDto {
     type: 'string',
     required: false,
   })
-  dateFrom?: string;
+  dateFrom: string;
 
   @property({
     type: 'string',
     required: false,
   })
-  dateTo?: string;
+  dateTo: string;
 }

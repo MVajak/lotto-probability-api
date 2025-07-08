@@ -1,31 +1,39 @@
 import {BindingScope, inject, injectable} from '@loopback/core';
+import {HttpErrors} from '@loopback/rest';
 import {groupBy} from 'lodash';
 
-import {EstonianLottoApiClient} from '../../clients/EstonianLottoApiClient';
-import {LottoType} from '../../common/types';
+import {
+  ALL_PROBABILITY_LOTTO,
+  LottoType,
+  OVERALL_PROBABILITY_LOTTO,
+  POSITIONAL_PROBABILITY_LOTTO,
+} from '../../common/types';
 import {safeBig} from '../../common/utils/calculations';
 import {convertToNumbers} from '../../common/utils/conversions';
-import {EstonianLottoDrawDto} from '../../models/EstonianLotto/EstonianLottoDrawDto';
-import {EstonianLottoDrawResultDto} from '../../models/EstonianLotto/EstonianLottoDrawResultDto';
+import {isDateBefore} from '../../common/utils/dates';
+import {EstonianLottoDrawWinningsDto} from '../../models/EstonianLotto/EstonianLottoDrawWinningsDto';
+import {LottoDrawRelations} from '../../models/LottoDraw';
+import {LottoDrawSearchDto} from '../../models/LottoNumbers/LottoDrawSearchDto';
 import {LottoProbabilityDto} from '../../models/LottoNumbers/LottoProbabilityDto';
 import {LottoProbabilityNumbersDto} from '../../models/LottoNumbers/LottoProbabilityNumbersDto';
-import {LottoSearchDto} from '../../models/LottoNumbers/LottoSearchDto';
-import {CsrfService} from '../csrf/csrf.service';
+import {LoggerService} from '../logger/loggerService';
+import {LottoDrawService} from '../lottoDraw/lottoDrawService';
 
 import {calculateNumberStats, calculatePositionalNumberStats} from './helpers/calculateProbability';
-import {OVERALL_PROBABILITY_LOTTO, POSITIONAL_PROBABILITY_LOTTO, WinningNumbers} from './types';
+import {WinningNumbers} from './types';
 
 @injectable({scope: BindingScope.SINGLETON})
 export class LottoProbabilityService {
   constructor(
-    @inject('services.CsrfService')
-    protected csrfService: CsrfService,
-    @inject('clients.EstonianLottoApiClient')
-    protected estonianLottoApiClient: EstonianLottoApiClient,
+    @inject('services.LoggerService')
+    private loggerService: LoggerService,
+    @inject('services.LottoDrawService')
+    private lottoDrawService: LottoDrawService,
   ) {}
 
-  async calculateProbability(data: LottoSearchDto): Promise<LottoProbabilityDto> {
-    const estonianLottoDraws: EstonianLottoDrawDto[] = await this.fetchEstonianLottoDraws(data);
+  async calculateProbability(data: LottoDrawSearchDto): Promise<LottoProbabilityDto> {
+    this.validatePayload(data);
+    const estonianLottoDraws: LottoDrawRelations[] = await this.lottoDrawService.findDraws(data);
 
     const totalDraws = estonianLottoDraws.length;
     const {lottoType} = data;
@@ -34,15 +42,8 @@ export class LottoProbabilityService {
     return this.buildLottoProbabilityDto(result, lottoType, totalDraws);
   }
 
-  private async fetchEstonianLottoDraws(data: LottoSearchDto): Promise<EstonianLottoDrawDto[]> {
-    const csrfToken = await this.csrfService.getCsrfToken();
-    const client = this.csrfService.getClient();
-
-    return this.estonianLottoApiClient.getAllEstonianLottoDraws(data, csrfToken, client);
-  }
-
   private calculateProbabilityByType(
-    draws: EstonianLottoDrawDto[],
+    draws: LottoDrawRelations[],
     lottoType: LottoType,
   ): LottoProbabilityNumbersDto[] {
     if (OVERALL_PROBABILITY_LOTTO.includes(lottoType)) {
@@ -54,11 +55,29 @@ export class LottoProbabilityService {
     }
   }
 
+  private validatePayload(payload: LottoDrawSearchDto) {
+    const {lottoType, dateFrom, dateTo} = payload;
+
+    if (!ALL_PROBABILITY_LOTTO.includes(lottoType)) {
+      this.loggerService.logError({
+        message: `Lotto type ${lottoType} is not supported.`,
+        errorConstructor: HttpErrors.BadRequest,
+      });
+    }
+
+    if (!isDateBefore(dateFrom, dateTo)) {
+      this.loggerService.logError({
+        message: `Date data is incorrect.`,
+        errorConstructor: HttpErrors.BadRequest,
+      });
+    }
+  }
+
   private calculatePositionalProbability(
-    draws: EstonianLottoDrawDto[],
+    draws: LottoDrawRelations[],
     lottoType: LottoType,
   ): LottoProbabilityNumbersDto[] {
-    const allResults: WinningNumbers[] = draws.map((draw: EstonianLottoDrawDto) => {
+    const allResults: WinningNumbers[] = draws.map((draw: LottoDrawRelations) => {
       return draw.results.reduce<WinningNumbers>(
         (acc, result) => {
           acc.winningNumbers.push(...convertToNumbers(result.winningNumber));
@@ -86,11 +105,11 @@ export class LottoProbabilityService {
   }
 
   private calculateOverallProbability(
-    draws: EstonianLottoDrawDto[],
+    draws: LottoDrawRelations[],
     lottoType: LottoType,
   ): LottoProbabilityNumbersDto[] {
-    const allResults: EstonianLottoDrawResultDto[] = draws.flatMap(
-      (draw: EstonianLottoDrawDto) => draw.results,
+    const allResults: EstonianLottoDrawWinningsDto[] = draws.flatMap(
+      (draw: LottoDrawRelations) => draw.results,
     );
 
     const resultsByWinClass = groupBy(allResults, result => result.winClass);

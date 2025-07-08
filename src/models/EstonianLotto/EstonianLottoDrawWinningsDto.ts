@@ -1,7 +1,7 @@
 import {model, property} from '@loopback/repository';
 
 @model()
-export class EstonianLottoDrawResultDto {
+export class EstonianLottoDrawWinningsDto {
   @property({
     type: 'number',
     required: true,

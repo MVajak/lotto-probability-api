@@ -6,10 +6,19 @@ import {RestExplorerBindings, RestExplorerComponent} from '@loopback/rest-explor
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 
+import {CronBooter} from './boot/cron.boot';
 import {EstonianLottoApiClient} from './clients/EstonianLottoApiClient';
 import {LottoProbabilityController} from './controllers/lottoProbabilityController';
+import {NewLottoDrawsCronService} from './crons/newLottoDrawsCronService';
+import {ResetLottoDrawsCronService} from './crons/resetLottoDrawsCronService';
+import {PostgresDataSource} from './datasources/postgres.datasource';
+import {LottoDrawRepository} from './repositories/lottoDrawRepository';
+import {LottoDrawResultRepository} from './repositories/lottoDrawResultRepository';
 import {CsrfService} from './services/csrf/csrf.service';
-import {LottoProbabilityService} from './services/lottoNumbers/lottoProbabilityService';
+import {LoggerService} from './services/logger/loggerService';
+import {LottoDrawService} from './services/lottoDraw/lottoDrawService';
+import {LottoDrawResultService} from './services/lottoDrawResult/lottoDrawResultService';
+import {LottoProbabilityService} from './services/lottoProbability/lottoProbabilityService';
 import {MySequence} from './sequence';
 
 export {ApplicationConfig};
@@ -30,12 +39,28 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     });
     this.component(RestExplorerComponent);
 
-    // Binding services
+    this.dataSource(PostgresDataSource, 'postgresDS');
+
+    // Booters
+    this.booters(CronBooter);
+
+    // Repositories
+    this.repository(LottoDrawRepository);
+    this.repository(LottoDrawResultRepository);
+
+    // Services
     this.bind('services.LottoProbabilityService').toClass(LottoProbabilityService);
+    this.bind('services.LottoDrawService').toClass(LottoDrawService);
+    this.bind('services.LottoDrawResultService').toClass(LottoDrawResultService);
     this.bind('services.CsrfService').toClass(CsrfService);
+    this.bind('services.LoggerService').toClass(LoggerService);
+    this.bind('services.NewLottoDrawsCronService').toClass(NewLottoDrawsCronService);
+    this.bind('services.ResetLottoDrawsCronService').toClass(ResetLottoDrawsCronService);
+
+    // Clients
     this.bind('clients.EstonianLottoApiClient').toClass(EstonianLottoApiClient);
 
-    // Binding controllers
+    // Controllers
     this.controller(LottoProbabilityController);
 
     this.projectRoot = __dirname;
@@ -45,6 +70,9 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
         extensions: ['.controller.js'],
         nested: true,
       },
+      dirs: ['boot'],
+      extensions: ['.boot.ts'],
+      nested: true,
     };
   }
 }

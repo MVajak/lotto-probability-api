@@ -1,4 +1,4 @@
-import {BindingScope, injectable} from '@loopback/core';
+import {BindingScope, inject, injectable} from '@loopback/core';
 import {HttpErrors} from '@loopback/rest';
 import axios, {AxiosInstance, AxiosRequestConfig, AxiosResponse} from 'axios';
 
@@ -7,18 +7,20 @@ import {formatDate} from '../common/utils/dates';
 import {EstonianLottoDrawDto} from '../models/EstonianLotto/EstonianLottoDrawDto';
 import {EstonianLottoDrawsResultDto} from '../models/EstonianLotto/EstonianLottoDrawsResultDto';
 import {EstonianLottoPayloadDto} from '../models/EstonianLotto/EstonianLottoPayloadDto';
-import {LottoSearchDto} from '../models/LottoNumbers/LottoSearchDto';
+import {LoggerService} from '../services/logger/loggerService';
 
 import {getEstonianLottoHeaders} from './helpers/getEstonianLottoHeaders';
+import {EstonianLottoSearchDto, PageableEstonianLottoSearchDto} from './types';
 
 export const ESTONIAN_LOTTO_DRAWS_URL = 'https://www.eestiloto.ee/app/ajaxDrawStatistic';
 export const ESTONIAN_LOTTO_RESULT_URL = 'https://www.eestiloto.ee/et/results/';
 
-type PageableLottoSearchDto = LottoSearchDto & {pageIndex: number};
-
 @injectable({scope: BindingScope.SINGLETON})
 export class EstonianLottoApiClient {
-  constructor() {}
+  constructor(
+    @inject('services.LoggerService')
+    protected loggerService: LoggerService,
+  ) {}
 
   async getEstonianLottoResult(): Promise<AxiosResponse> {
     try {
@@ -26,7 +28,10 @@ export class EstonianLottoApiClient {
         headers: getEstonianLottoHeaders(),
       });
     } catch (error) {
-      throw new HttpErrors.BadRequest('Could not load results view. Issue on eestilotto.ee side.');
+      this.loggerService.logError({
+        message: 'Could not load results view. Issue on eestilotto.ee side.',
+        errorConstructor: HttpErrors.BadRequest,
+      });
     }
   }
 
@@ -49,12 +54,15 @@ export class EstonianLottoApiClient {
 
       return response.data;
     } catch (error) {
-      throw new HttpErrors.BadRequest('Could not fetch lotto draws. Issue on eestilotto.ee side.');
+      this.loggerService.logError({
+        message: 'Could not fetch lotto draws. Issue on eestilotto.ee side.',
+        errorConstructor: HttpErrors.BadRequest,
+      });
     }
   }
 
   async getAllEstonianLottoDraws(
-    data: LottoSearchDto,
+    data: EstonianLottoSearchDto,
     csrfToken: string,
     client?: AxiosInstance,
   ): Promise<EstonianLottoDrawDto[]> {
@@ -102,7 +110,7 @@ export class EstonianLottoApiClient {
   }
 
   private generatePayloadForEstonianLotto(
-    data: PageableLottoSearchDto,
+    data: PageableEstonianLottoSearchDto,
     csrfToken: string,
   ): EstonianLottoPayloadDto {
     const dateTo = data.dateTo ? formatDate(data.dateTo, DateFormat.European) : '';

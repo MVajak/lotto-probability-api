@@ -1,23 +1,24 @@
 import {expect, sinon} from '@loopback/testlab';
-import {AxiosInstance} from 'axios';
 
-import {EstonianLottoApiClient} from '../../../clients/EstonianLottoApiClient';
 import {createStubInstance, createStubInstances} from '../../../common/test-utils/mocking';
 import {LottoType} from '../../../common/types';
-import {EstonianLottoDrawDto} from '../../../models/EstonianLotto/EstonianLottoDrawDto';
-import {EstonianLottoDrawResultDto} from '../../../models/EstonianLotto/EstonianLottoDrawResultDto';
-import {LottoSearchDto} from '../../../models/LottoNumbers/LottoSearchDto';
-import {CsrfService} from '../../csrf/csrf.service';
+import {LottoDrawRelations} from '../../../models/LottoDraw';
+import {LottoDrawResult} from '../../../models/LottoDrawResult';
+import {LottoDrawSearchDto} from '../../../models/LottoNumbers/LottoDrawSearchDto';
+import {LoggerService} from '../../logger/loggerService';
+import {LottoDrawService} from '../../lottoDraw/lottoDrawService';
 import {LottoProbabilityService} from '../lottoProbabilityService';
 
 describe('LottoProbabilityService', () => {
   let service: LottoProbabilityService;
-  let csrfServiceStub: sinon.SinonStubbedInstance<CsrfService>;
-  let apiClientStub: sinon.SinonStubbedInstance<EstonianLottoApiClient>;
+  let loggerServiceStub: sinon.SinonStubbedInstance<LoggerService>;
+  let lottoDrawServiceStub: sinon.SinonStubbedInstance<LottoDrawService>;
 
-  const mockDraw = createStubInstance<EstonianLottoDrawDto>({
-    results: createStubInstances<EstonianLottoDrawResultDto>([
+  const mockDraw = createStubInstance<LottoDrawRelations>({
+    results: createStubInstances<LottoDrawResult>([
       {
+        id: 1,
+        drawId: 10,
         winClass: null,
         winningNumber: '41,9,25,6,17',
         secWinningNumber: '4,10',
@@ -26,18 +27,16 @@ describe('LottoProbabilityService', () => {
   });
 
   beforeEach(() => {
-    csrfServiceStub = sinon.createStubInstance(CsrfService);
-    apiClientStub = sinon.createStubInstance(EstonianLottoApiClient);
+    loggerServiceStub = sinon.createStubInstance(LoggerService);
+    lottoDrawServiceStub = sinon.createStubInstance(LottoDrawService);
 
-    service = new LottoProbabilityService(csrfServiceStub, apiClientStub);
+    service = new LottoProbabilityService(loggerServiceStub, lottoDrawServiceStub);
 
-    csrfServiceStub.getCsrfToken.resolves('mock-token');
-    csrfServiceStub.getClient.returns(createStubInstance<AxiosInstance>({}));
-    apiClientStub.getAllEstonianLottoDraws.resolves([mockDraw]);
+    lottoDrawServiceStub.findDraws.resolves([mockDraw]);
   });
 
   it('returns probability DTO for overall probability type', async () => {
-    const data: LottoSearchDto = {
+    const data: LottoDrawSearchDto = {
       lottoType: LottoType.EURO,
       dateFrom: '2023-01-01',
       dateTo: '2023-01-31',
@@ -54,13 +53,13 @@ describe('LottoProbabilityService', () => {
   });
 
   it('returns probability DTO for positional probability type', async () => {
-    const data: LottoSearchDto = {
+    const data: LottoDrawSearchDto = {
       lottoType: LottoType.JOKKER,
       dateFrom: '2023-01-01',
       dateTo: '2023-01-31',
     };
-    const responseDraw = createStubInstance<EstonianLottoDrawDto>({
-      results: createStubInstances<EstonianLottoDrawResultDto>([
+    const responseDraw = createStubInstance<LottoDrawRelations>({
+      results: createStubInstances<LottoDrawResult>([
         {
           winClass: null,
           winningNumber: '1,0,8,8,2,0,2',
@@ -69,7 +68,7 @@ describe('LottoProbabilityService', () => {
       ]),
     });
 
-    apiClientStub.getAllEstonianLottoDraws.resolves([responseDraw]);
+    lottoDrawServiceStub.findDraws.resolves([responseDraw]);
 
     const result = await service.calculateProbability(data);
 
@@ -81,13 +80,13 @@ describe('LottoProbabilityService', () => {
   });
 
   it('returns empty array when lottoType is unsupported', async () => {
-    const data: LottoSearchDto = {
+    const data: LottoDrawSearchDto = {
       lottoType: 'UNKNOWN_LOTTO' as LottoType,
       dateFrom: '2023-01-01',
       dateTo: '2023-01-31',
     };
 
-    apiClientStub.getAllEstonianLottoDraws.resolves([]);
+    lottoDrawServiceStub.findDraws.resolves([]);
 
     const result = await service.calculateProbability(data);
     expect(result.probabilityNumbers).to.deepEqual([]);

@@ -2,7 +2,7 @@ import {model, property} from '@loopback/repository';
 
 import {LottoType} from '../../common/types';
 
-import {EstonianLottoDrawResultDto} from './EstonianLottoDrawResultDto';
+import {EstonianLottoDrawWinningsDto} from './EstonianLottoDrawWinningsDto';
 
 @model()
 export class EstonianLottoDrawDto {
@@ -12,12 +12,22 @@ export class EstonianLottoDrawDto {
   gameTypeName: LottoType;
 
   @property({
+    type: 'number',
+  })
+  drawDate: number;
+
+  @property({
     type: 'string',
   })
   drawLabel: string;
 
-  @property.array(EstonianLottoDrawResultDto)
-  results: EstonianLottoDrawResultDto[];
+  @property({
+    type: 'string',
+  })
+  externalDrawId: string;
+
+  @property.array(EstonianLottoDrawWinningsDto)
+  results: EstonianLottoDrawWinningsDto[];
 
   constructor(data: EstonianLottoDrawDto) {
     Object.assign(this, data);

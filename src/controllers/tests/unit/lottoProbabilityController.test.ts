@@ -2,9 +2,9 @@ import {expect} from '@loopback/testlab';
 import sinon from 'sinon';
 
 import {LottoType} from '../../../common/types';
+import {LottoDrawSearchDto} from '../../../models/LottoNumbers/LottoDrawSearchDto';
 import {LottoProbabilityDto} from '../../../models/LottoNumbers/LottoProbabilityDto';
-import {LottoSearchDto} from '../../../models/LottoNumbers/LottoSearchDto';
-import {LottoProbabilityService} from '../../../services/lottoNumbers/lottoProbabilityService';
+import {LottoProbabilityService} from '../../../services/lottoProbability/lottoProbabilityService';
 import {LottoProbabilityController} from '../../lottoProbabilityController';
 
 describe('LottoProbabilityController', () => {
@@ -26,7 +26,7 @@ describe('LottoProbabilityController', () => {
 
   describe('getLottoProbability', () => {
     it('should return lotto probability result', async () => {
-      const input: LottoSearchDto = {
+      const input: LottoDrawSearchDto = {
         lottoType: LottoType.EURO,
         dateFrom: '2023-01-01',
         dateTo: '2023-12-31',

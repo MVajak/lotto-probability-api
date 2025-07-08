@@ -29,15 +29,17 @@
     "docker:build": "docker build -t lotto-api .",
     "docker:run": "docker run -p 3000:3000 -d lotto-api",
     "premigrate": "npm run build",
-    "migrate": "node ./dist/migrate",
     "preopenapi-spec": "npm run build",
     "openapi-spec": "node ./dist/openapi-spec",
     "prestart": "npm run rebuild",
     "start": "node -r source-map-support/register .",
-
     "dev": "nodemon --legacy-watch --watch 'src/**/*.ts' --exec 'ts-node -r source-map-support/register' src/index.ts",
     "clean": "lb-clean dist *.tsbuildinfo .eslintcache",
-    "rebuild": "npm run clean && npm run build"
+    "rebuild": "npm run clean && npm run build",
+    "migrate": "node-pg-migrate up -c migration.config.js",
+    "migrate:create": "node-pg-migrate create -m sql -c migration.config.js",
+    "migrate:up": "node-pg-migrate up",
+    "migrate:down": "node-pg-migrate down"
   },
   "nyc": {
     "extension": [
@@ -88,6 +90,8 @@
     "cheerio": "^1.0.0",
     "date-fns": "^4.1.0",
     "lodash": "^4.17.21",
+    "loopback-connector-postgresql": "^7.2.2",
+    "node-cron": "^4.1.1",
     "node-fetch": "^3.3.2",
     "tough-cookie": "^5.1.2",
     "tslib": "^2.0.0"
@@ -100,12 +104,14 @@
     "@types/lodash": "^4.17.17",
     "@types/mocha": "^10.0.10",
     "@types/node": "^16.18.126",
+    "@types/node-cron": "^3.0.11",
     "@types/tough-cookie": "^4.0.5",
     "eslint": "^8.57.1",
     "eslint-import-resolver-typescript": "^4.4.1",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "mocha": "^11.5.0",
+    "node-pg-migrate": "^8.0.3",
     "nodemon": "^3.1.10",
     "nyc": "^17.1.0",
     "source-map-support": "^0.5.21",

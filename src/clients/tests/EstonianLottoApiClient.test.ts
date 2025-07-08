@@ -1,28 +1,31 @@
-import {HttpErrors} from '@loopback/rest';
 import {expect, sinon} from '@loopback/testlab';
 import axios, {AxiosInstance} from 'axios';
 import {omit} from 'lodash';
 
-import {createStubInstance} from '../../common/test-utils/mocking';
+import {createStubInstance, createStubInstances} from '../../common/test-utils/mocking';
 import {LottoType} from '../../common/types';
+import {EstonianLottoDrawDto} from '../../models/EstonianLotto/EstonianLottoDrawDto';
 import {EstonianLottoDrawsResultDto} from '../../models/EstonianLotto/EstonianLottoDrawsResultDto';
 import {EstonianLottoPayloadDto} from '../../models/EstonianLotto/EstonianLottoPayloadDto';
-import {LottoSearchDto} from '../../models/LottoNumbers/LottoSearchDto';
+import {LoggerService} from '../../services/logger/loggerService';
 import {
   ESTONIAN_LOTTO_DRAWS_URL,
   ESTONIAN_LOTTO_RESULT_URL,
   EstonianLottoApiClient,
 } from '../EstonianLottoApiClient';
 import {getEstonianLottoHeaders} from '../helpers/getEstonianLottoHeaders';
+import {EstonianLottoSearchDto} from '../types';
 
 describe('EstonianLottoApiClient', () => {
   let lottoService: EstonianLottoApiClient;
   let axiosGetStub: sinon.SinonStub;
   let axiosPostStub: sinon.SinonStub;
+  let loggerServiceStub: sinon.SinonStubbedInstance<LoggerService>;
   const headers = getEstonianLottoHeaders();
 
   beforeEach(() => {
-    lottoService = new EstonianLottoApiClient();
+    loggerServiceStub = sinon.createStubInstance(LoggerService);
+    lottoService = new EstonianLottoApiClient(loggerServiceStub);
   });
 
   afterEach(() => {
@@ -54,13 +57,12 @@ describe('EstonianLottoApiClient', () => {
       expect(result).deepEqual(fakeResponse);
     });
 
-    it('should throw HttpErrors.BadRequest when axios fails', async () => {
+    it('should call error service to log it when axios fails', async () => {
       axiosGetStub.rejects(new Error('Network Error'));
 
-      await expect(lottoService.getEstonianLottoResult()).to.be.rejectedWith(
-        HttpErrors.BadRequest,
-        {message: 'Could not load results view. Issue on eestilotto.ee side.'},
-      );
+      await lottoService.getEstonianLottoResult();
+
+      sinon.assert.calledOnce(loggerServiceStub.logError);
     });
   });
 
@@ -72,10 +74,10 @@ describe('EstonianLottoApiClient', () => {
 
     const fakeResponseData: EstonianLottoDrawsResultDto = {
       drawCount: 2,
-      draws: [
+      draws: createStubInstances<EstonianLottoDrawDto>([
         {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
         {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
-      ],
+      ]),
     };
 
     beforeEach(() => {
@@ -133,19 +135,18 @@ describe('EstonianLottoApiClient', () => {
       expect(result).deepEqual(fakeResponseData);
     });
 
-    it('should throw HttpErrors.BadRequest when axios fails', async () => {
+    it('should call error service to log it when axios fails', async () => {
       axiosPostStub.rejects(new Error('Network Error'));
 
-      await expect(lottoService.getEstonianLottoDraws(fakePayload)).to.be.rejectedWith(
-        HttpErrors.BadRequest,
-        {message: 'Could not fetch lotto draws. Issue on eestilotto.ee side.'},
-      );
+      await lottoService.getEstonianLottoDraws(fakePayload);
+
+      sinon.assert.calledOnce(loggerServiceStub.logError);
     });
   });
 
   describe('getAllEstonianLottoDraws', () => {
     let getDrawsStub: sinon.SinonStub;
-    const searchDto = createStubInstance<LottoSearchDto>({
+    const searchDto = createStubInstance<EstonianLottoSearchDto>({
       lottoType: LottoType.EURO,
       dateFrom: '2024-01-01',
       dateTo: '2024-01-31',
@@ -154,17 +155,17 @@ describe('EstonianLottoApiClient', () => {
     const csrfToken = 'csrf-token';
 
     beforeEach(() => {
-      lottoService = new EstonianLottoApiClient();
+      lottoService = new EstonianLottoApiClient(loggerServiceStub);
 
       getDrawsStub = sinon.stub(lottoService, 'getEstonianLottoDraws');
     });
 
     it('should return all results from a single-page response', async () => {
       const firstPageResult: EstonianLottoDrawsResultDto = {
-        draws: [
+        draws: createStubInstances<EstonianLottoDrawDto>([
           {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
           {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
-        ],
+        ]),
         drawCount: 2,
       };
 
@@ -201,17 +202,23 @@ describe('EstonianLottoApiClient', () => {
 
     it('should return combined results from multiple pages', async () => {
       const firstPage: EstonianLottoDrawsResultDto = {
-        draws: [{gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []}],
+        draws: createStubInstances<EstonianLottoDrawDto>([
+          {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
+        ]),
         drawCount: 3,
       };
 
       const secondPage: EstonianLottoDrawsResultDto = {
-        draws: [{gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []}],
+        draws: createStubInstances<EstonianLottoDrawDto>([
+          {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
+        ]),
         drawCount: 3,
       };
 
       const thirdPage: EstonianLottoDrawsResultDto = {
-        draws: [{gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []}],
+        draws: createStubInstances<EstonianLottoDrawDto>([
+          {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
+        ]),
         drawCount: 3,
       };
 
@@ -227,7 +234,9 @@ describe('EstonianLottoApiClient', () => {
 
     it('should stop fetching if a page returns empty draws', async () => {
       const firstPage: EstonianLottoDrawsResultDto = {
-        draws: [{gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []}],
+        draws: createStubInstances<EstonianLottoDrawDto>([
+          {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
+        ]),
         drawCount: 3,
       };
 

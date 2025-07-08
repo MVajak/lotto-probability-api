@@ -1,9 +1,9 @@
 import {inject} from '@loopback/core';
 import {getModelSchemaRef, post, requestBody, response} from '@loopback/rest';
 
+import {LottoDrawSearchDto} from '../models/LottoNumbers/LottoDrawSearchDto';
 import {LottoProbabilityDto} from '../models/LottoNumbers/LottoProbabilityDto';
-import {LottoSearchDto} from '../models/LottoNumbers/LottoSearchDto';
-import {LottoProbabilityService} from '../services/lottoNumbers/lottoProbabilityService';
+import {LottoProbabilityService} from '../services/lottoProbability/lottoProbabilityService';
 
 export class LottoProbabilityController {
   constructor(
@@ -25,12 +25,12 @@ export class LottoProbabilityController {
       content: {
         'application/json': {
           schema: {
-            'x-ts-type': LottoSearchDto,
+            'x-ts-type': LottoDrawSearchDto,
           },
         },
       },
     })
-    data: LottoSearchDto,
+    data: LottoDrawSearchDto,
   ): Promise<LottoProbabilityDto> {
     return this.lottoProbabilityService.calculateProbability(data);
   }
