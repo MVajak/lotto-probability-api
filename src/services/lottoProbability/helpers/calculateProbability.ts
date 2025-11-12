@@ -1,61 +1,107 @@
-import {LottoType, NumberStat} from '../../../common/types';
+import {LottoType, NumberFrequencyStat} from '../../../common/types';
 import {safeBig} from '../../../common/utils/calculations';
 
-import {
-  BINGO_CENTER_NUMBER_RANGE,
-  BINGO_CENTER_SQUARE_GAME_WIN_CLASS,
-  BINGO_CORNER_NUMBER_RANGE,
-  BINGO_CORNER_SQUARE_GAME_WIN_CLASS,
-  BINGO_DIAGONAL_NUMBER_RANGE,
-  BINGO_DIAGONAL_SQUARE_GAME_WIN_CLASS,
-  BINGO_PRIMARY_NUMBER_RANGE,
-  EURO_PRIMARY_NUMBER_RANGE,
-  EURO_SECONDARY_NUMBER_RANGE,
-  JOKKER_PRIMARY_NUMBER_RANGE,
-  KENO_PRIMARY_NUMBER_RANGE,
-  VIKING_PRIMARY_NUMBER_RANGE,
-  VIKING_SECONDARY_NUMBER_RANGE,
-} from './constants';
-import {NumberRange} from './types';
+import {calculateDeviation} from './deviation';
+import {interpretFrequency} from './interpretation';
+import {calculateTheoreticalProbability, getLotteryConfig, getNumberRange} from './lotteryConfigs';
+import {calculateWilsonConfidenceInterval} from './wilsonConfidenceInterval';
 
-export function calculateNumberStats(
+/**
+ * Default confidence level for statistical analysis (95%)
+ */
+const DEFAULT_CONFIDENCE_LEVEL = 0.95;
+
+/**
+ * Calculate number statistics with Wilson confidence intervals and frequency analysis
+ *
+ * This function provides comprehensive statistical analysis including:
+ * - Historical frequency (observed rate)
+ * - Wilson confidence intervals (uncertainty estimation)
+ * - Theoretical probability comparison
+ * - Deviation analysis
+ * - User-friendly interpretation (hot/cold/normal)
+ *
+ * @param numbers - Array of numbers that appeared
+ * @param lottoType - Type of lottery
+ * @param totalDraws - Total number of draws (not individual numbers)
+ * @param useSecondaryNumbers - Whether analyzing secondary numbers (stars/bonus)
+ * @param winClass - Win class (for games like Bingo with multiple patterns)
+ * @returns Array of enhanced frequency statistics
+ */
+export function calculateNumberStatsWithCI(
   numbers: number[],
   lottoType: LottoType,
+  totalDraws: number,
   useSecondaryNumbers?: boolean,
   winClass?: number,
-): NumberStat[] {
-  const total = numbers.length;
+): NumberFrequencyStat[] {
   const countMap = new Map<number, number>();
 
+  // Count occurrences of each number
   for (const num of numbers) {
     countMap.set(num, (countMap.get(num) || 0) + 1);
   }
 
-  const stats: NumberStat[] = [];
-  const {start, end} = getNumberRangeByType(lottoType, useSecondaryNumbers, winClass);
+  const stats: NumberFrequencyStat[] = [];
+  const {start, end} = getNumberRange(lottoType, useSecondaryNumbers, winClass);
 
   if (safeBig(end).eq(0)) {
     return [];
   }
 
+  // Get lottery configuration for theoretical probability
+  const config = getLotteryConfig(lottoType);
+  const theoreticalProb = calculateTheoreticalProbability(config, useSecondaryNumbers);
+
+  // Calculate stats for each possible number
   for (let digit = start; digit <= end; digit++) {
     const count = countMap.get(digit) || 0;
+    const frequency = totalDraws > 0 ? count / totalDraws : 0;
+
+    // Calculate Wilson confidence interval
+    const ci = calculateWilsonConfidenceInterval(count, totalDraws, DEFAULT_CONFIDENCE_LEVEL);
+
+    // Calculate deviation from theoretical
+    const deviation = calculateDeviation(frequency, theoreticalProb, ci.lower, ci.upper);
+
+    // Get user-friendly interpretation
+    const interpretation = interpretFrequency(frequency, theoreticalProb, ci, count, totalDraws);
+
     stats.push({
       position: null,
       digit,
       count,
-      probability: total > 0 ? count / total : 0,
+      totalDraws,
+      frequency,
+      confidenceInterval: {
+        lower: ci.lower,
+        upper: ci.upper,
+        confidenceLevel: DEFAULT_CONFIDENCE_LEVEL,
+      },
+      theoreticalProbability: theoreticalProb,
+      deviation,
+      interpretation,
     });
   }
 
   return stats;
 }
 
-export function calculatePositionalNumberStats(
+/**
+ * Calculate positional number statistics with Wilson confidence intervals
+ *
+ * For positional lotteries (like Jokker), analyze each position separately
+ *
+ * @param sets - Array of number sets (each draw)
+ * @param lottoType - Type of lottery
+ * @param useSecondaryNumbers - Whether analyzing secondary numbers
+ * @returns Array of enhanced frequency statistics with position information
+ */
+export function calculatePositionalNumberStatsWithCI(
   sets: number[][],
   lottoType: LottoType,
   useSecondaryNumbers?: boolean,
-): NumberStat[] {
+): NumberFrequencyStat[] {
   if (sets.length === 0) {
     return [];
   }
@@ -63,6 +109,7 @@ export function calculatePositionalNumberStats(
   const setLength = sets[0].length;
   const digitCounts: Map<number, number>[] = Array.from({length: setLength}, () => new Map());
 
+  // Count occurrences at each position
   for (const set of sets) {
     if (set.length !== setLength) {
       throw new Error('All sets must be of equal length');
@@ -74,61 +121,55 @@ export function calculatePositionalNumberStats(
     });
   }
 
-  const result: NumberStat[] = [];
+  const result: NumberFrequencyStat[] = [];
+  const config = getLotteryConfig(lottoType);
+  const theoreticalProb = calculateTheoreticalProbability(config, useSecondaryNumbers);
 
+  // Calculate stats for each position and digit
   for (let pos = 0; pos < setLength; pos++) {
     const totalAtPosition = sets.length;
-    const {start, end} = getNumberRangeByType(lottoType, useSecondaryNumbers);
+    const {start, end} = getNumberRange(lottoType, useSecondaryNumbers);
+
     for (let digit = start; digit <= end; digit++) {
       const count = digitCounts[pos].get(digit) ?? 0;
+      const frequency = count / totalAtPosition;
+
+      // Calculate Wilson confidence interval
+      const ci = calculateWilsonConfidenceInterval(
+        count,
+        totalAtPosition,
+        DEFAULT_CONFIDENCE_LEVEL,
+      );
+
+      // Calculate deviation
+      const deviation = calculateDeviation(frequency, theoreticalProb, ci.lower, ci.upper);
+
+      // Get interpretation
+      const interpretation = interpretFrequency(
+        frequency,
+        theoreticalProb,
+        ci,
+        count,
+        totalAtPosition,
+      );
+
       result.push({
         position: pos,
         digit,
         count,
-        probability: count / totalAtPosition,
+        totalDraws: totalAtPosition,
+        frequency,
+        confidenceInterval: {
+          lower: ci.lower,
+          upper: ci.upper,
+          confidenceLevel: DEFAULT_CONFIDENCE_LEVEL,
+        },
+        theoreticalProbability: theoreticalProb,
+        deviation,
+        interpretation,
       });
     }
   }
 
   return result;
-}
-
-function getNumberRangeByType(
-  lottoType: LottoType,
-  useSecondaryNumbers?: boolean,
-  winClass?: number,
-): NumberRange {
-  switch (lottoType) {
-    case LottoType.EURO:
-      return useSecondaryNumbers ? EURO_SECONDARY_NUMBER_RANGE : EURO_PRIMARY_NUMBER_RANGE;
-    case LottoType.KENO:
-      return KENO_PRIMARY_NUMBER_RANGE;
-    case LottoType.VIKINGLOTTO: {
-      return useSecondaryNumbers ? VIKING_SECONDARY_NUMBER_RANGE : VIKING_PRIMARY_NUMBER_RANGE;
-    }
-    case LottoType.BINGO: {
-      const winClassNumber = safeBig(winClass);
-      if (winClassNumber.eq(BINGO_CENTER_SQUARE_GAME_WIN_CLASS)) {
-        return BINGO_CENTER_NUMBER_RANGE;
-      }
-
-      if (winClassNumber.eq(BINGO_CORNER_SQUARE_GAME_WIN_CLASS)) {
-        return BINGO_CORNER_NUMBER_RANGE;
-      }
-
-      if (winClassNumber.eq(BINGO_DIAGONAL_SQUARE_GAME_WIN_CLASS)) {
-        return BINGO_DIAGONAL_NUMBER_RANGE;
-      }
-
-      return BINGO_PRIMARY_NUMBER_RANGE;
-    }
-    case LottoType.JOKKER: {
-      return JOKKER_PRIMARY_NUMBER_RANGE;
-    }
-    default: {
-      break;
-    }
-  }
-
-  return {start: 0, end: 0};
 }

@@ -1,6 +1,6 @@
 import {model, property} from '@loopback/repository';
 
-import {NumberStat} from '../../common/types';
+import {NumberFrequencyStat} from '../../common/types';
 
 @model()
 export class LottoProbabilityNumbersDto {
@@ -15,13 +15,13 @@ export class LottoProbabilityNumbersDto {
     type: 'object',
     required: true,
   })
-  winningNumbersCount: NumberStat[];
+  winningNumbersCount: NumberFrequencyStat[];
 
   @property({
     type: 'object',
     required: false,
   })
-  secWinningNumbersCount?: NumberStat[];
+  secWinningNumbersCount?: NumberFrequencyStat[];
 
   constructor(data: LottoProbabilityNumbersDto) {
     Object.assign(this, data);

@@ -11,15 +11,18 @@ import {
 import {safeBig} from '../../common/utils/calculations';
 import {convertToNumbers} from '../../common/utils/conversions';
 import {isDateBefore} from '../../common/utils/dates';
+import {LottoDrawRelations} from '../../models';
 import {EstonianLottoDrawWinningsDto} from '../../models/EstonianLotto/EstonianLottoDrawWinningsDto';
-import {LottoDrawRelations} from '../../models/LottoDraw';
 import {LottoDrawSearchDto} from '../../models/LottoNumbers/LottoDrawSearchDto';
 import {LottoProbabilityDto} from '../../models/LottoNumbers/LottoProbabilityDto';
 import {LottoProbabilityNumbersDto} from '../../models/LottoNumbers/LottoProbabilityNumbersDto';
 import {LoggerService} from '../logger/loggerService';
 import {LottoDrawService} from '../lottoDraw/lottoDrawService';
 
-import {calculateNumberStats, calculatePositionalNumberStats} from './helpers/calculateProbability';
+import {
+  calculateNumberStatsWithCI,
+  calculatePositionalNumberStatsWithCI,
+} from './helpers/calculateProbability';
 import {WinningNumbers} from './types';
 
 @injectable({scope: BindingScope.SINGLETON})
@@ -91,11 +94,11 @@ export class LottoProbabilityService {
     return [
       new LottoProbabilityNumbersDto({
         winClass: null,
-        winningNumbersCount: calculatePositionalNumberStats(
+        winningNumbersCount: calculatePositionalNumberStatsWithCI(
           allResults.map(result => result.winningNumbers),
           lottoType,
         ),
-        secWinningNumbersCount: calculatePositionalNumberStats(
+        secWinningNumbersCount: calculatePositionalNumberStatsWithCI(
           allResults.map(result => result.secWinningNumbers),
           lottoType,
           true,
@@ -128,15 +131,17 @@ export class LottoProbabilityService {
 
       return new LottoProbabilityNumbersDto({
         winClass,
-        winningNumbersCount: calculateNumberStats(
+        winningNumbersCount: calculateNumberStatsWithCI(
           combinedNumbers.winningNumbers,
           lottoType,
+          results.length,
           false,
           winClass,
         ),
-        secWinningNumbersCount: calculateNumberStats(
+        secWinningNumbersCount: calculateNumberStatsWithCI(
           combinedNumbers.secWinningNumbers,
           lottoType,
+          results.length,
           true,
           winClass,
         ),
