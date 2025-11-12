@@ -1,4 +1,4 @@
-import {BindingScope, injectable} from '@loopback/core';
+import {BindingScope, inject, injectable} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 
@@ -34,8 +34,11 @@ export class AuthService {
     private userRepository: UserRepository,
     @repository(SubscriptionRepository)
     private subscriptionRepository: SubscriptionRepository,
+    @inject('services.JWTService')
     private jwtService: JWTService,
+    @inject('services.MagicLinkService')
     private magicLinkService: MagicLinkService,
+    @inject('services.EmailService')
     private emailService: EmailService,
   ) {}
 
