@@ -29,14 +29,15 @@ export class LottoDrawResult extends LottoEntity {
 
   @property({
     type: 'string',
-    required: true,
+    required: false,
+    nullable: true,
     postgresql: {columnName: 'winning_number'},
   })
-  winningNumber: string;
+  winningNumber: string | null;
 
   @property({
     type: 'string',
-    required: true,
+    required: false,
     nullable: true,
     postgresql: {columnName: 'sec_winning_number'},
   })

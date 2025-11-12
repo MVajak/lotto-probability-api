@@ -4,9 +4,9 @@ export const config = {
   },
   database: {
     url:
-      process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/lotto_probability',
+      process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5433/lotto_probability',
     host: process.env.POSTGRES_HOST || 'localhost',
-    port: Number(process.env.POSTGRES_PORT ?? 5432),
+    port: Number(process.env.POSTGRES_PORT ?? 5433),
     user: process.env.POSTGRES_USER || 'postgres',
     password: process.env.POSTGRES_PASSWORD || 'postgres',
     database: process.env.POSTGRES_DB || 'lotto_probability',

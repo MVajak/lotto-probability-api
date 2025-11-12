@@ -18,13 +18,17 @@ export class EstonianLottoDrawDto {
 
   @property({
     type: 'string',
+    required: false,
+    nullable: true,
   })
-  drawLabel: string;
+  drawLabel: string | null;
 
   @property({
     type: 'string',
+    required: false,
+    nullable: true,
   })
-  externalDrawId: string;
+  externalDrawId: string | null;
 
   @property.array(EstonianLottoDrawWinningsDto)
   results: EstonianLottoDrawWinningsDto[];

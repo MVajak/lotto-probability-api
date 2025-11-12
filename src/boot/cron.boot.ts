@@ -23,7 +23,19 @@ export class CronBooter implements Booter {
     await this.saveNewDraws(config.crons.jokkerLottoInterval, LottoType.JOKKER);
     await this.saveNewDraws(config.crons.kenoLottoInterval, LottoType.KENO);
 
+    await this.testing();
     await this.deleteAllAndResave();
+  }
+
+  private async testing(): Promise<void> {
+    schedule('* * * * *', async () => {
+      console.log('Scheduled task running at', new Date().toISOString());
+      await this.newLottoDrawsCronService.saveLatestDraws(LottoType.EURO);
+      // await this.newLottoDrawsCronService.saveLatestDraws(LottoType.VIKINGLOTTO);
+      // await this.newLottoDrawsCronService.saveLatestDraws(LottoType.BINGO);
+      // await this.newLottoDrawsCronService.saveLatestDraws(LottoType.JOKKER);
+      // await this.newLottoDrawsCronService.saveLatestDraws(LottoType.KENO);
+    });
   }
 
   private async saveNewDraws(

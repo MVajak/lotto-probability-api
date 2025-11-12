@@ -11,14 +11,15 @@ export class EstonianLottoDrawWinningsDto {
 
   @property({
     type: 'string',
-    required: true,
+    required: false,
     nullable: true,
   })
   secWinningNumber: string | null;
 
   @property({
     type: 'string',
-    required: true,
+    required: false,
+    nullable: true,
   })
-  winningNumber: string;
+  winningNumber: string | null;
 }

@@ -1,14 +1,13 @@
 import {BindingScope, inject, injectable} from '@loopback/core';
 import {Filter} from '@loopback/filter';
 import {IsolationLevel} from '@loopback/repository';
-import {chunk, keyBy} from 'lodash';
+import {chunk} from 'lodash';
 
 import {EstonianLottoApiClient} from '../clients/EstonianLottoApiClient';
 import {config} from '../common/config';
-import {PostgresDataSource} from '../datasources/postgres.datasource';
+import {PostgresDataSource} from '../datasources';
+import {LottoDraw, LottoDrawCreateDto, LottoDrawResultCreateDto} from '../models';
 import {EstonianLottoDrawDto} from '../models/EstonianLotto/EstonianLottoDrawDto';
-import {LottoDraw, LottoDrawCreateDto} from '../models/LottoDraw';
-import {LottoDrawResultCreateDto} from '../models/LottoDrawResult';
 import {LottoDrawSearchDto} from '../models/LottoNumbers/LottoDrawSearchDto';
 import {CsrfService} from '../services/csrf/csrf.service';
 import {LoggerService} from '../services/logger/loggerService';
@@ -63,18 +62,33 @@ export class LottoDrawCronService {
         draws.push(...savedDraws);
       }
 
-      const drawsByExternalId = keyBy(draws, 'externalDrawId');
-      const drawResults = estonianLottoDraws.flatMap(
-        ({results, externalDrawId}) =>
-          results?.map(result => {
+      // Create a map using a composite key that works even when externalDrawId is null
+      const drawsMap = new Map(
+        draws.map(draw => [
+          `${draw.drawDate.toISOString()}-${draw.externalDrawId ?? 'null'}-${draw.drawLabel ?? 'null'}`,
+          draw,
+        ]),
+      );
+
+      const drawResults = estonianLottoDraws.flatMap(lottoDraw => {
+        const key = `${new Date(lottoDraw.drawDate).toISOString()}-${lottoDraw.externalDrawId ?? 'null'}-${lottoDraw.drawLabel ?? 'null'}`;
+        const matchingDraw = drawsMap.get(key);
+
+        if (!matchingDraw) {
+          return [];
+        }
+
+        return (
+          lottoDraw.results?.map(result => {
             return new LottoDrawResultCreateDto({
               winClass: result.winClass ?? null,
               winningNumber: result.winningNumber,
               secWinningNumber: result.secWinningNumber,
-              drawId: drawsByExternalId[externalDrawId].id,
+              drawId: matchingDraw.id,
             });
-          }) || [],
-      );
+          }) || []
+        );
+      });
 
       if (drawResults.length) {
         const drawResultChunks = chunk(drawResults, config.repository.chunkSize);
@@ -126,11 +140,11 @@ export class LottoDrawCronService {
     }
 
     const existingDrawKeys = new Set(
-      localDraws.map(draw => `${draw.externalDrawId}-${draw.drawLabel}`),
+      localDraws.map(draw => `${draw.externalDrawId ?? 'null'}-${draw.drawLabel ?? 'null'}`),
     );
 
     return estonianLottoDraws.filter(
-      draw => !existingDrawKeys.has(`${draw.externalDrawId}-${draw.drawLabel}`),
+      draw => !existingDrawKeys.has(`${draw.externalDrawId ?? 'null'}-${draw.drawLabel ?? 'null'}`),
     );
   }
 }

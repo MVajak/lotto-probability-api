@@ -1,3 +1,4 @@
+import {AuthenticationComponent} from '@loopback/authentication';
 import {BootMixin} from '@loopback/boot';
 import {ApplicationConfig} from '@loopback/core';
 import {RepositoryMixin} from '@loopback/repository';
@@ -8,17 +9,26 @@ import path from 'path';
 
 import {CronBooter} from './boot/cron.boot';
 import {EstonianLottoApiClient} from './clients/EstonianLottoApiClient';
+import {AuthController} from './controllers/authController';
 import {LottoProbabilityController} from './controllers/lottoProbabilityController';
 import {NewLottoDrawsCronService} from './crons/newLottoDrawsCronService';
 import {ResetLottoDrawsCronService} from './crons/resetLottoDrawsCronService';
-import {PostgresDataSource} from './datasources/postgres.datasource';
-import {LottoDrawRepository} from './repositories/lottoDrawRepository';
-import {LottoDrawResultRepository} from './repositories/lottoDrawResultRepository';
+import {JWTAuthenticationStrategy} from './middleware/auth.middleware';
+import {AuthService, EmailService, JWTService, MagicLinkService} from './services/auth';
 import {CsrfService} from './services/csrf/csrf.service';
 import {LoggerService} from './services/logger/loggerService';
 import {LottoDrawService} from './services/lottoDraw/lottoDrawService';
 import {LottoDrawResultService} from './services/lottoDrawResult/lottoDrawResultService';
 import {LottoProbabilityService} from './services/lottoProbability/lottoProbabilityService';
+import {PostgresDataSource} from './datasources';
+import {
+  LottoDrawRepository,
+  LottoDrawResultRepository,
+  MagicLinkTokenRepository,
+  SubscriptionHistoryRepository,
+  SubscriptionRepository,
+  UserRepository,
+} from './repositories';
 import {MySequence} from './sequence';
 
 export {ApplicationConfig};
@@ -39,6 +49,11 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     });
     this.component(RestExplorerComponent);
 
+    // Authentication
+    this.component(AuthenticationComponent);
+    // Register JWT authentication strategy
+    this.bind('authentication.strategies.jwt').toClass(JWTAuthenticationStrategy);
+
     this.dataSource(PostgresDataSource, 'postgresDS');
 
     // Booters
@@ -47,6 +62,10 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     // Repositories
     this.repository(LottoDrawRepository);
     this.repository(LottoDrawResultRepository);
+    this.repository(UserRepository);
+    this.repository(SubscriptionRepository);
+    this.repository(SubscriptionHistoryRepository);
+    this.repository(MagicLinkTokenRepository);
 
     // Services
     this.bind('services.LottoProbabilityService').toClass(LottoProbabilityService);
@@ -56,12 +75,17 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.bind('services.LoggerService').toClass(LoggerService);
     this.bind('services.NewLottoDrawsCronService').toClass(NewLottoDrawsCronService);
     this.bind('services.ResetLottoDrawsCronService').toClass(ResetLottoDrawsCronService);
+    this.bind('services.JWTService').toClass(JWTService);
+    this.bind('services.MagicLinkService').toClass(MagicLinkService);
+    this.bind('services.EmailService').toClass(EmailService);
+    this.bind('services.AuthService').toClass(AuthService);
 
     // Clients
     this.bind('clients.EstonianLottoApiClient').toClass(EstonianLottoApiClient);
 
     // Controllers
     this.controller(LottoProbabilityController);
+    this.controller(AuthController);
 
     this.projectRoot = __dirname;
     this.bootOptions = {
