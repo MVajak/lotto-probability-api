@@ -58,7 +58,7 @@ export class MagicLinkService {
    * Generate magic link URL
    */
   generateMagicLinkUrl(token: string, baseUrl: string): string {
-    return `${baseUrl}/auth/verify?token=${token}`;
+    return `${baseUrl}/verify?token=${token}`;
   }
 
   /**

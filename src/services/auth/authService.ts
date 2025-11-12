@@ -233,7 +233,7 @@ export class AuthService {
     const token = await this.magicLinkService.generateToken(userId, ipAddress, userAgent);
 
     // Generate magic link URL
-    const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3001';
     const magicLinkUrl = this.magicLinkService.generateMagicLinkUrl(token.token, baseUrl);
 
     // Send email
