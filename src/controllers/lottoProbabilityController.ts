@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {getModelSchemaRef, post, requestBody, response} from '@loopback/rest';
 
@@ -11,6 +12,7 @@ export class LottoProbabilityController {
     private lottoProbabilityService: LottoProbabilityService,
   ) {}
 
+  @authenticate('jwt')
   @post('/lotto-probability')
   @response(200, {
     description: 'Calculated Lotto Probability',
