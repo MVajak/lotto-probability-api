@@ -4,7 +4,7 @@ import {get, param, post, Request, requestBody, RestBindings} from '@loopback/re
 import {UserProfile} from '@loopback/security';
 
 import {AuthService} from '../services/auth';
-import {AuthSubscriptionResponse, AuthUserResponse} from '../types/auth.types';
+import {AuthSubscriptionResponse, AuthTokens, AuthUserResponse} from '../types/auth.types';
 
 export class AuthController {
   constructor(
@@ -54,12 +54,7 @@ export class AuthController {
    * Verify magic link - Step 2 of login/signup
    */
   @get('/auth/verify')
-  async verifyMagicLink(@param.query.string('token') token: string): Promise<{
-    accessToken: string;
-    refreshToken: string;
-    user: AuthUserResponse;
-    subscription: AuthSubscriptionResponse;
-  }> {
+  async verifyMagicLink(@param.query.string('token') token: string): Promise<AuthTokens> {
     const ipAddress = this.request.ip;
     return await this.authService.verifyMagicLink(token, ipAddress);
   }
@@ -90,7 +85,7 @@ export class AuthController {
     body: {
       refreshToken: string;
     },
-  ): Promise<{accessToken: string; refreshToken: string}> {
+  ): Promise<AuthTokens> {
     return await this.authService.refreshAccessToken(body.refreshToken);
   }
 

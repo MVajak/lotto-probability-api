@@ -1,5 +1,5 @@
 import {AuthenticationStrategy} from '@loopback/authentication';
-import {inject, Provider} from '@loopback/core';
+import {inject} from '@loopback/core';
 import {HttpErrors, Request} from '@loopback/rest';
 import {securityId, UserProfile} from '@loopback/security';
 
@@ -29,22 +29,17 @@ export class JWTAuthenticationStrategy implements AuthenticationStrategy {
       );
     }
 
-    try {
-      // Verify and decode token
-      const decoded = this.jwtService.verifyToken(token);
+    // Verify and decode token
+    const decoded = this.jwtService.verifyToken(token);
 
-      // Return user profile for LoopBack
-      // Map to UserProfile interface with securityId
-      return {
-        [securityId]: decoded.userId,
-        id: decoded.userId,
-        email: decoded.email,
-        subscriptionTier: decoded.subscriptionTier,
-      };
-    } catch (error) {
-      // JWTService already throws proper HttpErrors
-      throw error;
-    }
+    // Return user profile for LoopBack
+    // Map to UserProfile interface with securityId
+    return {
+      [securityId]: decoded.userId,
+      id: decoded.userId,
+      email: decoded.email,
+      subscriptionTier: decoded.subscriptionTier,
+    };
   }
 
   /**
@@ -73,20 +68,5 @@ export class JWTAuthenticationStrategy implements AuthenticationStrategy {
     }
 
     return token;
-  }
-}
-
-/**
- * Provider for JWT Authentication Strategy
- * Registers the strategy with LoopBack's authentication system
- */
-export class JWTAuthenticationStrategyProvider implements Provider<AuthenticationStrategy> {
-  constructor(
-    @inject('services.JWTService')
-    private jwtService: JWTService,
-  ) {}
-
-  value(): AuthenticationStrategy {
-    return new JWTAuthenticationStrategy(this.jwtService);
   }
 }

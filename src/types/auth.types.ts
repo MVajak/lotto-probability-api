@@ -1,6 +1,14 @@
 import {Subscription, User} from '../models';
 
 /**
+ * JWT Token Pair
+ */
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+/**
  * User data returned in authentication responses (excludes sensitive fields)
  */
 export interface AuthUserResponse {
@@ -26,17 +34,6 @@ export interface AuthSubscriptionResponse {
   status: 'active' | 'canceled' | 'past_due' | 'trialing';
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
-}
-
-/**
- * Current user info from JWT (injected by authentication middleware)
- */
-export interface CurrentUser {
-  userId: string;
-  email: string;
-  subscriptionTier: 'free' | 'pro' | 'premium';
-  iat?: number;
-  exp?: number;
 }
 
 /**

@@ -6,6 +6,7 @@ import {Subscription, User} from '../../models';
 import {SubscriptionRepository, UserRepository} from '../../repositories';
 import {
   AuthSubscriptionResponse,
+  AuthTokens,
   AuthUserResponse,
   toAuthSubscriptionResponse,
   toAuthUserResponse,
@@ -14,18 +15,6 @@ import {
 import {EmailService} from './emailService';
 import {JWTService} from './jwtService';
 import {MagicLinkService} from './magicLinkService';
-
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-}
-
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: AuthUserResponse;
-  subscription: AuthSubscriptionResponse;
-}
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class AuthService {
@@ -80,9 +69,9 @@ export class AuthService {
   }
 
   /**
-   * Verify magic link token and return JWT tokens with user data
+   * Verify magic link token and return JWT tokens only
    */
-  async verifyMagicLink(token: string, ipAddress?: string): Promise<LoginResponse> {
+  async verifyMagicLink(token: string, ipAddress?: string): Promise<AuthTokens> {
     if (!token) {
       throw new HttpErrors.BadRequest('Token is required');
     }
@@ -99,16 +88,12 @@ export class AuthService {
     // Mark token as used (one-time use)
     await this.magicLinkService.markTokenAsUsed(magicLinkToken.id);
 
-    // Get user with subscription
-    const user = await this.userRepository.findById(magicLinkToken.userId, {
-      include: ['subscription'],
-    });
+    // Get user
+    const user = await this.userRepository.findById(magicLinkToken.userId);
 
     // Activate user on first login
     if (user.userState === 'pending') {
       await this.activateUser(user.id);
-      user.userState = 'active';
-      user.emailVerified = true;
       console.log(`✅ User activated: ${user.email}`);
     }
 
@@ -119,15 +104,11 @@ export class AuthService {
     const subscription = await this.getOrCreateSubscription(user.id);
 
     // Generate JWT tokens
-    const tokens = this.generateTokens(user, subscription);
+    const tokens = this.generateTokens(user, subscription.tier);
 
     console.log(`🔐 User logged in: ${user.email} (${subscription.tier})`);
 
-    return {
-      ...tokens,
-      user: toAuthUserResponse(user),
-      subscription: toAuthSubscriptionResponse(subscription),
-    };
+    return tokens;
   }
 
   /**
@@ -159,22 +140,10 @@ export class AuthService {
 
     // Get fresh user data
     const user = await this.userRepository.findById(payload.userId);
-    const subscription = await this.subscriptionRepository.findByUserId(user.id);
-
-    if (!subscription) {
-      throw new HttpErrors.InternalServerError('User subscription not found');
-    }
+    const subscription = await this.getOrCreateSubscription(user.id);
 
     // Generate new tokens
-    return this.generateTokens(user, subscription);
-  }
-
-  /**
-   * Validate access token and return user data
-   */
-  async validateAccessToken(accessToken: string): Promise<User> {
-    const payload = this.jwtService.verifyToken(accessToken);
-    return await this.userRepository.findById(payload.userId);
+    return this.generateTokens(user, subscription.tier);
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -264,11 +233,11 @@ export class AuthService {
   /**
    * Generate JWT access and refresh tokens
    */
-  private generateTokens(user: User, subscription: Subscription): AuthTokens {
+  private generateTokens(user: User, subscriptionTier: 'free' | 'pro' | 'premium'): AuthTokens {
     const payload = {
       userId: user.id,
       email: user.email,
-      subscriptionTier: subscription.tier,
+      subscriptionTier,
     };
 
     return {

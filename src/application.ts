@@ -1,4 +1,4 @@
-import {AuthenticationComponent} from '@loopback/authentication';
+import {AuthenticationComponent, registerAuthenticationStrategy} from '@loopback/authentication';
 import {BootMixin} from '@loopback/boot';
 import {ApplicationConfig} from '@loopback/core';
 import {RepositoryMixin} from '@loopback/repository';
@@ -49,11 +49,6 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     });
     this.component(RestExplorerComponent);
 
-    // Authentication
-    this.component(AuthenticationComponent);
-    // Register JWT authentication strategy
-    this.bind('authentication.strategies.jwt').toClass(JWTAuthenticationStrategy);
-
     this.dataSource(PostgresDataSource, 'postgresDS');
 
     // Booters
@@ -67,7 +62,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.repository(SubscriptionHistoryRepository);
     this.repository(MagicLinkTokenRepository);
 
-    // Services
+    // Services - MUST be bound before authentication strategy
     this.bind('services.LottoProbabilityService').toClass(LottoProbabilityService);
     this.bind('services.LottoDrawService').toClass(LottoDrawService);
     this.bind('services.LottoDrawResultService').toClass(LottoDrawResultService);
@@ -79,6 +74,12 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.bind('services.MagicLinkService').toClass(MagicLinkService);
     this.bind('services.EmailService').toClass(EmailService);
     this.bind('services.AuthService').toClass(AuthService);
+
+    // Authentication - AFTER services are bound
+    this.component(AuthenticationComponent);
+    // Register JWT authentication strategy
+    // @ts-expect-error - LottoApiApplication extends RestApplication which is a Context, but TypeScript can't infer this
+    registerAuthenticationStrategy(this, JWTAuthenticationStrategy);
 
     // Clients
     this.bind('clients.EstonianLottoApiClient').toClass(EstonianLottoApiClient);
