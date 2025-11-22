@@ -1,5 +1,4 @@
 import {BindingScope, inject, injectable} from '@loopback/core';
-import {Filter} from '@loopback/filter';
 import {IsolationLevel} from '@loopback/repository';
 import {chunk} from 'lodash';
 
@@ -35,7 +34,7 @@ export class LottoDrawCronService {
     const estonianLottoDraws: EstonianLottoDrawDto[] = await this.fetchEstonianLottoDraws(payload);
 
     if (!estonianLottoDraws.length) {
-      this.loggerService.log(`No new lotto draws found for ${payload.lottoType}. Closing...`);
+      this.loggerService.log(`No lotto draws fetched for ${payload.lottoType}. Closing...`);
       return;
     }
 
@@ -55,23 +54,35 @@ export class LottoDrawCronService {
         });
       });
 
+      // Use upsert to prevent duplicates - ON CONFLICT DO NOTHING
+      // Only returns newly inserted draws
       const draws: LottoDraw[] = [];
       const drawChunks = chunk(drawCreateDtos, config.repository.chunkSize);
       for (const chunkedItems of drawChunks) {
-        const savedDraws = await this.lottoDrawService.createAll(chunkedItems, {transaction});
+        const savedDraws = await this.lottoDrawService.upsertAll(chunkedItems, {transaction});
         draws.push(...savedDraws);
       }
 
+      if (!draws.length) {
+        this.loggerService.log('No new draws to insert (all already exist). Closing...');
+        await transaction.commit();
+        return;
+      }
+
+      this.loggerService.log(`Inserted ${draws.length} new draws`);
+
       // Create a map using a composite key that works even when externalDrawId is null
+      // Map from (externalDrawId, drawLabel, gameTypeName) -> draw
       const drawsMap = new Map(
         draws.map(draw => [
-          `${draw.drawDate.toISOString()}-${draw.externalDrawId ?? 'null'}-${draw.drawLabel ?? 'null'}`,
+          `${draw.externalDrawId ?? 'null'}-${draw.drawLabel ?? 'null'}-${draw.gameTypeName ?? 'null'}`,
           draw,
         ]),
       );
 
       const drawResults = estonianLottoDraws.flatMap(lottoDraw => {
-        const key = `${new Date(lottoDraw.drawDate).toISOString()}-${lottoDraw.externalDrawId ?? 'null'}-${lottoDraw.drawLabel ?? 'null'}`;
+        // Use same composite key format as the map
+        const key = `${lottoDraw.externalDrawId ?? 'null'}-${lottoDraw.drawLabel ?? 'null'}-${lottoDraw.gameTypeName ?? 'null'}`;
         const matchingDraw = drawsMap.get(key);
 
         if (!matchingDraw) {
@@ -109,42 +120,8 @@ export class LottoDrawCronService {
     const csrfToken = await this.csrfService.getCsrfToken();
     const client = this.csrfService.getClient();
 
-    const draws = await this.estonianLottoApiClient.getAllEstonianLottoDraws(
-      payload,
-      csrfToken,
-      client,
-    );
-    return this.getValidEstonianLottoDraws(payload, draws);
-  }
-
-  private async getValidEstonianLottoDraws(
-    payload: LottoDrawSearchDto,
-    estonianLottoDraws: EstonianLottoDrawDto[],
-  ): Promise<EstonianLottoDrawDto[]> {
-    const {lottoType, dateFrom, dateTo} = payload;
-    const filter: Filter<LottoDraw> = {
-      where: {
-        and: [
-          {drawDate: {gte: new Date(dateFrom)}},
-          {drawDate: {lte: new Date(dateTo)}},
-          {gameTypeName: lottoType},
-        ],
-      },
-      fields: ['id', 'externalDrawId', 'drawLabel'],
-    };
-    const localDraws: Pick<LottoDraw, 'id' | 'externalDrawId' | 'drawLabel'>[] =
-      await this.lottoDrawService.find(filter);
-
-    if (!localDraws.length) {
-      return estonianLottoDraws;
-    }
-
-    const existingDrawKeys = new Set(
-      localDraws.map(draw => `${draw.externalDrawId ?? 'null'}-${draw.drawLabel ?? 'null'}`),
-    );
-
-    return estonianLottoDraws.filter(
-      draw => !existingDrawKeys.has(`${draw.externalDrawId ?? 'null'}-${draw.drawLabel ?? 'null'}`),
-    );
+    // Fetch all draws from Estonian Lotto API
+    // Deduplication is now handled at the database level with ON CONFLICT
+    return await this.estonianLottoApiClient.getAllEstonianLottoDraws(payload, csrfToken, client);
   }
 }

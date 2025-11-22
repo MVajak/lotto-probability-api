@@ -43,6 +43,14 @@ export class LottoDrawService {
     return this.lottoDrawRepository.createAll(entities, options);
   }
 
+  async upsertAll(entities: LottoDrawCreateDto[], options?: Options): Promise<LottoDraw[]> {
+    if (!entities.length) {
+      return [];
+    }
+
+    return this.lottoDrawRepository.upsertAll(entities, options);
+  }
+
   async deleteAll(where: Where, options?: Options): Promise<void> {
     await this.lottoDrawRepository.deleteAll(where, options);
   }

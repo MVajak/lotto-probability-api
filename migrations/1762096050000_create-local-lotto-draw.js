@@ -16,6 +16,12 @@ exports.up = pgm => {
     name: 'idx_draw_date_game_type_name',
   });
 
+  // Add unique constraint to prevent duplicate draws
+  // Uses COALESCE to handle nullable fields in the constraint
+  pgm.addConstraint('lotto_draw', 'unique_draw_external_id_label_game', {
+    unique: ['external_draw_id', 'draw_label', 'game_type_name'],
+  });
+
   pgm.createTable('lotto_draw_result', {
     id: {type: 'serial', primaryKey: true},
     draw_id: {
@@ -35,6 +41,7 @@ exports.up = pgm => {
 
 exports.down = pgm => {
   pgm.dropTable('lotto_draw_result');
+  pgm.dropConstraint('lotto_draw', 'unique_draw_external_id_label_game');
   pgm.dropIndex('lotto_draw', 'idx_draw_date_game_type_name');
   pgm.dropTable('lotto_draw');
 };
