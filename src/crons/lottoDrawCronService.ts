@@ -1,5 +1,5 @@
 import {BindingScope, inject, injectable} from '@loopback/core';
-import {IsolationLevel} from '@loopback/repository';
+import {IsolationLevel, Where} from '@loopback/repository';
 import {chunk} from 'lodash';
 
 import {EstonianLottoApiClient} from '../clients/EstonianLottoApiClient';
@@ -56,32 +56,42 @@ export class LottoDrawCronService {
 
       // Use upsert to prevent duplicates - ON CONFLICT DO NOTHING
       // Only returns newly inserted draws
-      const draws: LottoDraw[] = [];
+      const newlyInsertedDraws: LottoDraw[] = [];
       const drawChunks = chunk(drawCreateDtos, config.repository.chunkSize);
       for (const chunkedItems of drawChunks) {
         const savedDraws = await this.lottoDrawService.upsertAll(chunkedItems, {transaction});
-        draws.push(...savedDraws);
+        newlyInsertedDraws.push(...savedDraws);
       }
 
-      if (!draws.length) {
-        this.loggerService.log('No new draws to insert (all already exist). Closing...');
-        await transaction.commit();
-        return;
+      if (newlyInsertedDraws.length > 0) {
+        this.loggerService.log(`Inserted ${newlyInsertedDraws.length} new draws`);
       }
 
-      this.loggerService.log(`Inserted ${draws.length} new draws`);
+      // Fetch ALL draws from the database that match the ones from the API
+      // This includes both newly inserted draws and existing draws
+      // IMPORTANT: Use the same transaction so we can see the rows we just inserted
+      const allDrawsFromDB = await this.lottoDrawService.find(
+        {
+          where: {
+            or: estonianLottoDraws.map(lottoDraw => ({
+              externalDrawId: lottoDraw.externalDrawId ?? null,
+              drawLabel: lottoDraw.drawLabel ?? null,
+              gameTypeName: lottoDraw.gameTypeName,
+            })) as Where<LottoDraw>[],
+          },
+        },
+        {transaction},
+      );
 
       // Create a map using a composite key that works even when externalDrawId is null
-      // Map from (externalDrawId, drawLabel, gameTypeName) -> draw
       const drawsMap = new Map(
-        draws.map(draw => [
+        allDrawsFromDB.map(draw => [
           `${draw.externalDrawId ?? 'null'}-${draw.drawLabel ?? 'null'}-${draw.gameTypeName ?? 'null'}`,
           draw,
         ]),
       );
 
       const drawResults = estonianLottoDraws.flatMap(lottoDraw => {
-        // Use same composite key format as the map
         const key = `${lottoDraw.externalDrawId ?? 'null'}-${lottoDraw.drawLabel ?? 'null'}-${lottoDraw.gameTypeName ?? 'null'}`;
         const matchingDraw = drawsMap.get(key);
 
@@ -101,10 +111,18 @@ export class LottoDrawCronService {
         );
       });
 
+      // Use upsert to prevent duplicates - ON CONFLICT DO NOTHING
       if (drawResults.length) {
         const drawResultChunks = chunk(drawResults, config.repository.chunkSize);
+        let totalInserted = 0;
         for (const chunkedItems of drawResultChunks) {
-          await this.lottoDrawResultService.createAll(chunkedItems, {transaction});
+          const insertedResults = await this.lottoDrawResultService.upsertAll(chunkedItems, {
+            transaction,
+          });
+          totalInserted += insertedResults.length;
+        }
+        if (totalInserted > 0) {
+          this.loggerService.log(`Inserted ${totalInserted} new results`);
         }
       }
 

@@ -37,9 +37,19 @@ exports.up = pgm => {
     updated_at: {type: 'timestamptz', notNull: true},
     deleted_at: {type: 'timestamptz', notNull: false, default: null},
   });
+
+  // Add unique constraint to prevent duplicate results
+  // A result is unique by draw_id, win_class, winning_number, and sec_winning_number
+  // NULLS NOT DISTINCT treats NULL values as equal (PostgreSQL 15+)
+  pgm.sql(`
+    CREATE UNIQUE INDEX unique_draw_result
+    ON lotto_draw_result (draw_id, win_class, winning_number, sec_winning_number)
+    NULLS NOT DISTINCT;
+  `);
 };
 
 exports.down = pgm => {
+  pgm.sql('DROP INDEX IF EXISTS unique_draw_result;');
   pgm.dropTable('lotto_draw_result');
   pgm.dropConstraint('lotto_draw', 'unique_draw_external_id_label_game');
   pgm.dropIndex('lotto_draw', 'idx_draw_date_game_type_name');

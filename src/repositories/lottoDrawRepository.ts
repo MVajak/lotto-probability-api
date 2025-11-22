@@ -70,19 +70,9 @@ export class LottoDrawRepository extends BaseRepository<
       RETURNING *;
     `;
 
-    // Execute with callback-based approach wrapped in a Promise
-    // Bind connector context to preserve 'this' when execute is called
-    type ExecuteCallback = (err: Error | null, result?: LottoDraw[]) => void;
-    type ExecuteFunction = (
-      sql: string,
-      params: unknown[],
-      options: Options | undefined,
-      callback: ExecuteCallback,
-    ) => void;
-
     return new Promise<LottoDraw[]>((resolve, reject) => {
       // We've already verified execute exists above, safe to use non-null assertion
-      const executeFn = connector.execute!.bind(connector) as ExecuteFunction;
+      const executeFn = connector.execute!.bind(connector);
       executeFn(sql, params, options, (err: Error | null, result?: LottoDraw[]) => {
         if (err) {
           reject(err);
