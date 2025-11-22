@@ -42,7 +42,7 @@ export class NewLottoDrawsCronService extends LottoDrawCronService {
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000); // subtract 1 day in ms
     // TODO: remove
     const threeMonthsAgo = new Date(now);
-    threeMonthsAgo.setMonth(now.getMonth() - 1);
+    threeMonthsAgo.setMonth(now.getMonth() - 6);
 
     this.loggerService.log(
       `Getting new ${lottoType} draws between ${yesterday.toISOString()} - ${now.toISOString()}`,

@@ -19,7 +19,7 @@ const DEFAULT_CONFIDENCE_LEVEL = 0.95;
  * - Wilson confidence intervals (uncertainty estimation)
  * - Theoretical probability comparison
  * - Deviation analysis
- * - User-friendly interpretation (hot/cold/normal)
+ * - User-friendly interpretation (frequent/rare/normal)
  *
  * @param numbers - Array of numbers that appeared
  * @param lottoType - Type of lottery
@@ -53,7 +53,15 @@ export function calculateNumberStatsWithCI(
   const config = getLotteryConfig(lottoType);
   const theoreticalProb = calculateTheoreticalProbability(config, useSecondaryNumbers);
 
-  // Calculate stats for each possible number
+  // First pass: Calculate all frequencies for percentile ranking
+  const allFrequencies: number[] = [];
+  for (let digit = start; digit <= end; digit++) {
+    const count = countMap.get(digit) || 0;
+    const frequency = totalDraws > 0 ? count / totalDraws : 0;
+    allFrequencies.push(frequency);
+  }
+
+  // Second pass: Calculate stats for each possible number
   for (let digit = start; digit <= end; digit++) {
     const count = countMap.get(digit) || 0;
     const frequency = totalDraws > 0 ? count / totalDraws : 0;
@@ -64,8 +72,14 @@ export function calculateNumberStatsWithCI(
     // Calculate deviation from theoretical
     const deviation = calculateDeviation(frequency, theoreticalProb, ci.lower, ci.upper);
 
-    // Get user-friendly interpretation
-    const interpretation = interpretFrequency(frequency, theoreticalProb, ci, count, totalDraws);
+    // Get user-friendly interpretation based on percentile ranking
+    const interpretation = interpretFrequency(
+      frequency,
+      theoreticalProb,
+      allFrequencies,
+      count,
+      totalDraws,
+    );
 
     stats.push({
       position: null,
@@ -130,6 +144,15 @@ export function calculatePositionalNumberStatsWithCI(
     const totalAtPosition = sets.length;
     const {start, end} = getNumberRange(lottoType, useSecondaryNumbers);
 
+    // First pass: Calculate all frequencies for this position for percentile ranking
+    const allFrequenciesAtPosition: number[] = [];
+    for (let digit = start; digit <= end; digit++) {
+      const count = digitCounts[pos].get(digit) ?? 0;
+      const frequency = count / totalAtPosition;
+      allFrequenciesAtPosition.push(frequency);
+    }
+
+    // Second pass: Calculate stats for each digit at this position
     for (let digit = start; digit <= end; digit++) {
       const count = digitCounts[pos].get(digit) ?? 0;
       const frequency = count / totalAtPosition;
@@ -144,11 +167,11 @@ export function calculatePositionalNumberStatsWithCI(
       // Calculate deviation
       const deviation = calculateDeviation(frequency, theoreticalProb, ci.lower, ci.upper);
 
-      // Get interpretation
+      // Get interpretation based on percentile ranking
       const interpretation = interpretFrequency(
         frequency,
         theoreticalProb,
-        ci,
+        allFrequenciesAtPosition,
         count,
         totalAtPosition,
       );

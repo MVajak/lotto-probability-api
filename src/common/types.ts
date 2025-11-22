@@ -27,7 +27,7 @@ export interface DeviationAnalysis {
 /**
  * Frequency status classification
  */
-export type FrequencyStatus = 'hot' | 'cold' | 'normal';
+export type FrequencyStatus = 'frequent' | 'rare' | 'normal';
 
 /**
  * Structured interpretation of frequency status (i18n-friendly)
