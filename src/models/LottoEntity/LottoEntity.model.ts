@@ -2,11 +2,11 @@ import {Entity, property} from '@loopback/repository';
 
 export class LottoEntity extends Entity {
   @property({
-    type: 'number',
+    type: 'string',
     id: true,
-    generated: true,
+    postgresql: {dataType: 'uuid'},
   })
-  id: number;
+  id: string;
 
   @property({
     type: 'date',

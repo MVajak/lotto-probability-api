@@ -5,7 +5,7 @@ import {LottoDraw} from '../LottoDraw';
 @model()
 export class LottoDrawResultCreateDto extends Entity {
   @belongsTo(() => LottoDraw)
-  drawId: number;
+  drawId: string;
 
   @property({
     type: 'number',

@@ -1,8 +1,15 @@
 /* eslint-disable camelcase */
 
 exports.up = pgm => {
+  // Enable UUID extension (if not already enabled by user migration)
+  pgm.sql('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
+
   pgm.createTable('lotto_draw', {
-    id: {type: 'serial', primaryKey: true},
+    id: {
+      type: 'uuid',
+      primaryKey: true,
+      default: pgm.func('uuid_generate_v4()'),
+    },
     draw_date: {type: 'timestamptz', notNull: true},
     draw_label: {type: 'varchar(255)', notNull: false, defaultValue: null},
     external_draw_id: {type: 'varchar(255)', notNull: false, defaultValue: null},
@@ -23,9 +30,13 @@ exports.up = pgm => {
   });
 
   pgm.createTable('lotto_draw_result', {
-    id: {type: 'serial', primaryKey: true},
+    id: {
+      type: 'uuid',
+      primaryKey: true,
+      default: pgm.func('uuid_generate_v4()'),
+    },
     draw_id: {
-      type: 'integer',
+      type: 'uuid',
       notNull: true,
       references: 'lotto_draw',
       onDelete: 'CASCADE',

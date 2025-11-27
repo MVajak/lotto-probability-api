@@ -2,14 +2,15 @@ import {expect} from '@loopback/testlab';
 import sinon from 'sinon';
 
 import {LottoType} from '../../../common/types';
-import {LottoDrawSearchDto} from '../../../models/LottoNumbers/LottoDrawSearchDto';
-import {LottoProbabilityDto} from '../../../models/LottoNumbers/LottoProbabilityDto';
+import {LottoDrawSearchDto, LottoProbabilityDto} from '../../../models/LottoNumbers';
 import {LottoProbabilityService} from '../../../services/lottoProbability/lottoProbabilityService';
+import {NumberHistoryService} from '../../../services/numberHistory/numberHistoryService';
 import {LottoProbabilityController} from '../../lottoProbabilityController';
 
 describe('LottoProbabilityController', () => {
   let controller: LottoProbabilityController;
   let lottoProbabilityServiceStub: sinon.SinonStubbedInstance<LottoProbabilityService>;
+  let numberHistoryServiceStub: sinon.SinonStubbedInstance<NumberHistoryService>;
 
   const expectedResponse = new LottoProbabilityDto({
     totalDraws: 2,
@@ -19,7 +20,8 @@ describe('LottoProbabilityController', () => {
 
   beforeEach(() => {
     lottoProbabilityServiceStub = sinon.createStubInstance(LottoProbabilityService);
-    controller = new LottoProbabilityController(lottoProbabilityServiceStub);
+    numberHistoryServiceStub = sinon.createStubInstance(NumberHistoryService);
+    controller = new LottoProbabilityController(lottoProbabilityServiceStub, numberHistoryServiceStub);
 
     lottoProbabilityServiceStub.calculateProbability.resolves(expectedResponse);
   });

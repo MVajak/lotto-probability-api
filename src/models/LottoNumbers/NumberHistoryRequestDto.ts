@@ -1,0 +1,51 @@
+import {model, property} from '@loopback/repository';
+
+import {LottoType} from '../../common/types';
+
+/**
+ * Request DTO for fetching historical data of a specific number
+ */
+@model()
+export class NumberHistoryRequestDto {
+  @property({
+    type: 'string',
+    required: true,
+    description: 'Type of lottery game',
+  })
+  lottoType: LottoType;
+
+  @property({
+    type: 'number',
+    required: true,
+    description: 'The number to get history for',
+  })
+  number: number;
+
+  @property({
+    type: 'string',
+    required: true,
+    description: 'Start date in ISO format',
+  })
+  dateFrom: string;
+
+  @property({
+    type: 'string',
+    required: true,
+    description: 'End date in ISO format',
+  })
+  dateTo: string;
+
+  @property({
+    type: 'boolean',
+    required: false,
+    description: 'Whether to search in secondary numbers (stars/bonus)',
+  })
+  useSecondaryNumbers?: boolean;
+
+  @property({
+    type: 'number',
+    required: false,
+    description: 'Position index for positional games (like Jokker)',
+  })
+  position?: number;
+}

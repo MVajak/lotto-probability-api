@@ -2,9 +2,8 @@ import {expect, sinon} from '@loopback/testlab';
 
 import {createStubInstance, createStubInstances} from '../../../common/test-utils/mocking';
 import {LottoType} from '../../../common/types';
-import {LottoDrawRelations} from '../../../models/LottoDraw';
-import {LottoDrawResult} from '../../../models/LottoDrawResult';
-import {LottoDrawSearchDto} from '../../../models/LottoNumbers/LottoDrawSearchDto';
+import {LottoDrawRelations, LottoDrawResult} from '../../../models';
+import {LottoDrawSearchDto} from '../../../models/LottoNumbers';
 import {LoggerService} from '../../logger/loggerService';
 import {LottoDrawService} from '../../lottoDraw/lottoDrawService';
 import {LottoProbabilityService} from '../lottoProbabilityService';
@@ -17,8 +16,8 @@ describe('LottoProbabilityService', () => {
   const mockDraw = createStubInstance<LottoDrawRelations>({
     results: createStubInstances<LottoDrawResult>([
       {
-        id: 1,
-        drawId: 10,
+        id: 'uuid-1',
+        drawId: 'uuid-10',
         winClass: null,
         winningNumber: '41,9,25,6,17',
         secWinningNumber: '4,10',

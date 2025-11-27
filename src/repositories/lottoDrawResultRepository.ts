@@ -2,15 +2,15 @@ import {Getter, inject} from '@loopback/core';
 import {DataObject, repository} from '@loopback/repository';
 import {Options} from '@loopback/repository/src/common-types';
 
-import {PostgresDataSource} from '../datasources/postgres.datasource';
-import {LottoDrawResult} from '../models/LottoDrawResult';
+import {PostgresDataSource} from '../datasources';
+import {LottoDrawResult} from '../models';
 
 import {BaseRepository} from './baseRepository';
 import {LottoDrawRepository} from './lottoDrawRepository';
 
 export class LottoDrawResultRepository extends BaseRepository<
   LottoDrawResult,
-  typeof LottoDrawResult.prototype.id,
+  string,
   LottoDrawResult
 > {
   constructor(
@@ -43,6 +43,8 @@ export class LottoDrawResultRepository extends BaseRepository<
       throw new Error('Database connector does not support raw SQL execution');
     }
 
+    // Build VALUES clause
+    // Note: id column is omitted - PostgreSQL will use DEFAULT (uuid_generate_v4())
     const values = auditedEntities.map((entity, idx) => {
       const offset = idx * 7;
       return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7})`;

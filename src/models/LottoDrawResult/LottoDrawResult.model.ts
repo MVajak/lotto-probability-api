@@ -15,10 +15,10 @@ export class LottoDrawResult extends LottoEntity {
     () => LottoDraw,
     {},
     {
-      postgresql: {columnName: 'draw_id'},
+      postgresql: {columnName: 'draw_id', dataType: 'uuid'},
     },
   )
-  drawId: number;
+  drawId: string;
 
   @property({
     type: 'number',

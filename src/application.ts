@@ -20,6 +20,7 @@ import {LoggerService} from './services/logger/loggerService';
 import {LottoDrawService} from './services/lottoDraw/lottoDrawService';
 import {LottoDrawResultService} from './services/lottoDrawResult/lottoDrawResultService';
 import {LottoProbabilityService} from './services/lottoProbability/lottoProbabilityService';
+import {NumberHistoryService} from './services/numberHistory/numberHistoryService';
 import {PostgresDataSource} from './datasources';
 import {
   LottoDrawRepository,
@@ -64,6 +65,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
 
     // Services - MUST be bound before authentication strategy
     this.bind('services.LottoProbabilityService').toClass(LottoProbabilityService);
+    this.bind('services.NumberHistoryService').toClass(NumberHistoryService);
     this.bind('services.LottoDrawService').toClass(LottoDrawService);
     this.bind('services.LottoDrawResultService').toClass(LottoDrawResultService);
     this.bind('services.CsrfService').toClass(CsrfService);
