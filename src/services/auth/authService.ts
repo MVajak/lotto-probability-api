@@ -2,8 +2,12 @@ import {BindingScope, inject, injectable} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 
-import {Subscription, User} from '../../models';
-import {SubscriptionRepository, UserRepository} from '../../repositories';
+import {Subscription, SubscriptionTierCode, User} from '../../models';
+import {
+  SubscriptionRepository,
+  SubscriptionTierRepository,
+  UserRepository,
+} from '../../repositories';
 import {
   AuthSubscriptionResponse,
   AuthTokens,
@@ -23,6 +27,8 @@ export class AuthService {
     private userRepository: UserRepository,
     @repository(SubscriptionRepository)
     private subscriptionRepository: SubscriptionRepository,
+    @repository(SubscriptionTierRepository)
+    private subscriptionTierRepository: SubscriptionTierRepository,
     @inject('services.JWTService')
     private jwtService: JWTService,
     @inject('services.MagicLinkService')
@@ -100,13 +106,14 @@ export class AuthService {
     // Track login
     await this.userRepository.trackLogin(user.id, ipAddress);
 
-    // Get subscription
+    // Get subscription with tier
     const subscription = await this.getOrCreateSubscription(user.id);
+    const tierCode = await this.getTierCode(subscription.tierId);
 
     // Generate JWT tokens
-    const tokens = this.generateTokens(user, subscription.tier);
+    const tokens = this.generateTokens(user, tierCode);
 
-    console.log(`🔐 User logged in: ${user.email} (${subscription.tier})`);
+    console.log(`🔐 User logged in: ${user.email} (${tierCode})`);
 
     return tokens;
   }
@@ -125,9 +132,11 @@ export class AuthService {
       throw new HttpErrors.InternalServerError('User subscription not found');
     }
 
+    const tierCode = await this.getTierCode(subscription.tierId);
+
     return {
       user: toAuthUserResponse(user),
-      subscription: toAuthSubscriptionResponse(subscription),
+      subscription: toAuthSubscriptionResponse(subscription, tierCode),
     };
   }
 
@@ -141,14 +150,34 @@ export class AuthService {
     // Get fresh user data
     const user = await this.userRepository.findById(payload.userId);
     const subscription = await this.getOrCreateSubscription(user.id);
+    const tierCode = await this.getTierCode(subscription.tierId);
 
     // Generate new tokens
-    return this.generateTokens(user, subscription.tier);
+    return this.generateTokens(user, tierCode);
   }
 
   // ─────────────────────────────────────────────────────────────────────
   // Private Helper Methods
   // ─────────────────────────────────────────────────────────────────────
+
+  /**
+   * Get tier code by tier ID
+   */
+  private async getTierCode(tierId: string): Promise<SubscriptionTierCode> {
+    const tier = await this.subscriptionTierRepository.findById(tierId);
+    return tier.code;
+  }
+
+  /**
+   * Get tier ID by code
+   */
+  private async getTierIdByCode(code: SubscriptionTierCode): Promise<string> {
+    const tier = await this.subscriptionTierRepository.findByCode(code);
+    if (!tier) {
+      throw new HttpErrors.InternalServerError(`Subscription tier ${code} not found`);
+    }
+    return tier.id;
+  }
 
   /**
    * Create new user with pending state
@@ -166,10 +195,13 @@ export class AuthService {
       updatedAt: new Date(),
     });
 
+    // Get the FREE tier ID
+    const freeTierId = await this.getTierIdByCode('FREE');
+
     // Create free subscription for new user
     await this.subscriptionRepository.create({
       userId: user.id,
-      tier: 'free',
+      tierId: freeTierId,
       status: 'active',
       cancelAtPeriodEnd: false,
       createdAt: new Date(),
@@ -216,10 +248,13 @@ export class AuthService {
     let subscription = await this.subscriptionRepository.findByUserId(userId);
 
     if (!subscription) {
+      // Get the FREE tier ID
+      const freeTierId = await this.getTierIdByCode('FREE');
+
       // Create default free subscription if missing
       subscription = await this.subscriptionRepository.create({
         userId,
-        tier: 'free',
+        tierId: freeTierId,
         status: 'active',
         cancelAtPeriodEnd: false,
         createdAt: new Date(),
@@ -233,7 +268,7 @@ export class AuthService {
   /**
    * Generate JWT access and refresh tokens
    */
-  private generateTokens(user: User, subscriptionTier: 'free' | 'pro' | 'premium'): AuthTokens {
+  private generateTokens(user: User, subscriptionTier: SubscriptionTierCode): AuthTokens {
     const payload = {
       userId: user.id,
       email: user.email,

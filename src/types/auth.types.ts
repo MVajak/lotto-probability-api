@@ -1,4 +1,4 @@
-import {Subscription, User} from '../models';
+import {Subscription, SubscriptionTierCode, User} from '../models';
 
 /**
  * JWT Token Pair
@@ -30,7 +30,7 @@ export interface AuthUserResponse {
  */
 export interface AuthSubscriptionResponse {
   id: string;
-  tier: 'free' | 'pro' | 'premium';
+  tier: SubscriptionTierCode;
   status: 'active' | 'canceled' | 'past_due' | 'trialing';
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
@@ -58,10 +58,13 @@ export function toAuthUserResponse(user: User): AuthUserResponse {
 /**
  * Helper to convert Subscription model to AuthSubscriptionResponse
  */
-export function toAuthSubscriptionResponse(subscription: Subscription): AuthSubscriptionResponse {
+export function toAuthSubscriptionResponse(
+  subscription: Subscription,
+  tierCode: SubscriptionTierCode,
+): AuthSubscriptionResponse {
   return {
     id: subscription.id,
-    tier: subscription.tier,
+    tier: tierCode,
     status: subscription.status,
     currentPeriodEnd: subscription.currentPeriodEnd ?? null,
     cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,

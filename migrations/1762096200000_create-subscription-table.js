@@ -1,6 +1,51 @@
 /* eslint-disable camelcase */
 
 exports.up = pgm => {
+  pgm.createTable('subscription_tier', {
+    id: {
+      type: 'uuid',
+      primaryKey: true,
+      default: pgm.func('uuid_generate_v4()'),
+    },
+    code: {
+      type: 'varchar(20)',
+      notNull: true,
+      unique: true,
+    },
+    price: {
+      type: 'decimal(10,2)',
+      notNull: true,
+      default: 0,
+    },
+    features: {
+      type: 'jsonb',
+      notNull: true,
+      default: '[]',
+    },
+    display_order: {
+      type: 'integer',
+      notNull: true,
+      default: 0,
+    },
+    created_at: {type: 'timestamptz', notNull: true, default: pgm.func('NOW()')},
+    updated_at: {type: 'timestamptz', notNull: true, default: pgm.func('NOW()')},
+  });
+
+  // Seed subscription tiers
+  pgm.sql(`
+    INSERT INTO subscription_tier (code, price, features, display_order) VALUES
+    ('FREE', 0.00, '["STATS_2_MONTHS", "BASIC_FREQUENCY", "AD_SUPPORTED"]', 1),
+    ('PRO', 2.49, '["NO_ADS", "STATS_2_YEARS", "WILSON_CI", "STD_DEVIATION"]', 2),
+    ('PREMIUM', 3.99, '["NO_ADS", "STATS_5_YEARS", "WILSON_CI", "MARKOV_CHAIN", "AUTOCORRELATION", "STD_DEVIATION", "INTERACTIVE_GRAPHS", "ADVANCED_VISUALIZATION"]', 3);
+  `);
+
+  // Auto-update updated_at trigger for subscription_tier
+  pgm.sql(`
+    CREATE TRIGGER update_subscription_tier_updated_at BEFORE UPDATE ON "subscription_tier"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+  `);
+
+  // Create subscription table with tier_id reference
   pgm.createTable('subscription', {
     id: {
       type: 'uuid',
@@ -14,13 +59,11 @@ exports.up = pgm => {
       references: 'user',
       onDelete: 'CASCADE',
     },
-
-    // Subscription Details
-    tier: {
-      type: 'varchar(20)',
+    tier_id: {
+      type: 'uuid',
       notNull: true,
-      default: 'free',
-      check: "tier IN ('free', 'pro', 'premium')",
+      references: 'subscription_tier',
+      onDelete: 'RESTRICT',
     },
     status: {
       type: 'varchar(20)',
@@ -52,7 +95,7 @@ exports.up = pgm => {
     name: 'idx_subscription_stripe_customer_id',
   });
   pgm.createIndex('subscription', 'status', {name: 'idx_subscription_status'});
-  pgm.createIndex('subscription', 'tier', {name: 'idx_subscription_tier'});
+  pgm.createIndex('subscription', 'tier_id', {name: 'idx_subscription_tier_id'});
 
   // Auto-update updated_at trigger
   pgm.sql(`
@@ -64,4 +107,6 @@ exports.up = pgm => {
 exports.down = pgm => {
   pgm.dropTrigger('subscription', 'update_subscription_updated_at', {ifExists: true});
   pgm.dropTable('subscription');
+  pgm.dropTrigger('subscription_tier', 'update_subscription_tier_updated_at', {ifExists: true});
+  pgm.dropTable('subscription_tier');
 };

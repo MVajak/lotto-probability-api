@@ -117,11 +117,7 @@ export class NumberHistoryService {
       ),
       // Total draws in period
       this.lottoDrawRepository.count({
-        and: [
-          {gameTypeName: lottoType},
-          {drawDate: {gte: startDate}},
-          {drawDate: {lte: endDate}},
-        ],
+        and: [{gameTypeName: lottoType}, {drawDate: {gte: startDate}}, {drawDate: {lte: endDate}}],
       }),
       // All draws in period (for statistical analysis)
       this.lottoDrawRepository.find({
@@ -160,7 +156,7 @@ export class NumberHistoryService {
 
     // Build occurrences
     return drawsWithNumber.map(draw =>
-      this.buildSingleOccurrence(draw, resultsByDrawId, searchNumber)
+      this.buildSingleOccurrence(draw, resultsByDrawId, searchNumber),
     );
   }
 
@@ -170,7 +166,10 @@ export class NumberHistoryService {
    */
   private buildSingleOccurrence(
     draw: LottoDraw,
-    resultsByDrawId: Record<string, Array<Awaited<ReturnType<typeof this.lottoDrawResultRepository.find>>[number]>>,
+    resultsByDrawId: Record<
+      string,
+      Array<Awaited<ReturnType<typeof this.lottoDrawResultRepository.find>>[number]>
+    >,
     searchNumber: number,
   ): DrawOccurrence {
     const drawResults = resultsByDrawId[draw.id] || [];
@@ -231,11 +230,7 @@ export class NumberHistoryService {
     const deviationPercent = frequencyPercent - expectedFrequencyPercent;
 
     // Calculate Wilson confidence interval for statistical significance
-    const confidenceInterval = calculateWilsonConfidenceInterval(
-      appearanceCount,
-      totalDraws,
-      0.95,
-    );
+    const confidenceInterval = calculateWilsonConfidenceInterval(appearanceCount, totalDraws, 0.95);
 
     // Determine status
     let status: FrequencyStatus = 'normal';
@@ -452,17 +447,13 @@ export class NumberHistoryService {
     }
 
     if (startDate > endDate) {
-      throw new HttpErrors.BadRequest(
-        'Start date must be before or equal to end date',
-      );
+      throw new HttpErrors.BadRequest('Start date must be before or equal to end date');
     }
 
     // Validate date range (max 10 years for performance)
     const maxRangeMs = 10 * 365 * 24 * 60 * 60 * 1000; // 10 years in milliseconds
     if (endDate.getTime() - startDate.getTime() > maxRangeMs) {
-      throw new HttpErrors.BadRequest(
-        'Date range cannot exceed 10 years',
-      );
+      throw new HttpErrors.BadRequest('Date range cannot exceed 10 years');
     }
 
     // Validate number based on lottery type
@@ -485,9 +476,7 @@ export class NumberHistoryService {
           );
         }
       } else {
-        throw new HttpErrors.BadRequest(
-          `Position parameter is only valid for JOKKER lottery type`,
-        );
+        throw new HttpErrors.BadRequest(`Position parameter is only valid for JOKKER lottery type`);
       }
     }
   }
@@ -499,10 +488,7 @@ export class NumberHistoryService {
    * @param drawsWithNumber - Draws where the number appeared
    * @returns Binary array representing appearance in each draw
    */
-  private buildAppearanceSequence(
-    allDraws: LottoDraw[],
-    drawsWithNumber: LottoDraw[],
-  ): number[] {
+  private buildAppearanceSequence(allDraws: LottoDraw[], drawsWithNumber: LottoDraw[]): number[] {
     // Create a set of draw IDs where the number appeared for O(1) lookup
     const appearedDrawIds = new Set(drawsWithNumber.map(draw => draw.id));
 

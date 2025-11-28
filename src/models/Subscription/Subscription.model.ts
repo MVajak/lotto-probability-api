@@ -1,9 +1,9 @@
 import {belongsTo, Entity, hasMany, model, property} from '@loopback/repository';
 
 import {SubscriptionHistory} from '../SubscriptionHistory';
+import {SubscriptionTier} from '../SubscriptionTier';
 import {User} from '../User';
 
-export type SubscriptionTier = 'free' | 'pro' | 'premium';
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing';
 
 @model({
@@ -30,14 +30,14 @@ export class Subscription extends Entity {
   )
   userId: string;
 
-  // Subscription Details
-  @property({
-    type: 'string',
-    required: true,
-    default: 'free',
-    postgresql: {columnName: 'tier'},
-  })
-  tier: SubscriptionTier;
+  @belongsTo(
+    () => SubscriptionTier,
+    {},
+    {
+      postgresql: {columnName: 'tier_id'},
+    },
+  )
+  tierId: string;
 
   @property({
     type: 'string',
@@ -131,6 +131,7 @@ export class Subscription extends Entity {
 
 export interface SubscriptionRelations {
   user?: User;
+  tier?: SubscriptionTier;
   history?: SubscriptionHistory[];
 }
 

@@ -11,6 +11,7 @@ import {CronBooter} from './boot/cron.boot';
 import {EstonianLottoApiClient} from './clients/EstonianLottoApiClient';
 import {AuthController} from './controllers/authController';
 import {LottoProbabilityController} from './controllers/lottoProbabilityController';
+import {SubscriptionTierController} from './controllers/subscriptionTierController';
 import {NewLottoDrawsCronService} from './crons/newLottoDrawsCronService';
 import {ResetLottoDrawsCronService} from './crons/resetLottoDrawsCronService';
 import {JWTAuthenticationStrategy} from './middleware/auth.middleware';
@@ -21,6 +22,7 @@ import {LottoDrawService} from './services/lottoDraw/lottoDrawService';
 import {LottoDrawResultService} from './services/lottoDrawResult/lottoDrawResultService';
 import {LottoProbabilityService} from './services/lottoProbability/lottoProbabilityService';
 import {NumberHistoryService} from './services/numberHistory/numberHistoryService';
+import {SubscriptionTierService} from './services/subscriptionTier/subscriptionTierService';
 import {PostgresDataSource} from './datasources';
 import {
   LottoDrawRepository,
@@ -28,6 +30,7 @@ import {
   MagicLinkTokenRepository,
   SubscriptionHistoryRepository,
   SubscriptionRepository,
+  SubscriptionTierRepository,
   UserRepository,
 } from './repositories';
 import {MySequence} from './sequence';
@@ -60,6 +63,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.repository(LottoDrawResultRepository);
     this.repository(UserRepository);
     this.repository(SubscriptionRepository);
+    this.repository(SubscriptionTierRepository);
     this.repository(SubscriptionHistoryRepository);
     this.repository(MagicLinkTokenRepository);
 
@@ -76,6 +80,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.bind('services.MagicLinkService').toClass(MagicLinkService);
     this.bind('services.EmailService').toClass(EmailService);
     this.bind('services.AuthService').toClass(AuthService);
+    this.bind('services.SubscriptionTierService').toClass(SubscriptionTierService);
 
     // Authentication - AFTER services are bound
     this.component(AuthenticationComponent);
@@ -89,6 +94,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     // Controllers
     this.controller(LottoProbabilityController);
     this.controller(AuthController);
+    this.controller(SubscriptionTierController);
 
     this.projectRoot = __dirname;
     this.bootOptions = {

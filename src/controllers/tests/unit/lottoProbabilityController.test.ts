@@ -21,7 +21,10 @@ describe('LottoProbabilityController', () => {
   beforeEach(() => {
     lottoProbabilityServiceStub = sinon.createStubInstance(LottoProbabilityService);
     numberHistoryServiceStub = sinon.createStubInstance(NumberHistoryService);
-    controller = new LottoProbabilityController(lottoProbabilityServiceStub, numberHistoryServiceStub);
+    controller = new LottoProbabilityController(
+      lottoProbabilityServiceStub,
+      numberHistoryServiceStub,
+    );
 
     lottoProbabilityServiceStub.calculateProbability.resolves(expectedResponse);
   });

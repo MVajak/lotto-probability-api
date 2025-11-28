@@ -1,6 +1,7 @@
 import {belongsTo, Entity, model, property} from '@loopback/repository';
 
-import {Subscription, SubscriptionStatus, SubscriptionTier} from '../Subscription';
+import {Subscription, SubscriptionStatus} from '../Subscription';
+import {SubscriptionTierCode} from '../SubscriptionTier';
 import {User} from '../User';
 
 export type SubscriptionEventType =
@@ -60,14 +61,14 @@ export class SubscriptionHistory extends Entity {
     required: false,
     postgresql: {columnName: 'from_tier'},
   })
-  fromTier?: SubscriptionTier | null;
+  fromTier?: SubscriptionTierCode | null;
 
   @property({
     type: 'string',
     required: true,
     postgresql: {columnName: 'to_tier'},
   })
-  toTier: SubscriptionTier;
+  toTier: SubscriptionTierCode;
 
   @property({
     type: 'string',

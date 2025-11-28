@@ -7,9 +7,16 @@ import {
 } from '@loopback/repository';
 
 import {PostgresDataSource} from '../datasources';
-import {Subscription, SubscriptionHistory, SubscriptionRelations, User} from '../models';
+import {
+  Subscription,
+  SubscriptionHistory,
+  SubscriptionRelations,
+  SubscriptionTier,
+  User,
+} from '../models';
 
 import {SubscriptionHistoryRepository} from './subscriptionHistoryRepository';
+import {SubscriptionTierRepository} from './subscriptionTierRepository';
 import {UserRepository} from './userRepository';
 
 export class SubscriptionRepository extends DefaultCrudRepository<
@@ -18,6 +25,7 @@ export class SubscriptionRepository extends DefaultCrudRepository<
   SubscriptionRelations
 > {
   public readonly user: BelongsToAccessor<User, typeof Subscription.prototype.id>;
+  public readonly tier: BelongsToAccessor<SubscriptionTier, typeof Subscription.prototype.id>;
   public readonly history: HasManyRepositoryFactory<
     SubscriptionHistory,
     typeof Subscription.prototype.id
@@ -27,16 +35,20 @@ export class SubscriptionRepository extends DefaultCrudRepository<
     @inject('datasources.postgresDS') dataSource: PostgresDataSource,
     @repository.getter('UserRepository')
     protected userRepositoryGetter: Getter<UserRepository>,
+    @repository.getter('SubscriptionTierRepository')
+    protected subscriptionTierRepositoryGetter: Getter<SubscriptionTierRepository>,
     @repository.getter('SubscriptionHistoryRepository')
     protected subscriptionHistoryRepositoryGetter: Getter<SubscriptionHistoryRepository>,
   ) {
     super(Subscription, dataSource);
     this.user = this.createBelongsToAccessorFor('user', userRepositoryGetter);
+    this.tier = this.createBelongsToAccessorFor('tier', subscriptionTierRepositoryGetter);
     this.history = this.createHasManyRepositoryFactoryFor(
       'history',
       subscriptionHistoryRepositoryGetter,
     );
     this.registerInclusionResolver('user', this.user.inclusionResolver);
+    this.registerInclusionResolver('tier', this.tier.inclusionResolver);
     this.registerInclusionResolver('history', this.history.inclusionResolver);
   }
 
