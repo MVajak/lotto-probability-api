@@ -37,6 +37,7 @@ export class LottoDrawRepository extends BaseRepository<
    * @param dateFrom - Start date
    * @param dateTo - End date
    * @param position - Optional position (for positional games like Jokker)
+   * @param useSecondaryNumbers - If true, search in sec_winning_number; if false, search in winning_number
    * @param options - Query options
    * @returns Array of draws with their results
    */
@@ -46,12 +47,16 @@ export class LottoDrawRepository extends BaseRepository<
     dateFrom: Date,
     dateTo: Date,
     position?: number,
+    useSecondaryNumbers?: boolean,
     options?: Options,
   ): Promise<LottoDraw[]> {
     const connector = this.dataSource.connector;
     if (!connector?.execute) {
       throw new Error('Database connector not available');
     }
+
+    // Determine which column to search based on useSecondaryNumbers flag
+    const numberColumn = useSecondaryNumbers ? 'sec_winning_number' : 'winning_number';
 
     // Build SQL query to find draws containing the specific number
     // Note: winning_number and sec_winning_number are comma-separated strings
@@ -73,10 +78,7 @@ export class LottoDrawRepository extends BaseRepository<
       WHERE ld.game_type_name = $1
         AND ld.draw_date >= $2
         AND ld.draw_date <= $3
-        AND (
-          ldr.winning_number ~ ('(^|,)' || $4 || '(,|$)')
-          OR ldr.sec_winning_number ~ ('(^|,)' || $4 || '(,|$)')
-        )
+        AND ldr.${numberColumn} ~ ('(^|,)' || $4 || '(,|$)')
         AND ld.deleted_at IS NULL
         AND ldr.deleted_at IS NULL
     `;

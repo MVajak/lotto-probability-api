@@ -54,6 +54,7 @@ export class NumberHistoryService {
       endDate,
       number,
       position,
+      useSecondaryNumbers,
     );
 
     // Build occurrences with parsed numbers
@@ -105,6 +106,7 @@ export class NumberHistoryService {
     endDate: Date,
     number: number,
     position?: number,
+    useSecondaryNumbers?: boolean,
   ) {
     return Promise.all([
       // Draws containing this number
@@ -114,6 +116,7 @@ export class NumberHistoryService {
         startDate,
         endDate,
         position,
+        useSecondaryNumbers,
       ),
       // Total draws in period
       this.lottoDrawRepository.count({
