@@ -27,16 +27,21 @@ exports.up = pgm => {
       notNull: true,
       default: 0,
     },
+    stripe_price_id: {
+      type: 'varchar(100)',
+      notNull: false,
+      default: null,
+    },
     created_at: {type: 'timestamptz', notNull: true, default: pgm.func('NOW()')},
     updated_at: {type: 'timestamptz', notNull: true, default: pgm.func('NOW()')},
   });
 
-  // Seed subscription tiers
+  // Seed subscription tiers (stripe_price_id to be updated manually after Stripe setup)
   pgm.sql(`
-    INSERT INTO subscription_tier (code, price, features, display_order) VALUES
-    ('FREE', 0.00, '["STATS_2_MONTHS", "BASIC_FREQUENCY", "AD_SUPPORTED"]', 1),
-    ('PRO', 2.49, '["NO_ADS", "STATS_2_YEARS", "WILSON_CI", "STD_DEVIATION"]', 2),
-    ('PREMIUM', 3.99, '["NO_ADS", "STATS_5_YEARS", "WILSON_CI", "MARKOV_CHAIN", "AUTOCORRELATION", "STD_DEVIATION", "INTERACTIVE_GRAPHS", "ADVANCED_VISUALIZATION"]', 3);
+    INSERT INTO subscription_tier (code, price, features, display_order, stripe_price_id) VALUES
+    ('FREE', 0.00, '["STATS_2_MONTHS", "BASIC_FREQUENCY", "AD_SUPPORTED"]', 1, NULL),
+    ('PRO', 2.49, '["NO_ADS", "STATS_2_YEARS", "WILSON_CI", "STD_DEVIATION"]', 2, NULL),
+    ('PREMIUM', 3.99, '["NO_ADS", "STATS_5_YEARS", "WILSON_CI", "MARKOV_CHAIN", "AUTOCORRELATION", "STD_DEVIATION", "INTERACTIVE_GRAPHS", "ADVANCED_VISUALIZATION"]', 3, NULL);
   `);
 
   // Auto-update updated_at trigger for subscription_tier

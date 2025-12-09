@@ -11,6 +11,7 @@ import {CronBooter} from './boot/cron.boot';
 import {EstonianLottoApiClient} from './clients/EstonianLottoApiClient';
 import {AuthController} from './controllers/authController';
 import {LottoProbabilityController} from './controllers/lottoProbabilityController';
+import {SubscriptionController} from './controllers/subscriptionController';
 import {SubscriptionTierController} from './controllers/subscriptionTierController';
 import {NewLottoDrawsCronService} from './crons/newLottoDrawsCronService';
 import {ResetLottoDrawsCronService} from './crons/resetLottoDrawsCronService';
@@ -22,6 +23,8 @@ import {LottoDrawService} from './services/lottoDraw/lottoDrawService';
 import {LottoDrawResultService} from './services/lottoDrawResult/lottoDrawResultService';
 import {LottoProbabilityService} from './services/lottoProbability/lottoProbabilityService';
 import {NumberHistoryService} from './services/numberHistory/numberHistoryService';
+import {StripeService} from './services/stripe/stripeService';
+import {SubscriptionService} from './services/subscription';
 import {SubscriptionTierService} from './services/subscriptionTier/subscriptionTierService';
 import {PostgresDataSource} from './datasources';
 import {
@@ -81,6 +84,8 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.bind('services.EmailService').toClass(EmailService);
     this.bind('services.AuthService').toClass(AuthService);
     this.bind('services.SubscriptionTierService').toClass(SubscriptionTierService);
+    this.bind('services.StripeService').toClass(StripeService);
+    this.bind('services.SubscriptionService').toClass(SubscriptionService);
 
     // Authentication - AFTER services are bound
     this.component(AuthenticationComponent);
@@ -94,6 +99,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     // Controllers
     this.controller(LottoProbabilityController);
     this.controller(AuthController);
+    this.controller(SubscriptionController);
     this.controller(SubscriptionTierController);
 
     this.projectRoot = __dirname;

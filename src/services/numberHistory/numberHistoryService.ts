@@ -227,18 +227,22 @@ export class NumberHistoryService {
     const frequency = totalDraws > 0 ? appearanceCount / totalDraws : 0;
     const frequencyPercent = frequency * 100;
     const expectedFrequencyPercent = theoreticalProb * 100;
-    const deviationPercent = frequencyPercent - expectedFrequencyPercent;
 
     // Calculate Wilson confidence interval for statistical significance
-    const confidenceInterval = calculateWilsonConfidenceInterval(appearanceCount, totalDraws, 0.95);
+    const wilsonCI = calculateWilsonConfidenceInterval(appearanceCount, totalDraws, 0.95);
 
-    // Determine status
+    // Determine status based on whether theoretical probability falls within CI
     let status: FrequencyStatus = 'normal';
-    if (theoreticalProb < confidenceInterval.lower) {
+    if (theoreticalProb < wilsonCI.lower) {
       status = 'frequent';
-    } else if (theoreticalProb > confidenceInterval.upper) {
+    } else if (theoreticalProb > wilsonCI.upper) {
       status = 'rare';
     }
+
+    // Calculate deviation analysis (using raw decimals, not percentages)
+    const absoluteDeviation = frequency - theoreticalProb;
+    const relativeDeviation = theoreticalProb > 0 ? absoluteDeviation / theoreticalProb : 0;
+    const isSignificant = status !== 'normal';
 
     return {
       number,
@@ -246,8 +250,18 @@ export class NumberHistoryService {
       appearanceCount,
       frequencyPercent: Math.round(frequencyPercent * 100) / 100,
       expectedFrequencyPercent: Math.round(expectedFrequencyPercent * 100) / 100,
-      deviationPercent: Math.round(deviationPercent * 100) / 100,
       status,
+      confidenceInterval: {
+        lower: Math.round(wilsonCI.lower * 100000) / 100000,
+        upper: Math.round(wilsonCI.upper * 100000) / 100000,
+        center: Math.round(wilsonCI.center * 100000) / 100000,
+        confidenceLevel: 0.95,
+      },
+      deviation: {
+        absolute: Math.round(absoluteDeviation * 100000) / 100000,
+        relative: Math.round(relativeDeviation * 100000) / 100000,
+        isSignificant,
+      },
     };
   }
 

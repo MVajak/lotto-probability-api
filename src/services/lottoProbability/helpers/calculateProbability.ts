@@ -1,32 +1,25 @@
 import {LottoType, NumberFrequencyStat} from '../../../common/types';
 import {safeBig} from '../../../common/utils/calculations';
 
-import {calculateDeviation} from './deviation';
 import {interpretFrequency} from './interpretation';
 import {calculateTheoreticalProbability, getLotteryConfig, getNumberRange} from './lotteryConfigs';
-import {calculateWilsonConfidenceInterval} from './wilsonConfidenceInterval';
 
 /**
- * Default confidence level for statistical analysis (95%)
- */
-const DEFAULT_CONFIDENCE_LEVEL = 0.95;
-
-/**
- * Calculate number statistics with Wilson confidence intervals and frequency analysis
+ * Calculate number statistics with frequency analysis
  *
- * This function provides comprehensive statistical analysis including:
+ * This function provides statistical analysis including:
  * - Historical frequency (observed rate)
- * - Wilson confidence intervals (uncertainty estimation)
- * - Theoretical probability comparison
- * - Deviation analysis
  * - User-friendly interpretation (frequent/rare/normal)
+ *
+ * Note: Detailed statistical data (confidence intervals, deviation analysis)
+ * is available via the /number-history endpoint for individual numbers.
  *
  * @param numbers - Array of numbers that appeared
  * @param lottoType - Type of lottery
  * @param totalDraws - Total number of draws (not individual numbers)
  * @param useSecondaryNumbers - Whether analyzing secondary numbers (stars/bonus)
  * @param winClass - Win class (for games like Bingo with multiple patterns)
- * @returns Array of enhanced frequency statistics
+ * @returns Array of frequency statistics
  */
 export function calculateNumberStatsWithCI(
   numbers: number[],
@@ -66,12 +59,6 @@ export function calculateNumberStatsWithCI(
     const count = countMap.get(digit) || 0;
     const frequency = totalDraws > 0 ? count / totalDraws : 0;
 
-    // Calculate Wilson confidence interval
-    const ci = calculateWilsonConfidenceInterval(count, totalDraws, DEFAULT_CONFIDENCE_LEVEL);
-
-    // Calculate deviation from theoretical
-    const deviation = calculateDeviation(frequency, theoreticalProb, ci.lower, ci.upper);
-
     // Get user-friendly interpretation based on percentile ranking
     const interpretation = interpretFrequency(
       frequency,
@@ -87,13 +74,6 @@ export function calculateNumberStatsWithCI(
       count,
       totalDraws,
       frequency,
-      confidenceInterval: {
-        lower: ci.lower,
-        upper: ci.upper,
-        confidenceLevel: DEFAULT_CONFIDENCE_LEVEL,
-      },
-      theoreticalProbability: theoreticalProb,
-      deviation,
       interpretation,
     });
   }
@@ -102,14 +82,17 @@ export function calculateNumberStatsWithCI(
 }
 
 /**
- * Calculate positional number statistics with Wilson confidence intervals
+ * Calculate positional number statistics with frequency analysis
  *
  * For positional lotteries (like Jokker), analyze each position separately
+ *
+ * Note: Detailed statistical data (confidence intervals, deviation analysis)
+ * is available via the /number-history endpoint for individual numbers.
  *
  * @param sets - Array of number sets (each draw)
  * @param lottoType - Type of lottery
  * @param useSecondaryNumbers - Whether analyzing secondary numbers
- * @returns Array of enhanced frequency statistics with position information
+ * @returns Array of frequency statistics with position information
  */
 export function calculatePositionalNumberStatsWithCI(
   sets: number[][],
@@ -157,16 +140,6 @@ export function calculatePositionalNumberStatsWithCI(
       const count = digitCounts[pos].get(digit) ?? 0;
       const frequency = count / totalAtPosition;
 
-      // Calculate Wilson confidence interval
-      const ci = calculateWilsonConfidenceInterval(
-        count,
-        totalAtPosition,
-        DEFAULT_CONFIDENCE_LEVEL,
-      );
-
-      // Calculate deviation
-      const deviation = calculateDeviation(frequency, theoreticalProb, ci.lower, ci.upper);
-
       // Get interpretation based on percentile ranking
       const interpretation = interpretFrequency(
         frequency,
@@ -182,13 +155,6 @@ export function calculatePositionalNumberStatsWithCI(
         count,
         totalDraws: totalAtPosition,
         frequency,
-        confidenceInterval: {
-          lower: ci.lower,
-          upper: ci.upper,
-          confidenceLevel: DEFAULT_CONFIDENCE_LEVEL,
-        },
-        theoreticalProbability: theoreticalProb,
-        deviation,
         interpretation,
       });
     }

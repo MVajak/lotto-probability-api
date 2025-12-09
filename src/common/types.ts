@@ -40,7 +40,8 @@ export interface FrequencyInterpretation {
 }
 
 /**
- * Number statistics with frequency analysis and confidence intervals
+ * Number statistics with frequency analysis
+ * Note: confidenceInterval, theoreticalProbability, and deviation are available via /number-history endpoint
  */
 export interface NumberFrequencyStat {
   position: number | null; // null for overall stats, 0-N for positional
@@ -52,19 +53,6 @@ export interface NumberFrequencyStat {
 
   // Historical frequency
   frequency: number; // count / totalDraws
-
-  // Confidence interval for frequency
-  confidenceInterval: {
-    lower: number;
-    upper: number;
-    confidenceLevel: number; // e.g., 0.95 for 95%
-  };
-
-  // Theoretical expected probability
-  theoreticalProbability: number; // e.g., 0.10 for EuroJackpot main numbers
-
-  // Deviation analysis
-  deviation: DeviationAnalysis;
 
   // Structured interpretation (i18n-friendly)
   interpretation: FrequencyInterpretation;

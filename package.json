@@ -99,6 +99,7 @@
     "loopback-connector-postgresql": "^7.2.2",
     "node-cron": "^4.1.1",
     "node-fetch": "^3.3.2",
+    "stripe": "^20.0.0",
     "tough-cookie": "^5.1.2",
     "tslib": "^2.0.0"
   },

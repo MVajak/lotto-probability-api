@@ -64,6 +64,13 @@ export class SubscriptionTier extends Entity {
   displayOrder: number;
 
   @property({
+    type: 'string',
+    required: false,
+    postgresql: {columnName: 'stripe_price_id'},
+  })
+  stripePriceId?: string | null;
+
+  @property({
     type: 'date',
     required: true,
     postgresql: {columnName: 'created_at'},
