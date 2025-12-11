@@ -6,6 +6,7 @@ import {FrequencyStatus, LottoType} from '../../common/types';
 import {LottoDraw} from '../../models';
 import {
   DrawOccurrence,
+  DrawTimelineEntry,
   NumberHistoryRequestDto,
   NumberHistoryResponseDto,
   NumberHistorySummary,
@@ -77,6 +78,7 @@ export class NumberHistoryService {
     // Calculate all analyses
     const trends = this.calculateTrendAnalysis(
       occurrences,
+      appearanceSequence,
       startTime,
       endTime,
       totalDraws.count,
@@ -86,12 +88,16 @@ export class NumberHistoryService {
     const autocorrelation = calculateAutocorrelation(appearanceSequence);
     const markovChain = calculateMarkovChain(appearanceSequence, theoreticalProb);
 
+    // Build timeline showing all draws with appearance flag
+    const timeline = this.buildTimeline(allDrawsInPeriod, drawsWithNumber);
+
     return {
       summary,
       trends,
       autocorrelation,
       markovChain,
       occurrences,
+      timeline,
       periodStart: dateFrom,
       periodEnd: dateTo,
     };
@@ -211,7 +217,7 @@ export class NumberHistoryService {
     return {
       drawId: draw.id,
       drawDate: draw.drawDate,
-      drawLabel: draw.drawLabel ?? undefined,
+      drawLabel: draw.drawLabel,
       allNumbers: primaryNumbers,
       secondaryNumbers: secondaryNumbers.length > 0 ? secondaryNumbers : undefined,
       position: foundPosition,
@@ -272,6 +278,7 @@ export class NumberHistoryService {
    * Calculate trend analysis for the number
    *
    * @param occurrences - All occurrences of the number
+   * @param appearanceSequence - Binary sequence (1=appeared, 0=didn't) for all draws in order
    * @param startTime - Period start timestamp
    * @param endTime - Period end timestamp
    * @param totalDraws - Total number of draws in period
@@ -280,13 +287,13 @@ export class NumberHistoryService {
    */
   private calculateTrendAnalysis(
     occurrences: DrawOccurrence[],
+    appearanceSequence: number[],
     startTime: number,
     endTime: number,
     totalDraws: number,
     theoreticalProb: number,
   ): TrendAnalysis {
     const MS_PER_DAY = 86400000; // 1000 * 60 * 60 * 24
-    const STREAK_THRESHOLD_DAYS = 7;
 
     // Sort occurrences by date (oldest first) - sort in place for performance
     occurrences.sort((a, b) => a.drawDate.getTime() - b.drawDate.getTime());
@@ -307,6 +314,10 @@ export class NumberHistoryService {
       // Cache timestamps for performance
       const timestamps = occurrences.map(occ => occ.drawDate.getTime());
 
+      // Calculate drought before first appearance
+      const daysBeforeFirst = Math.floor((timestamps[0] - startTime) / MS_PER_DAY);
+      longestDroughtDays = Math.max(longestDroughtDays, daysBeforeFirst);
+
       // Calculate gaps between consecutive appearances
       for (let i = 1; i < len; i++) {
         const daysDiff = Math.floor((timestamps[i] - timestamps[i - 1]) / MS_PER_DAY);
@@ -315,44 +326,51 @@ export class NumberHistoryService {
         longestDroughtDays = Math.max(longestDroughtDays, daysDiff);
       }
 
-      // Current drought (since last appearance)
-      currentDroughtDays = Math.floor((endTime - timestamps[len - 1]) / MS_PER_DAY);
+      // Current drought: 0 if appeared in most recent draw, otherwise days since last appearance
+      const mostRecentDrawHadNumber =
+        appearanceSequence.length > 0 && appearanceSequence[appearanceSequence.length - 1] === 1;
+      currentDroughtDays = mostRecentDrawHadNumber
+        ? 0
+        : Math.floor((endTime - timestamps[len - 1]) / MS_PER_DAY);
+
+      // Also consider current drought for longest drought calculation
+      longestDroughtDays = Math.max(longestDroughtDays, currentDroughtDays);
     }
 
     // Calculate average days between appearances
-    const averageDaysBetweenAppearances =
-      droughtCount > 0 ? Math.round(droughtSum / droughtCount) : 0;
+    // If only 1 appearance, use the average of drought before and after
+    let averageDaysBetweenAppearances: number;
+    if (droughtCount > 0) {
+      averageDaysBetweenAppearances = Math.round(droughtSum / droughtCount);
+    } else if (len === 1) {
+      // Only 1 appearance: average the drought before first and after last
+      const totalDays = Math.floor((endTime - startTime) / MS_PER_DAY);
+      averageDaysBetweenAppearances = Math.round(totalDays / 2);
+    } else {
+      averageDaysBetweenAppearances = 0;
+    }
 
-    // Calculate streaks (consecutive draws with the number)
+    // Calculate streaks (consecutive draws where number appeared)
+    // Using appearanceSequence which is a binary array [0,1,0,1,1,0,1,0,1]
     let currentStreak = 0;
     let longestStreak = 0;
+    let tempStreak = 0;
 
-    if (len > 0) {
-      const timestamps = occurrences.map(occ => occ.drawDate.getTime());
-      let tempStreak = 1;
-
-      // Calculate longest streak
-      for (let i = 1; i < len; i++) {
-        const daysDiff = Math.floor((timestamps[i] - timestamps[i - 1]) / MS_PER_DAY);
-
-        if (daysDiff <= STREAK_THRESHOLD_DAYS) {
-          tempStreak++;
-        } else {
-          longestStreak = Math.max(longestStreak, tempStreak);
-          tempStreak = 1;
-        }
+    for (const appeared of appearanceSequence) {
+      if (appeared === 1) {
+        tempStreak++;
+        longestStreak = Math.max(longestStreak, tempStreak);
+      } else {
+        tempStreak = 0;
       }
-      longestStreak = Math.max(longestStreak, tempStreak);
+    }
 
-      // Current streak: check from the end backwards
-      currentStreak = 1;
-      for (let i = len - 2; i >= 0; i--) {
-        const daysDiff = Math.floor((timestamps[i + 1] - timestamps[i]) / MS_PER_DAY);
-        if (daysDiff <= STREAK_THRESHOLD_DAYS) {
-          currentStreak++;
-        } else {
-          break;
-        }
+    // Current streak: count consecutive 1s from the end
+    for (let i = appearanceSequence.length - 1; i >= 0; i--) {
+      if (appearanceSequence[i] === 1) {
+        currentStreak++;
+      } else {
+        break;
       }
     }
 
@@ -511,5 +529,24 @@ export class NumberHistoryService {
 
     // Build binary sequence
     return allDraws.map(draw => (appearedDrawIds.has(draw.id) ? 1 : 0));
+  }
+
+  /**
+   * Build timeline of all draws showing when number appeared
+   *
+   * @param allDraws - All draws in chronological order
+   * @param drawsWithNumber - Draws where the number appeared
+   * @returns Timeline entries sorted by date (ascending)
+   */
+  private buildTimeline(allDraws: LottoDraw[], drawsWithNumber: LottoDraw[]): DrawTimelineEntry[] {
+    // Create a set of draw IDs where the number appeared for O(1) lookup
+    const appearedDrawIds = new Set(drawsWithNumber.map(draw => draw.id));
+
+    // Build timeline entries
+    return allDraws.map(draw => ({
+      drawDate: draw.drawDate,
+      drawLabel: draw.drawLabel,
+      appeared: appearedDrawIds.has(draw.id),
+    }));
   }
 }

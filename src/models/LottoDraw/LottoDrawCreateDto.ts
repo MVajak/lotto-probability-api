@@ -12,10 +12,9 @@ export class LottoDrawCreateDto {
 
   @property({
     type: 'string',
-    required: false,
-    nullable: true,
+    required: true,
   })
-  drawLabel: string | null;
+  drawLabel: string;
 
   @property({
     type: 'string',

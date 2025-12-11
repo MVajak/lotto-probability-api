@@ -31,7 +31,7 @@ export class CronBooter implements Booter {
     schedule('* * * * *', async () => {
       console.log('Scheduled task running at', new Date().toISOString());
       await this.newLottoDrawsCronService.saveLatestDraws(LottoType.EURO);
-      // await this.newLottoDrawsCronService.saveLatestDraws(LottoType.VIKINGLOTTO);
+      await this.newLottoDrawsCronService.saveLatestDraws(LottoType.VIKINGLOTTO);
       // await this.newLottoDrawsCronService.saveLatestDraws(LottoType.BINGO);
       // await this.newLottoDrawsCronService.saveLatestDraws(LottoType.JOKKER);
       // await this.newLottoDrawsCronService.saveLatestDraws(LottoType.KENO);

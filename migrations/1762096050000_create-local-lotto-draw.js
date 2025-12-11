@@ -11,7 +11,7 @@ exports.up = pgm => {
       default: pgm.func('uuid_generate_v4()'),
     },
     draw_date: {type: 'timestamptz', notNull: true},
-    draw_label: {type: 'varchar(255)', notNull: false, defaultValue: null},
+    draw_label: {type: 'varchar(255)', notNull: true},
     external_draw_id: {type: 'varchar(255)', notNull: false, defaultValue: null},
     game_type_name: {type: 'varchar(255)', notNull: true},
     created_at: {type: 'timestamptz', notNull: true},

@@ -20,11 +20,10 @@ export class LottoDraw extends LottoEntity {
 
   @property({
     type: 'string',
-    required: false,
-    nullable: true,
+    required: true,
     postgresql: {columnName: 'draw_label'},
   })
-  drawLabel: string | null;
+  drawLabel: string;
 
   @property({
     type: 'string',

@@ -1,6 +1,33 @@
 import {model, property} from '@loopback/repository';
 
 /**
+ * Timeline entry for visualizing draw history
+ */
+@model()
+export class DrawTimelineEntry {
+  @property({
+    type: 'date',
+    required: true,
+    description: 'Date when the draw occurred',
+  })
+  drawDate: Date;
+
+  @property({
+    type: 'string',
+    required: true,
+    description: 'Draw label (e.g., "123" for Jokker)',
+  })
+  drawLabel: string;
+
+  @property({
+    type: 'boolean',
+    required: true,
+    description: 'Whether the searched number appeared in this draw',
+  })
+  appeared: boolean;
+}
+
+/**
  * Single draw occurrence of a number
  */
 @model()
@@ -21,10 +48,10 @@ export class DrawOccurrence {
 
   @property({
     type: 'string',
-    required: false,
+    required: true,
     description: 'Draw label (e.g., "123" for Jokker)',
   })
-  drawLabel?: string;
+  drawLabel: string;
 
   @property({
     type: 'array',
@@ -338,6 +365,14 @@ export class NumberHistoryResponseDto {
     description: 'List of all draws where this number appeared',
   })
   occurrences: DrawOccurrence[];
+
+  @property({
+    type: 'array',
+    itemType: DrawTimelineEntry,
+    required: true,
+    description: 'Timeline of all draws in period showing when number appeared',
+  })
+  timeline: DrawTimelineEntry[];
 
   @property({
     type: 'string',
