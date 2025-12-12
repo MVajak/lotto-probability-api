@@ -72,6 +72,31 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     primaryRange: {min: 0, max: 9}, // Digits 0-9
     primaryCount: 6, // 6 digit number
   },
+  // US Lotteries
+  [LottoType.POWERBALL]: {
+    type: LottoType.POWERBALL,
+    name: 'Powerball',
+    primaryRange: {min: 1, max: 69},
+    primaryCount: 5,
+    secondaryRange: {min: 1, max: 26},
+    secondaryCount: 1,
+  },
+  [LottoType.MEGA_MILLIONS]: {
+    type: LottoType.MEGA_MILLIONS,
+    name: 'Mega Millions',
+    primaryRange: {min: 1, max: 70},
+    primaryCount: 5,
+    secondaryRange: {min: 1, max: 24}, // Changed from 25 to 24 in April 2025
+    secondaryCount: 1,
+  },
+  [LottoType.CASH4LIFE]: {
+    type: LottoType.CASH4LIFE,
+    name: 'Cash4Life',
+    primaryRange: {min: 1, max: 60},
+    primaryCount: 5,
+    secondaryRange: {min: 1, max: 4},
+    secondaryCount: 1,
+  },
 };
 
 /**
@@ -92,87 +117,4 @@ export function getLotteryConfig(lottoType: LottoType): LotteryConfig {
   }
 
   return config;
-}
-
-/**
- * Get the number range for a lottery type
- *
- * @param lottoType - Type of lottery
- * @param useSecondaryNumbers - Whether to get secondary numbers range
- * @param winClass - Win class (for Bingo variants)
- * @returns Number range with start and end values
- *
- * @example
- * getNumberRange(LottoType.EURO, false);  // {start: 1, end: 50}
- * getNumberRange(LottoType.EURO, true);   // {start: 1, end: 12}
- * getNumberRange(LottoType.BINGO, false, 5);  // {start: 31, end: 45} (center)
- */
-export function getNumberRange(
-  lottoType: LottoType,
-  useSecondaryNumbers?: boolean,
-  winClass?: number,
-): {start: number; end: number} {
-  const config = getLotteryConfig(lottoType);
-
-  // Handle Bingo win class variants
-  if (lottoType === LottoType.BINGO && winClass && config.bingoVariants) {
-    if (winClass === config.bingoVariants.center.winClass) {
-      const {min, max} = config.bingoVariants.center;
-      return {start: min, end: max};
-    }
-    if (winClass === config.bingoVariants.corner.winClass) {
-      const {min, max} = config.bingoVariants.corner;
-      return {start: min, end: max};
-    }
-    if (winClass === config.bingoVariants.diagonal.winClass) {
-      const {min, max} = config.bingoVariants.diagonal;
-      return {start: min, end: max};
-    }
-  }
-
-  // Return secondary or primary range
-  const range =
-    useSecondaryNumbers && config.secondaryRange ? config.secondaryRange : config.primaryRange;
-
-  if (!range) {
-    return {start: 0, end: 0};
-  }
-
-  return {start: range.min, end: range.max};
-}
-
-/**
- * Calculate theoretical probability for a single number to appear
- *
- * For a lottery where k numbers are drawn from a range of n numbers,
- * the probability that any specific number appears is: k / n
- *
- * @param config - Lottery configuration
- * @param useSecondaryNumbers - Whether to calculate for secondary numbers (stars/bonus)
- * @returns Theoretical probability (0 to 1)
- *
- * @example
- * // EuroJackpot main numbers: 5 drawn from 1-50
- * const prob = calculateTheoreticalProbability(euroConfig, false);
- * // Returns 5/50 = 0.10 (10%)
- *
- * // EuroJackpot stars: 2 drawn from 1-12
- * const starProb = calculateTheoreticalProbability(euroConfig, true);
- * // Returns 2/12 = 0.167 (16.7%)
- */
-export function calculateTheoreticalProbability(
-  config: LotteryConfig,
-  useSecondaryNumbers: boolean = false,
-): number {
-  if (useSecondaryNumbers) {
-    if (!config.secondaryRange || !config.secondaryCount) {
-      return 0;
-    }
-
-    const range = config.secondaryRange.max - config.secondaryRange.min + 1;
-    return config.secondaryCount / range;
-  }
-
-  const range = config.primaryRange.max - config.primaryRange.min + 1;
-  return config.primaryCount / range;
 }

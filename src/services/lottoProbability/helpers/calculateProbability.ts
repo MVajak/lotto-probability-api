@@ -1,8 +1,12 @@
 import {LottoType, NumberFrequencyStat} from '../../../common/types';
 import {safeBig} from '../../../common/utils/calculations';
+import {
+  calculateLotteryTheoreticalProbability,
+  getNumberRange,
+} from '../../../common/utils/lottery';
 
 import {interpretFrequency} from './interpretation';
-import {calculateTheoreticalProbability, getLotteryConfig, getNumberRange} from './lotteryConfigs';
+import {getLotteryConfig} from './lotteryConfigs';
 
 /**
  * Calculate number statistics with frequency analysis
@@ -44,7 +48,7 @@ export function calculateNumberStatsWithCI(
 
   // Get lottery configuration for theoretical probability
   const config = getLotteryConfig(lottoType);
-  const theoreticalProb = calculateTheoreticalProbability(config, useSecondaryNumbers);
+  const theoreticalProb = calculateLotteryTheoreticalProbability(config, useSecondaryNumbers);
 
   // First pass: Calculate all frequencies for percentile ranking
   const allFrequencies: number[] = [];
@@ -120,7 +124,7 @@ export function calculatePositionalNumberStatsWithCI(
 
   const result: NumberFrequencyStat[] = [];
   const config = getLotteryConfig(lottoType);
-  const theoreticalProb = calculateTheoreticalProbability(config, useSecondaryNumbers);
+  const theoreticalProb = calculateLotteryTheoreticalProbability(config, useSecondaryNumbers);
 
   // Calculate stats for each position and digit
   for (let pos = 0; pos < setLength; pos++) {

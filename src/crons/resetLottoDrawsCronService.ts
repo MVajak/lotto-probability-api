@@ -1,42 +1,32 @@
 import {BindingScope, inject, injectable} from '@loopback/core';
 
-import {EstonianLottoApiClient} from '../clients/EstonianLottoApiClient';
-import {ALL_PROBABILITY_LOTTO} from '../common/types';
-import {PostgresDataSource} from '../datasources/postgres.datasource';
-import {LottoDrawSearchDto} from '../models/LottoNumbers/LottoDrawSearchDto';
-import {CsrfService} from '../services/csrf/csrf.service';
+import {ALL_PROBABILITY_LOTTO, LottoType} from '../common/types';
 import {LoggerService} from '../services/logger/loggerService';
 import {LottoDrawService} from '../services/lottoDraw/lottoDrawService';
 import {LottoDrawResultService} from '../services/lottoDrawResult/lottoDrawResultService';
 
-import {LottoDrawCronService} from './lottoDrawCronService';
-import {LastDrawDate} from './types';
+import {EstonianLottoDrawCronService} from './estonianLottoDrawCronService';
+import {LastDrawDate, LOTTERY_CRON_CONFIG} from './types';
+import {USLottoDrawCronService} from './usLottoDrawCronService';
 
+/**
+ * Service for resetting all lottery draws (deletes and re-fetches)
+ * Used for data cleanup/refresh operations
+ */
 @injectable({scope: BindingScope.SINGLETON})
-export class ResetLottoDrawsCronService extends LottoDrawCronService {
+export class ResetLottoDrawsCronService {
   constructor(
-    @inject('datasources.postgresDS')
-    protected dataSource: PostgresDataSource,
     @inject('services.LoggerService')
-    protected loggerService: LoggerService,
-    @inject('services.CsrfService')
-    protected csrfService: CsrfService,
+    private loggerService: LoggerService,
     @inject('services.LottoDrawService')
-    protected lottoDrawService: LottoDrawService,
+    private lottoDrawService: LottoDrawService,
     @inject('services.LottoDrawResultService')
-    protected lottoDrawResultService: LottoDrawResultService,
-    @inject('clients.EstonianLottoApiClient')
-    protected estonianLottoApiClient: EstonianLottoApiClient,
-  ) {
-    super(
-      dataSource,
-      loggerService,
-      csrfService,
-      lottoDrawService,
-      lottoDrawResultService,
-      estonianLottoApiClient,
-    );
-  }
+    private lottoDrawResultService: LottoDrawResultService,
+    @inject('services.EstonianLottoDrawCronService')
+    private estonianLottoDrawCronService: EstonianLottoDrawCronService,
+    @inject('services.USLottoDrawCronService')
+    private usLottoDrawCronService: USLottoDrawCronService,
+  ) {}
 
   async resetDraws(): Promise<void> {
     this.loggerService.log(`Deleting everything and resaving every draw...`);
@@ -54,14 +44,25 @@ export class ResetLottoDrawsCronService extends LottoDrawCronService {
 
   private async saveAllDraws(): Promise<void> {
     const now = new Date();
-    for (const lottoType of ALL_PROBABILITY_LOTTO) {
-      const payload: LottoDrawSearchDto = {
-        lottoType,
-        dateFrom: new Date(LastDrawDate[lottoType]).toISOString(),
-        dateTo: now.toISOString(),
-      };
 
-      await this.saveDraws(payload);
+    for (const lottoType of ALL_PROBABILITY_LOTTO) {
+      const dateRange = this.getFullHistoryDateRange(lottoType, now);
+      const isEstonian = LOTTERY_CRON_CONFIG[lottoType].region === 'estonian';
+
+      const service = isEstonian ? this.estonianLottoDrawCronService : this.usLottoDrawCronService;
+
+      await service.saveLatestDraws(lottoType, dateRange);
     }
+  }
+
+  /**
+   * Get full history date range for reset operations
+   * Uses LastDrawDate for all lottery types
+   */
+  private getFullHistoryDateRange(lottoType: LottoType, now: Date): {dateFrom: Date; dateTo: Date} {
+    return {
+      dateFrom: new Date(LastDrawDate[lottoType]),
+      dateTo: now,
+    };
   }
 }

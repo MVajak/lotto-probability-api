@@ -3,67 +3,63 @@ import {bind, BindingScope, inject} from '@loopback/core';
 import {schedule, validate} from 'node-cron';
 
 import {config} from '../common/config';
-import {LottoType} from '../common/types';
-import {NewLottoDrawsCronService} from '../crons/newLottoDrawsCronService';
+import {ALL_PROBABILITY_LOTTO, LottoType} from '../common/types';
+import {EstonianLottoDrawCronService} from '../crons/estonianLottoDrawCronService';
 import {ResetLottoDrawsCronService} from '../crons/resetLottoDrawsCronService';
+import {LOTTERY_CRON_CONFIG} from '../crons/types';
+import {USLottoDrawCronService} from '../crons/usLottoDrawCronService';
 
 @bind({scope: BindingScope.SINGLETON})
 export class CronBooter implements Booter {
   constructor(
-    @inject('services.NewLottoDrawsCronService')
-    private newLottoDrawsCronService: NewLottoDrawsCronService,
+    @inject('services.EstonianLottoDrawCronService')
+    private estonianLottoDrawCronService: EstonianLottoDrawCronService,
     @inject('services.ResetLottoDrawsCronService')
     private resetLottoDrawsCronService: ResetLottoDrawsCronService,
+    @inject('services.USLottoDrawCronService')
+    private usLottoDrawCronService: USLottoDrawCronService,
   ) {}
 
   async load(): Promise<void> {
-    await this.saveNewDraws(config.crons.euroJackpotInterval, LottoType.EURO);
-    await this.saveNewDraws(config.crons.vikingLottoInterval, LottoType.VIKINGLOTTO);
-    await this.saveNewDraws(config.crons.bingoLottoInterval, LottoType.BINGO);
-    await this.saveNewDraws(config.crons.jokkerLottoInterval, LottoType.JOKKER);
-    await this.saveNewDraws(config.crons.kenoLottoInterval, LottoType.KENO);
+    // Schedule all lottery crons from single loop
+    for (const lottoType of ALL_PROBABILITY_LOTTO) {
+      this.scheduleLotteryDraws(lottoType);
+    }
 
-    await this.testing();
-    await this.deleteAllAndResave();
+    this.scheduleReset();
   }
 
-  private async testing(): Promise<void> {
-    schedule('* * * * *', async () => {
-      console.log('Scheduled task running at', new Date().toISOString());
-      await this.newLottoDrawsCronService.saveLatestDraws(LottoType.EURO);
-      await this.newLottoDrawsCronService.saveLatestDraws(LottoType.VIKINGLOTTO);
-      // await this.newLottoDrawsCronService.saveLatestDraws(LottoType.BINGO);
-      // await this.newLottoDrawsCronService.saveLatestDraws(LottoType.JOKKER);
-      // await this.newLottoDrawsCronService.saveLatestDraws(LottoType.KENO);
+  private scheduleLotteryDraws(lottoType: LottoType): void {
+    const lotteryConfig = LOTTERY_CRON_CONFIG[lottoType];
+    const cronSchedule = config.crons[lotteryConfig.configKey];
+
+    if (!cronSchedule || cronSchedule === 'off') return;
+
+    if (!validate(cronSchedule)) {
+      throw new Error(`Invalid cron expression for ${lottoType}: ${cronSchedule}`);
+    }
+
+    const service =
+      lotteryConfig.region === 'estonian'
+        ? this.estonianLottoDrawCronService
+        : this.usLottoDrawCronService;
+
+    schedule(cronSchedule, async () => {
+      await service.saveLatestDraws(lottoType);
     });
   }
 
-  private async saveNewDraws(
-    cronScheduleVar: string | undefined,
-    lottoType: LottoType,
-  ): Promise<void> {
-    if (cronScheduleVar && cronScheduleVar !== 'off') {
-      if (!validate(cronScheduleVar)) {
-        throw new Error(`Invalid cron expression for lott ${lottoType}: ${cronScheduleVar}`);
-      }
+  private scheduleReset(): void {
+    const cronSchedule = config.crons.resetDrawsInterval;
 
-      schedule(cronScheduleVar, async () => {
-        await this.newLottoDrawsCronService.saveLatestDraws(lottoType);
-      });
+    if (!cronSchedule || cronSchedule === 'off') return;
+
+    if (!validate(cronSchedule)) {
+      throw new Error(`Invalid cron expression for data reset: ${cronSchedule}`);
     }
-  }
 
-  private async deleteAllAndResave(): Promise<void> {
-    const drawsResetCronSchedule = config.crons.resetDrawsInterval;
-
-    if (drawsResetCronSchedule && drawsResetCronSchedule !== 'off') {
-      if (!validate(drawsResetCronSchedule)) {
-        throw new Error(`Invalid cron expression on data reset: ${drawsResetCronSchedule}`);
-      }
-
-      schedule(drawsResetCronSchedule, async () => {
-        await this.resetLottoDrawsCronService.resetDraws();
-      });
-    }
+    schedule(cronSchedule, async () => {
+      await this.resetLottoDrawsCronService.resetDraws();
+    });
   }
 }

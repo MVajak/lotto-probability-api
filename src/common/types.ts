@@ -1,9 +1,14 @@
 export enum LottoType {
+  // European lotteries
   EURO = 'EURO',
   VIKINGLOTTO = 'VIKINGLOTTO',
   BINGO = 'BINGO',
   KENO = 'KENO',
   JOKKER = 'JOKKER',
+  // US lotteries
+  POWERBALL = 'POWERBALL',
+  MEGA_MILLIONS = 'MEGA_MILLIONS',
+  CASH4LIFE = 'CASH4LIFE',
 }
 
 /**
@@ -67,6 +72,10 @@ export const OVERALL_PROBABILITY_LOTTO = [
   LottoType.VIKINGLOTTO,
   LottoType.KENO,
   LottoType.BINGO,
+  // US lotteries
+  LottoType.POWERBALL,
+  LottoType.MEGA_MILLIONS,
+  LottoType.CASH4LIFE,
 ];
 export const POSITIONAL_PROBABILITY_LOTTO = [LottoType.JOKKER];
 

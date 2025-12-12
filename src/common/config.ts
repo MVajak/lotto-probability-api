@@ -21,10 +21,24 @@ export const config = {
   },
   crons: {
     resetDrawsInterval: process.env.DRAWS_RESET_INTERVAL || 'off',
+    // Estonian lotteries
     euroJackpotInterval: process.env.EURO_JACKPOT_CRON_INTERVAL || 'off',
     vikingLottoInterval: process.env.VIKING_LOTTO_CRON_INTERVAL || 'off',
     bingoLottoInterval: process.env.BINGO_LOTTO_CRON_INTERVAL || 'off',
     jokkerLottoInterval: process.env.JOKKER_LOTTO_CRON_INTERVAL || 'off',
     kenoLottoInterval: process.env.KENO_LOTTO_CRON_INTERVAL || 'off',
+    // US lotteries (~3 hours after draws)
+    // '0 7 * * 0,2,4'
+    powerballInterval: process.env.POWERBALL_CRON_INTERVAL || 'off', // Sun,Tue,Thu 7AM UTC
+    // '0 7 * * 3,6'
+    megaMillionsInterval: process.env.MEGA_MILLIONS_CRON_INTERVAL || 'off', // Wed,Sat 7AM UTC
+    // '0 5 * * *'
+    cash4LifeInterval: process.env.CASH4LIFE_CRON_INTERVAL || 'off', // Daily 5AM UTC
+  },
+  dataNYGov: {
+    baseUrl: 'https://data.ny.gov/resource',
+    powerballResourceId: 'd6yy-54nr',
+    megaMillionsResourceId: '5xaw-6ayf',
+    cash4LifeResourceId: 'kwxv-fwze',
   },
 };

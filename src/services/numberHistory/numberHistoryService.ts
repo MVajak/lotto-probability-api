@@ -3,6 +3,8 @@ import {HttpErrors} from '@loopback/rest';
 import {groupBy} from 'lodash';
 
 import {FrequencyStatus, LottoType} from '../../common/types';
+import {calculateLotteryTheoreticalProbability} from '../../common/utils/lottery';
+import {calculateWilsonConfidenceInterval} from '../../common/utils/statistics';
 import {LottoDraw} from '../../models';
 import {
   DrawOccurrence,
@@ -13,11 +15,7 @@ import {
   TrendAnalysis,
 } from '../../models/LottoNumbers';
 import {LottoDrawRepository, LottoDrawResultRepository} from '../../repositories';
-import {
-  calculateTheoreticalProbability,
-  getLotteryConfig,
-} from '../lottoProbability/helpers/lotteryConfigs';
-import {calculateWilsonConfidenceInterval} from '../lottoProbability/helpers/wilsonConfidenceInterval';
+import {getLotteryConfig} from '../lottoProbability/helpers/lotteryConfigs';
 
 import {calculateAutocorrelation, calculateMarkovChain} from './utils/statisticalAnalysis';
 
@@ -63,7 +61,7 @@ export class NumberHistoryService {
 
     // Calculate statistics
     const config = getLotteryConfig(lottoType as LottoType);
-    const theoreticalProb = calculateTheoreticalProbability(config, useSecondaryNumbers);
+    const theoreticalProb = calculateLotteryTheoreticalProbability(config, useSecondaryNumbers);
 
     const summary = this.calculateSummary(
       number,
