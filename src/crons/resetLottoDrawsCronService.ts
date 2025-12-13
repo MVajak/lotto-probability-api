@@ -1,12 +1,13 @@
 import {BindingScope, inject, injectable} from '@loopback/core';
 
-import {ALL_PROBABILITY_LOTTO, LottoType} from '../common/types';
+import {ALL_PROBABILITY_LOTTO} from '../common/types';
 import {LoggerService} from '../services/logger/loggerService';
 import {LottoDrawService} from '../services/lottoDraw/lottoDrawService';
 import {LottoDrawResultService} from '../services/lottoDrawResult/lottoDrawResultService';
 
 import {EstonianLottoDrawCronService} from './estonianLottoDrawCronService';
-import {LastDrawDate, LOTTERY_CRON_CONFIG} from './types';
+import {LOTTERY_CONFIG} from './types';
+import {UKLottoDrawCronService} from './ukLottoDrawCronService';
 import {USLottoDrawCronService} from './usLottoDrawCronService';
 
 /**
@@ -26,6 +27,8 @@ export class ResetLottoDrawsCronService {
     private estonianLottoDrawCronService: EstonianLottoDrawCronService,
     @inject('services.USLottoDrawCronService')
     private usLottoDrawCronService: USLottoDrawCronService,
+    @inject('services.UKLottoDrawCronService')
+    private ukLottoDrawCronService: UKLottoDrawCronService,
   ) {}
 
   async resetDraws(): Promise<void> {
@@ -46,23 +49,20 @@ export class ResetLottoDrawsCronService {
     const now = new Date();
 
     for (const lottoType of ALL_PROBABILITY_LOTTO) {
-      const dateRange = this.getFullHistoryDateRange(lottoType, now);
-      const isEstonian = LOTTERY_CRON_CONFIG[lottoType].region === 'estonian';
+      const lotteryConfig = LOTTERY_CONFIG[lottoType];
+      const dateRange = {
+        dateFrom: new Date(lotteryConfig.historyStart),
+        dateTo: now,
+      };
 
-      const service = isEstonian ? this.estonianLottoDrawCronService : this.usLottoDrawCronService;
+      const service =
+        lotteryConfig.region === 'estonian'
+          ? this.estonianLottoDrawCronService
+          : lotteryConfig.region === 'us'
+            ? this.usLottoDrawCronService
+            : this.ukLottoDrawCronService;
 
       await service.saveLatestDraws(lottoType, dateRange);
     }
-  }
-
-  /**
-   * Get full history date range for reset operations
-   * Uses LastDrawDate for all lottery types
-   */
-  private getFullHistoryDateRange(lottoType: LottoType, now: Date): {dateFrom: Date; dateTo: Date} {
-    return {
-      dateFrom: new Date(LastDrawDate[lottoType]),
-      dateTo: now,
-    };
   }
 }

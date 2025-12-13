@@ -6,7 +6,8 @@ import {config} from '../common/config';
 import {ALL_PROBABILITY_LOTTO, LottoType} from '../common/types';
 import {EstonianLottoDrawCronService} from '../crons/estonianLottoDrawCronService';
 import {ResetLottoDrawsCronService} from '../crons/resetLottoDrawsCronService';
-import {LOTTERY_CRON_CONFIG} from '../crons/types';
+import {LOTTERY_CONFIG} from '../crons/types';
+import {UKLottoDrawCronService} from '../crons/ukLottoDrawCronService';
 import {USLottoDrawCronService} from '../crons/usLottoDrawCronService';
 
 @bind({scope: BindingScope.SINGLETON})
@@ -18,6 +19,8 @@ export class CronBooter implements Booter {
     private resetLottoDrawsCronService: ResetLottoDrawsCronService,
     @inject('services.USLottoDrawCronService')
     private usLottoDrawCronService: USLottoDrawCronService,
+    @inject('services.UKLottoDrawCronService')
+    private ukLottoDrawCronService: UKLottoDrawCronService,
   ) {}
 
   async load(): Promise<void> {
@@ -30,7 +33,7 @@ export class CronBooter implements Booter {
   }
 
   private scheduleLotteryDraws(lottoType: LottoType): void {
-    const lotteryConfig = LOTTERY_CRON_CONFIG[lottoType];
+    const lotteryConfig = LOTTERY_CONFIG[lottoType];
     const cronSchedule = config.crons[lotteryConfig.configKey];
 
     if (!cronSchedule || cronSchedule === 'off') return;
@@ -42,7 +45,9 @@ export class CronBooter implements Booter {
     const service =
       lotteryConfig.region === 'estonian'
         ? this.estonianLottoDrawCronService
-        : this.usLottoDrawCronService;
+        : lotteryConfig.region === 'us'
+          ? this.usLottoDrawCronService
+          : this.ukLottoDrawCronService;
 
     schedule(cronSchedule, async () => {
       await service.saveLatestDraws(lottoType);

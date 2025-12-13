@@ -97,6 +97,39 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryRange: {min: 1, max: 4},
     secondaryCount: 1,
   },
+  // UK Lotteries
+  [LottoType.UK_EUROMILLIONS]: {
+    type: LottoType.UK_EUROMILLIONS,
+    name: 'UK EuroMillions',
+    primaryRange: {min: 1, max: 50},
+    primaryCount: 5,
+    secondaryRange: {min: 1, max: 12},
+    secondaryCount: 2,
+  },
+  [LottoType.UK_LOTTO]: {
+    type: LottoType.UK_LOTTO,
+    name: 'UK Lotto',
+    primaryRange: {min: 1, max: 59},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 59}, // Bonus ball from same pool
+    secondaryCount: 1,
+  },
+  [LottoType.UK_THUNDERBALL]: {
+    type: LottoType.UK_THUNDERBALL,
+    name: 'Thunderball',
+    primaryRange: {min: 1, max: 39},
+    primaryCount: 5,
+    secondaryRange: {min: 1, max: 14},
+    secondaryCount: 1,
+  },
+  [LottoType.UK_SET_FOR_LIFE]: {
+    type: LottoType.UK_SET_FOR_LIFE,
+    name: 'Set For Life',
+    primaryRange: {min: 1, max: 47},
+    primaryCount: 5,
+    secondaryRange: {min: 1, max: 10},
+    secondaryCount: 1,
+  },
 };
 
 /**

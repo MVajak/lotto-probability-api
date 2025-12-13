@@ -34,6 +34,11 @@ export const config = {
     megaMillionsInterval: process.env.MEGA_MILLIONS_CRON_INTERVAL || 'off', // Wed,Sat 7AM UTC
     // '0 5 * * *'
     cash4LifeInterval: process.env.CASH4LIFE_CRON_INTERVAL || 'off', // Daily 5AM UTC
+    // UK lotteries
+    ukEuroMillionsInterval: process.env.UK_EUROMILLIONS_CRON_INTERVAL || 'off', // Tue,Fri
+    ukLottoInterval: process.env.UK_LOTTO_CRON_INTERVAL || 'off', // Wed,Sat
+    ukThunderballInterval: process.env.UK_THUNDERBALL_CRON_INTERVAL || 'off', // Tue,Wed,Fri,Sat
+    ukSetForLifeInterval: process.env.UK_SET_FOR_LIFE_CRON_INTERVAL || 'off', // Mon,Thu
   },
   dataNYGov: {
     baseUrl: 'https://data.ny.gov/resource',

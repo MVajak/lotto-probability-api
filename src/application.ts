@@ -10,12 +10,14 @@ import path from 'path';
 import {CronBooter} from './boot/cron.boot';
 import {DataNYGovClient} from './clients/DataNYGovClient';
 import {EstonianLottoApiClient} from './clients/EstonianLottoApiClient';
+import {UKLotteryClient} from './clients/UKLotteryClient';
 import {AuthController} from './controllers/authController';
 import {LottoProbabilityController} from './controllers/lottoProbabilityController';
 import {SubscriptionController} from './controllers/subscriptionController';
 import {SubscriptionTierController} from './controllers/subscriptionTierController';
 import {EstonianLottoDrawCronService} from './crons/estonianLottoDrawCronService';
 import {ResetLottoDrawsCronService} from './crons/resetLottoDrawsCronService';
+import {UKLottoDrawCronService} from './crons/ukLottoDrawCronService';
 import {USLottoDrawCronService} from './crons/usLottoDrawCronService';
 import {JWTAuthenticationStrategy} from './middleware/auth.middleware';
 import {AuthService, EmailService, JWTService, MagicLinkService} from './services/auth';
@@ -82,6 +84,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.bind('services.EstonianLottoDrawCronService').toClass(EstonianLottoDrawCronService);
     this.bind('services.ResetLottoDrawsCronService').toClass(ResetLottoDrawsCronService);
     this.bind('services.USLottoDrawCronService').toClass(USLottoDrawCronService);
+    this.bind('services.UKLottoDrawCronService').toClass(UKLottoDrawCronService);
     this.bind('services.JWTService').toClass(JWTService);
     this.bind('services.MagicLinkService').toClass(MagicLinkService);
     this.bind('services.EmailService').toClass(EmailService);
@@ -99,6 +102,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     // Clients
     this.bind('clients.EstonianLottoApiClient').toClass(EstonianLottoApiClient);
     this.bind('clients.DataNYGovClient').toClass(DataNYGovClient);
+    this.bind('clients.UKLotteryClient').toClass(UKLotteryClient);
 
     // Controllers
     this.controller(LottoProbabilityController);
