@@ -11,18 +11,18 @@ async function main() {
   console.log('✅ Lotto Worker started successfully');
   console.log('📅 Cron jobs are now running...');
 
-  // Keep the process alive
-  process.on('SIGINT', async () => {
+  // Handle graceful shutdown
+  const shutdown = async () => {
     console.log('\n🛑 Shutting down Lotto Worker...');
     await app.stop();
     process.exit(0);
-  });
+  };
 
-  process.on('SIGTERM', async () => {
-    console.log('\n🛑 Shutting down Lotto Worker...');
-    await app.stop();
-    process.exit(0);
-  });
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+
+  // Keep the process alive - this interval prevents Node.js from exiting
+  setInterval(() => {}, 1 << 30);
 }
 
 main().catch(err => {
