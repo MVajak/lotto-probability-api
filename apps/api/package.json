@@ -1,0 +1,43 @@
+{
+  "name": "@lotto/api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "lb-tsc",
+    "clean": "lb-clean dist *.tsbuildinfo",
+    "start": "node --env-file=../../.env -r source-map-support/register .",
+    "dev": "nodemon --legacy-watch --watch 'src/**/*.ts' --exec 'node --env-file=../../.env -r ts-node/register -r source-map-support/register' src/index.ts"
+  },
+  "dependencies": {
+    "@lotto/shared": "workspace:*",
+    "@lotto/database": "workspace:*",
+    "@lotto/core": "workspace:*",
+    "@loopback/authentication": "^12.0.9",
+    "@loopback/boot": "^8.0.8",
+    "@loopback/security": "^0.12.8",
+    "@loopback/core": "^7.0.7",
+    "@loopback/repository": "^8.0.7",
+    "@loopback/rest": "^15.0.8",
+    "@loopback/rest-explorer": "^8.0.8",
+    "@loopback/service-proxy": "^8.0.7",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "axios": "^1.9.0",
+    "axios-cookiejar-support": "^6.0.2",
+    "cheerio": "^1.0.0",
+    "tough-cookie": "^5.1.2",
+    "resend": "^4.0.0",
+    "stripe": "^20.0.0",
+    "tslib": "^2.0.0"
+  },
+  "devDependencies": {
+    "@loopback/build": "^12.0.7",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/tough-cookie": "^4.0.5",
+    "nodemon": "^3.1.10",
+    "source-map-support": "^0.5.21",
+    "ts-node": "^10.9.2"
+  }
+}

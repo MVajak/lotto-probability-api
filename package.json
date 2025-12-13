@@ -1,128 +1,34 @@
 {
   "name": "lotto-probability-api",
-  "version": "0.0.1",
-  "description": "Get data from Eesti Loto for different lottos",
-  "keywords": [
-    "loopback-application",
-    "loopback"
-  ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lotto probability API monorepo",
+  "packageManager": "pnpm@10.19.0",
   "engines": {
-    "node": "18 || 20 || 22"
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
   },
   "scripts": {
-    "build": "lb-tsc",
-    "build:watch": "lb-tsc --watch",
-    "lint": "npm run eslint && npm run prettier:check",
-    "lint:fix": "npm run eslint:fix && npm run prettier:fix",
-    "prettier:cli": "lb-prettier \"**/*.ts\" \"**/*.js\"",
-    "prettier:check": "npm run prettier:cli -- -l",
-    "prettier:fix": "npm run prettier:cli -- --write",
-    "eslint": "lb-eslint --report-unused-disable-directives \"src/**/*.ts\" --ignore-pattern \"**/*.d.ts\"",
-    "eslint:fix": "npm run eslint -- --fix",
-    "pretest": "npm run rebuild",
-    "test": "nyc mocha -r ts-node/register \"src/**/tests/**/*.test.ts\"",
-    "coverage:check": "nyc check-coverage --branches 80 --functions 80 --lines 80 --statements 80",
-    "posttest": "npm run lint",
-    "test:dev": "lb-mocha --allow-console-logs dist/__tests__/**/*.js && npm run posttest",
-    "docker:build": "docker build -t lotto-api .",
-    "docker:run": "docker run -p 3000:3000 -d lotto-api",
-    "premigrate": "npm run build",
-    "preopenapi-spec": "npm run build",
-    "openapi-spec": "node ./dist/openapi-spec",
-    "prestart": "npm run rebuild",
-    "start": "node --env-file=.env -r source-map-support/register .",
-    "dev": "nodemon --legacy-watch --watch 'src/**/*.ts' --exec 'node --env-file=.env -r ts-node/register -r source-map-support/register' src/index.ts",
-    "clean": "lb-clean dist *.tsbuildinfo .eslintcache",
-    "rebuild": "npm run clean && npm run build",
+    "dev": "pnpm --parallel --filter @lotto/api --filter @lotto/worker dev",
+    "dev:api": "pnpm --filter @lotto/api dev",
+    "dev:worker": "pnpm --filter @lotto/worker dev",
+    "start:api": "pnpm --filter @lotto/api start",
+    "start:worker": "pnpm --filter @lotto/worker start",
+    "build": "pnpm --recursive build",
+    "clean": "pnpm --recursive clean",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "test": "pnpm --recursive test",
     "migrate": "node-pg-migrate up -c migration.config.js",
     "migrate:create": "node-pg-migrate create -m sql -c migration.config.js",
-    "migrate:up": "node-pg-migrate up",
-    "migrate:down": "node-pg-migrate down"
-  },
-  "nyc": {
-    "extension": [
-      ".ts"
-    ],
-    "include": [
-      "src/**/*.ts"
-    ],
-    "exclude": [
-      "**/*.d.ts",
-      "src/**/tests/**/*.ts",
-      "src/**/constants.ts",
-      "src/sequence.ts",
-      "src/**/types.ts",
-      "src/models/**/*.ts",
-      "src/common/test-utils/*.ts"
-    ],
-    "all": true,
-    "reporter": [
-      "text",
-      "lcov"
-    ],
-    "sourceMap": true,
-    "instrument": true
-  },
-  "repository": {
-    "type": "git",
-    "url": ""
-  },
-  "author": "Mihkel Vajak",
-  "license": "",
-  "files": [
-    "README.md",
-    "dist",
-    "src",
-    "!*/__tests__"
-  ],
-  "dependencies": {
-    "@loopback/authentication": "^6.0.1",
-    "@loopback/boot": "^7.0.14",
-    "@loopback/core": "^6.1.11",
-    "@loopback/repository": "^7.0.14",
-    "@loopback/rest": "^14.0.14",
-    "@loopback/rest-explorer": "^7.0.14",
-    "@loopback/service-proxy": "^7.0.14",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "axios": "^1.9.0",
-    "axios-cookiejar-support": "^6.0.2",
-    "bcryptjs": "^3.0.2",
-    "big.js": "^7.0.1",
-    "cheerio": "^1.0.0",
-    "crypto-js": "^4.2.0",
-    "date-fns": "^4.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "lodash": "^4.17.21",
-    "loopback-connector-postgresql": "^7.2.2",
-    "node-cron": "^4.1.1",
-    "node-fetch": "^3.3.2",
-    "stripe": "^20.0.0",
-    "tough-cookie": "^5.1.2",
-    "tslib": "^2.0.0"
+    "migrate:down": "node-pg-migrate down -c migration.config.js"
   },
   "devDependencies": {
-    "@loopback/build": "^11.0.12",
-    "@loopback/eslint-config": "^15.0.5",
-    "@loopback/testlab": "^7.0.13",
-    "@types/big.js": "^6.2.2",
-    "@types/lodash": "^4.17.17",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^16.18.126",
-    "@types/node-cron": "^3.0.11",
-    "@types/tough-cookie": "^4.0.5",
-    "eslint": "^8.57.1",
-    "eslint-import-resolver-typescript": "^4.4.1",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-simple-import-sort": "^12.1.1",
-    "mocha": "^11.5.0",
+    "@biomejs/biome": "^1.9.4",
     "node-pg-migrate": "^8.0.3",
-    "nodemon": "^3.1.10",
-    "nyc": "^17.1.0",
-    "source-map-support": "^0.5.21",
-    "ts-node": "^10.9.2",
     "typescript": "~5.2.2"
-  }
+  },
+  "author": "Mihkel Vajak",
+  "license": "UNLICENSED"
 }
