@@ -87,10 +87,10 @@ export class USLottoDrawCronService extends AbstractLottoDrawCronService {
         drawDate,
         drawLabel: generateUSLottoDrawLabel(drawDate),
         gameTypeName: LottoType.POWERBALL,
-        externalDrawId: null, // US lotteries don't have external IDs
+        externalDrawId: null,
         results: [
           {
-            winClass: null, // US lotteries don't use win classes
+            winClass: null,
             winningNumber: main,
             secWinningNumber: secondary,
           },

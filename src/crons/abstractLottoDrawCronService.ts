@@ -77,8 +77,8 @@ export abstract class AbstractLottoDrawCronService {
    */
   protected getDefaultDateRange(): {dateFrom: Date; dateTo: Date} {
     const now = new Date();
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000); // subtract 1 day in ms
-    return {dateFrom: yesterday, dateTo: now};
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    return {dateFrom: twentyFourHoursAgo, dateTo: now};
   }
 
   /**

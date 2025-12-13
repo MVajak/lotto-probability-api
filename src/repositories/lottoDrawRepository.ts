@@ -141,7 +141,7 @@ export class LottoDrawRepository extends BaseRepository<
     const sql = `
       INSERT INTO lotto_draw (draw_date, draw_label, external_draw_id, game_type_name, created_at, updated_at)
       VALUES ${values}
-      ON CONFLICT (external_draw_id, draw_label, game_type_name)
+      ON CONFLICT (draw_label, game_type_name)
       DO NOTHING
       RETURNING *;
     `;
