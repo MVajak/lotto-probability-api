@@ -14,7 +14,7 @@ import {
 
 import type {EmailService} from './emailService';
 import type {JWTService} from './jwtService';
-import type {MagicLinkService} from './magicLinkService';
+import type {OTPService} from './otpService';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class AuthService {
@@ -27,17 +27,17 @@ export class AuthService {
     private subscriptionTierRepository: SubscriptionTierRepository,
     @inject('services.JWTService')
     private jwtService: JWTService,
-    @inject('services.MagicLinkService')
-    private magicLinkService: MagicLinkService,
+    @inject('services.OTPService')
+    private otpService: OTPService,
     @inject('services.EmailService')
     private emailService: EmailService,
   ) {}
 
   /**
-   * Request magic link for user (login or signup)
-   * Creates new user if doesn't exist, generates magic link, sends email
+   * Request OTP for user (login or signup)
+   * Creates new user if doesn't exist, generates OTP, sends email
    */
-  async requestMagicLink(
+  async requestOTP(
     email: string,
     ipAddress?: string,
     userAgent?: string,
@@ -61,37 +61,47 @@ export class AuthService {
       console.log(`👤 Existing user login request: ${normalizedEmail}`);
     }
 
-    // Generate and send magic link
-    await this.generateAndSendMagicLink(user.id, normalizedEmail, ipAddress, userAgent);
+    // Generate and send OTP
+    await this.generateAndSendOTP(user.id, normalizedEmail, ipAddress, userAgent);
 
     return {
-      message: 'Magic link sent to your email. Please check your inbox.',
+      message: 'Verification code sent to your email. Please check your inbox.',
       isNewUser,
     };
   }
 
   /**
-   * Verify magic link token and return JWT tokens only
+   * Verify OTP code and return JWT tokens
+   * Requires both email and code for security
    */
-  async verifyMagicLink(token: string, ipAddress?: string): Promise<AuthTokens> {
-    if (!token) {
-      throw new HttpErrors.BadRequest('Token is required');
+  async verifyOTP(email: string, code: string, ipAddress?: string): Promise<AuthTokens> {
+    if (!email || !code) {
+      throw new HttpErrors.BadRequest('Email and verification code are required');
     }
 
-    // Verify token
-    const magicLinkToken = await this.magicLinkService.verifyToken(token);
+    const normalizedEmail = email.toLowerCase();
+    const normalizedCode = code.trim();
 
-    if (!magicLinkToken) {
+    // Find user by email first
+    const user = await this.userRepository.findByEmail(normalizedEmail);
+
+    if (!user) {
       throw new HttpErrors.Unauthorized(
-        'Invalid or expired token. Please request a new magic link.',
+        'Invalid email or verification code. Please try again.',
       );
     }
 
-    // Mark token as used (one-time use)
-    await this.magicLinkService.markTokenAsUsed(magicLinkToken.id);
+    // Verify OTP for this user
+    const otpRecord = await this.otpService.verifyOTP(user.id, normalizedCode);
 
-    // Get user
-    const user = await this.userRepository.findById(magicLinkToken.userId);
+    if (!otpRecord) {
+      throw new HttpErrors.Unauthorized(
+        'Invalid or expired verification code. Please request a new one.',
+      );
+    }
+
+    // Mark OTP as used (one-time use)
+    await this.otpService.markAsUsed(otpRecord.id);
 
     // Activate user on first login
     if (user.userState === 'pending') {
@@ -218,23 +228,22 @@ export class AuthService {
   }
 
   /**
-   * Generate and send magic link email
+   * Generate and send OTP email
    */
-  private async generateAndSendMagicLink(
+  private async generateAndSendOTP(
     userId: string,
     email: string,
     ipAddress?: string,
     userAgent?: string,
   ): Promise<void> {
-    // Generate magic link token
-    const token = await this.magicLinkService.generateToken(userId, ipAddress, userAgent);
+    // Invalidate any pending OTPs for this user (only one active at a time)
+    await this.otpService.invalidatePendingOTPs(userId);
 
-    // Generate magic link URL
-    const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3001';
-    const magicLinkUrl = this.magicLinkService.generateMagicLinkUrl(token.token, baseUrl);
+    // Generate new OTP
+    const otpRecord = await this.otpService.generateOTP(userId, ipAddress, userAgent);
 
-    // Send email
-    await this.emailService.sendMagicLinkEmail(email, magicLinkUrl);
+    // Send email with code
+    await this.emailService.sendOTPEmail(email, otpRecord.token);
   }
 
   /**

@@ -11,7 +11,7 @@ import {ServiceMixin} from '@loopback/service-proxy';
 import {
   LottoDrawRepository,
   LottoDrawResultRepository,
-  MagicLinkTokenRepository,
+  OTPTokenRepository,
   PostgresDataSource,
   SubscriptionHistoryRepository,
   SubscriptionRepository,
@@ -42,7 +42,7 @@ import {
 } from './controllers';
 import {JWTAuthenticationStrategy} from './middleware';
 import {MySequence} from './sequence';
-import {AuthService, CsrfService, EmailService, JWTService, MagicLinkService} from './services';
+import {AuthService, CsrfService, EmailService, JWTService, OTPService} from './services';
 
 export {ApplicationConfig};
 
@@ -71,7 +71,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.repository(SubscriptionRepository);
     this.repository(SubscriptionTierRepository);
     this.repository(SubscriptionHistoryRepository);
-    this.repository(MagicLinkTokenRepository);
+    this.repository(OTPTokenRepository);
 
     // Services - MUST be bound before authentication strategy
     this.bind('services.LottoProbabilityService').toClass(LottoProbabilityService);
@@ -81,7 +81,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.bind('services.CsrfService').toClass(CsrfService);
     this.bind('services.LoggerService').toClass(LoggerService);
     this.bind('services.JWTService').toClass(JWTService);
-    this.bind('services.MagicLinkService').toClass(MagicLinkService);
+    this.bind('services.OTPService').toClass(OTPService);
     this.bind('services.EmailService').toClass(EmailService);
     this.bind('services.AuthService').toClass(AuthService);
     this.bind('services.SubscriptionTierService').toClass(SubscriptionTierService);

@@ -7,7 +7,7 @@ export * from './LottoDrawResult';
 
 // User & Auth models
 export * from './User';
-export * from './MagicLinkToken';
+export * from './OTPToken';
 
 // Subscription models
 export * from './Subscription';

@@ -5,4 +5,4 @@ export * from './userRepository';
 export * from './subscriptionRepository';
 export * from './subscriptionTierRepository';
 export * from './subscriptionHistoryRepository';
-export * from './magicLinkTokenRepository';
+export * from './otpTokenRepository';

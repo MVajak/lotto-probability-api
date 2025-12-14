@@ -5,11 +5,11 @@ import {User} from '../User';
 @model({
   settings: {
     postgresql: {
-      table: 'magic_link_token',
+      table: 'otp_token',
     },
   },
 })
-export class MagicLinkToken extends Entity {
+export class OTPToken extends Entity {
   @property({
     type: 'string',
     id: true,
@@ -70,8 +70,8 @@ export class MagicLinkToken extends Entity {
   createdAt: Date;
 }
 
-export interface MagicLinkTokenRelations {
+export interface OTPTokenRelations {
   user?: User;
 }
 
-export type MagicLinkTokenWithRelations = MagicLinkToken & MagicLinkTokenRelations;
+export type OTPTokenWithRelations = OTPToken & OTPTokenRelations;

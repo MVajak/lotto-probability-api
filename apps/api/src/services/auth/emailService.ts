@@ -20,21 +20,20 @@ export class EmailService {
   }
 
   /**
-   * Send magic link email
+   * Send OTP verification code email
    */
-  async sendMagicLinkEmail(email: string, magicLinkUrl: string): Promise<void> {
+  async sendOTPEmail(email: string, code: string): Promise<void> {
     if (!this.RESEND_API_KEY) {
       // Development mode - log to console
       console.log('\n╔═══════════════════════════════════════════════════════════════════╗');
-      console.log('║  📧  [DEV MODE] Magic Link Email                                 ║');
+      console.log('║  📧  [DEV MODE] OTP Verification Code                             ║');
       console.log('╠═══════════════════════════════════════════════════════════════════╣');
       console.log(`║  To: ${email.padEnd(58)}║`);
       console.log('╠═══════════════════════════════════════════════════════════════════╣');
-      console.log('║  🔗 VERIFY LINK (click or copy to test):                         ║');
       console.log('║                                                                   ║');
-      console.log(`║  ${magicLinkUrl.padEnd(63)}║`);
+      console.log(`║     🔐 Your verification code:  ${code}                          ║`);
       console.log('║                                                                   ║');
-      console.log('║  ⏱  Link expires in 15 minutes                                   ║');
+      console.log('║  ⏱  Code expires in 10 minutes                                   ║');
       console.log('╚═══════════════════════════════════════════════════════════════════╝\n');
       return;
     }
@@ -49,8 +48,8 @@ export class EmailService {
         body: JSON.stringify({
           from: this.FROM_EMAIL,
           to: email,
-          subject: `Log in to ${this.APP_NAME}`,
-          html: this.generateMagicLinkEmailHTML(magicLinkUrl),
+          subject: `${code} is your ${this.APP_NAME} verification code`,
+          html: this.generateOTPEmailHTML(code),
         }),
       });
 
@@ -59,17 +58,17 @@ export class EmailService {
         throw new Error(`Email sending failed: ${response.statusText} - ${errorData}`);
       }
 
-      console.log(`✅ Magic link email sent to ${email}`);
+      console.log(`✅ OTP email sent to ${email}`);
     } catch (error) {
-      console.error('❌ Failed to send magic link email:', error);
+      console.error('❌ Failed to send OTP email:', error);
       throw error;
     }
   }
 
   /**
-   * Generate HTML for magic link email
+   * Generate HTML for OTP email
    */
-  private generateMagicLinkEmailHTML(magicLinkUrl: string): string {
+  private generateOTPEmailHTML(code: string): string {
     return `
       <!DOCTYPE html>
       <html>
@@ -103,20 +102,21 @@ export class EmailService {
             }
             .content {
               padding: 30px 0;
+              text-align: center;
             }
-            .button {
-              display: inline-block;
-              background: #0070f3;
-              color: white !important;
-              padding: 14px 28px;
-              text-decoration: none;
-              border-radius: 6px;
-              font-weight: 500;
-              font-size: 16px;
-              margin: 20px 0;
+            .code-container {
+              background: #f8f9fa;
+              border: 2px dashed #dee2e6;
+              border-radius: 12px;
+              padding: 24px;
+              margin: 24px 0;
             }
-            .button:hover {
-              background: #0051cc;
+            .code {
+              font-size: 36px;
+              font-weight: 700;
+              letter-spacing: 8px;
+              color: #0070f3;
+              font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
             }
             .footer {
               border-top: 1px solid #eee;
@@ -124,15 +124,16 @@ export class EmailService {
               margin-top: 30px;
               color: #666;
               font-size: 14px;
+              text-align: center;
             }
-            .url-fallback {
-              background: #f8f8f8;
+            .warning {
+              background: #fff3cd;
+              border: 1px solid #ffc107;
+              border-radius: 6px;
               padding: 12px;
-              border-radius: 4px;
-              word-break: break-all;
-              font-size: 12px;
-              color: #666;
               margin-top: 20px;
+              font-size: 13px;
+              color: #856404;
             }
           </style>
         </head>
@@ -143,27 +144,22 @@ export class EmailService {
             </div>
 
             <div class="content">
-              <h2>Log in to your account</h2>
-              <p>Click the button below to securely log in to your ${this.APP_NAME} account:</p>
+              <h2>Your verification code</h2>
+              <p>Enter this code to sign in to your account:</p>
 
-              <div style="text-align: center;">
-                <a href="${magicLinkUrl}" class="button">Log in to ${this.APP_NAME}</a>
+              <div class="code-container">
+                <div class="code">${code}</div>
               </div>
 
-              <p style="color: #666; font-size: 14px; margin-top: 30px;">
-                ⏱ This link will expire in <strong>15 minutes</strong>.
-              </p>
-
               <p style="color: #666; font-size: 14px;">
-                If you didn't request this email, you can safely ignore it. No account will be created.
+                ⏱ This code expires in <strong>10 minutes</strong>
               </p>
             </div>
 
             <div class="footer">
-              <p><strong>Having trouble with the button?</strong></p>
-              <p>Copy and paste this URL into your browser:</p>
-              <div class="url-fallback">
-                ${magicLinkUrl}
+              <p>If you didn't request this code, you can safely ignore this email.</p>
+              <div class="warning">
+                ⚠️ Never share this code with anyone. ${this.APP_NAME} will never ask for your code.
               </div>
             </div>
           </div>

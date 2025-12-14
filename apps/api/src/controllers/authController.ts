@@ -1,9 +1,9 @@
 import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
-import {type Request, RestBindings, get, param, post, requestBody} from '@loopback/rest';
+import {type Request, RestBindings, get, post, requestBody} from '@loopback/rest';
 import type {UserProfile} from '@loopback/security';
 
-import type {AuthService} from '../services/auth';
+import type {AuthService} from '../services';
 import type {AuthSubscriptionResponse, AuthTokens, AuthUserResponse} from '../types/auth.types';
 
 export class AuthController {
@@ -15,12 +15,13 @@ export class AuthController {
   ) {}
 
   /**
-   * Request magic link - Step 1 of login/signup
+   * Request OTP - Step 1 of login/signup
+   * Sends a 6-digit verification code to the user's email
    */
-  @post('/auth/request-magic-link')
-  async requestMagicLink(
+  @post('/auth/request-otp')
+  async requestOTP(
     @requestBody({
-      description: 'Request magic link for login/signup',
+      description: 'Request OTP verification code for login/signup',
       required: true,
       content: {
         'application/json': {
@@ -45,18 +46,50 @@ export class AuthController {
     const ipAddress = this.request.ip;
     const userAgent = this.request.get('user-agent') || undefined;
 
-    const result = await this.authService.requestMagicLink(body.email, ipAddress, userAgent);
+    const result = await this.authService.requestOTP(body.email, ipAddress, userAgent);
 
     return {message: result.message};
   }
 
   /**
-   * Verify magic link - Step 2 of login/signup
+   * Verify OTP - Step 2 of login/signup
+   * Validates the 6-digit code and returns JWT tokens
    */
-  @get('/auth/verify')
-  async verifyMagicLink(@param.query.string('token') token: string): Promise<AuthTokens> {
+  @post('/auth/verify-otp')
+  async verifyOTP(
+    @requestBody({
+      description: 'Verify OTP code to complete login/signup',
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['email', 'code'],
+            properties: {
+              email: {
+                type: 'string',
+                format: 'email',
+                description: 'User email address',
+              },
+              code: {
+                type: 'string',
+                minLength: 6,
+                maxLength: 6,
+                pattern: '^[0-9]{6}$',
+                description: '6-digit verification code',
+              },
+            },
+          },
+        },
+      },
+    })
+    body: {
+      email: string;
+      code: string;
+    },
+  ): Promise<AuthTokens> {
     const ipAddress = this.request.ip;
-    return await this.authService.verifyMagicLink(token, ipAddress);
+    return await this.authService.verifyOTP(body.email, body.code, ipAddress);
   }
 
   /**

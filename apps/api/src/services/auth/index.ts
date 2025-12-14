@@ -1,4 +1,4 @@
 export * from './jwtService';
-export * from './magicLinkService';
+export * from './otpService';
 export * from './emailService';
 export * from './authService';

@@ -2,23 +2,23 @@ import {type Getter, inject} from '@loopback/core';
 import {type BelongsToAccessor, DefaultCrudRepository, repository} from '@loopback/repository';
 
 import type {PostgresDataSource} from '../datasources';
-import {MagicLinkToken, type MagicLinkTokenRelations, type User} from '../models';
+import {OTPToken, type OTPTokenRelations, type User} from '../models';
 
 import type {UserRepository} from './userRepository';
 
-export class MagicLinkTokenRepository extends DefaultCrudRepository<
-  MagicLinkToken,
-  typeof MagicLinkToken.prototype.id,
-  MagicLinkTokenRelations
+export class OTPTokenRepository extends DefaultCrudRepository<
+  OTPToken,
+  typeof OTPToken.prototype.id,
+  OTPTokenRelations
 > {
-  public readonly user: BelongsToAccessor<User, typeof MagicLinkToken.prototype.id>;
+  public readonly user: BelongsToAccessor<User, typeof OTPToken.prototype.id>;
 
   constructor(
     @inject('datasources.postgresDS') dataSource: PostgresDataSource,
     @repository.getter('UserRepository')
     protected userRepositoryGetter: Getter<UserRepository>,
   ) {
-    super(MagicLinkToken, dataSource);
+    super(OTPToken, dataSource);
     this.user = this.createBelongsToAccessorFor('user', userRepositoryGetter);
     this.registerInclusionResolver('user', this.user.inclusionResolver);
   }
@@ -26,7 +26,7 @@ export class MagicLinkTokenRepository extends DefaultCrudRepository<
   /**
    * Find valid token (not expired, not used)
    */
-  async findValidToken(token: string): Promise<MagicLinkToken | null> {
+  async findValidToken(token: string): Promise<OTPToken | null> {
     const tokens = await this.find({
       where: {
         token,
@@ -56,7 +56,7 @@ export class MagicLinkTokenRepository extends DefaultCrudRepository<
   }
 
   /**
-   * Delete all tokens for a user (e.g., on logout)
+   * Delete all tokens for a user (e.g., on logout or new OTP request)
    */
   async deleteAllForUser(userId: string): Promise<number> {
     const deleted = await this.deleteAll({userId});
