@@ -1,5 +1,7 @@
 import {model, property} from '@loopback/repository';
 
+import {RequiresTier} from '../../decorators';
+
 /**
  * Timeline entry for visualizing draw history
  */
@@ -309,20 +311,6 @@ export class NumberHistorySummary {
     description: 'Frequency status: frequent, rare, or normal',
   })
   status: 'frequent' | 'rare' | 'normal';
-
-  @property({
-    type: 'object',
-    required: true,
-    description: 'Wilson confidence interval for the frequency (as decimals 0-1)',
-  })
-  confidenceInterval: ConfidenceIntervalDto;
-
-  @property({
-    type: 'object',
-    required: true,
-    description: 'Deviation analysis comparing observed vs expected frequency',
-  })
-  deviation: DeviationAnalysisDto;
 }
 
 /**
@@ -337,24 +325,43 @@ export class NumberHistoryResponseDto {
   })
   summary: NumberHistorySummary;
 
-  @property({
-    type: 'object',
-    required: true,
-    description: 'Trend analysis data for visualizations',
-  })
-  trends: TrendAnalysis;
-
+  @RequiresTier('PRO')
   @property({
     type: 'object',
     required: false,
-    description: 'Autocorrelation analysis (requires sufficient data)',
+    description: 'Trend analysis data for visualizations (PRO+ tier)',
+  })
+  trends?: TrendAnalysis;
+
+  @RequiresTier('PRO')
+  @property({
+    type: 'object',
+    required: false,
+    description: 'Wilson confidence interval for the frequency (PRO+ tier)',
+  })
+  confidenceInterval?: ConfidenceIntervalDto;
+
+  @RequiresTier('PRO')
+  @property({
+    type: 'object',
+    required: false,
+    description: 'Deviation analysis comparing observed vs expected frequency (PRO+ tier)',
+  })
+  deviation?: DeviationAnalysisDto;
+
+  @RequiresTier('PREMIUM')
+  @property({
+    type: 'object',
+    required: false,
+    description: 'Autocorrelation analysis (PREMIUM tier)',
   })
   autocorrelation?: AutocorrelationAnalysis;
 
+  @RequiresTier('PREMIUM')
   @property({
     type: 'object',
     required: false,
-    description: 'Markov chain transition analysis (requires sufficient data)',
+    description: 'Markov chain transition analysis (PREMIUM tier)',
   })
   markovChain?: MarkovChainAnalysis;
 
@@ -366,13 +373,14 @@ export class NumberHistoryResponseDto {
   })
   occurrences: DrawOccurrence[];
 
+  @RequiresTier('PRO')
   @property({
     type: 'array',
     itemType: DrawTimelineEntry,
-    required: true,
-    description: 'Timeline of all draws in period showing when number appeared',
+    required: false,
+    description: 'Timeline of all draws in period showing when number appeared (PRO+ tier)',
   })
-  timeline: DrawTimelineEntry[];
+  timeline?: DrawTimelineEntry[];
 
   @property({
     type: 'string',

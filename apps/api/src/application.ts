@@ -1,7 +1,7 @@
 import path from 'node:path';
 import {AuthenticationComponent, registerAuthenticationStrategy} from '@loopback/authentication';
 import {BootMixin} from '@loopback/boot';
-import {ApplicationConfig} from '@loopback/core';
+import {ApplicationConfig, createBindingFromClass} from '@loopback/core';
 import {RepositoryMixin} from '@loopback/repository';
 import {RestApplication} from '@loopback/rest';
 import {RestExplorerBindings, RestExplorerComponent} from '@loopback/rest-explorer';
@@ -40,6 +40,7 @@ import {
   SubscriptionController,
   SubscriptionTierController,
 } from './controllers';
+import {TierGatingInterceptor} from './interceptors';
 import {JWTAuthenticationStrategy} from './middleware';
 import {MySequence} from './sequence';
 import {AuthService, CsrfService, EmailService, JWTService, OTPService} from './services';
@@ -92,6 +93,9 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.component(AuthenticationComponent);
     // Register JWT authentication strategy
     registerAuthenticationStrategy(this, JWTAuthenticationStrategy);
+
+    // Global interceptors
+    this.add(createBindingFromClass(TierGatingInterceptor, {namespace: 'interceptors'}));
 
     // Clients
     this.bind('clients.EstonianLottoApiClient').toClass(EstonianLottoApiClient);

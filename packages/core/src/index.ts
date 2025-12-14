@@ -22,5 +22,8 @@ export * from './services/subscriptionTier/subscriptionTierService';
 // Models (DTOs)
 export * from './models';
 
+// Decorators
+export * from './decorators';
+
 // Utils
 export * from './utils';

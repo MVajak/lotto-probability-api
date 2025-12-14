@@ -8,8 +8,9 @@ import {
   type LottoType,
   OVERALL_PROBABILITY_LOTTO,
   POSITIONAL_PROBABILITY_LOTTO,
+  type SubscriptionTierCode,
   convertToNumbers,
-  isDateBefore,
+  enforceMinDate,
   safeBig,
 } from '@lotto/shared';
 
@@ -37,7 +38,15 @@ export class LottoProbabilityService {
     private lottoDrawService: LottoDrawService,
   ) {}
 
-  async calculateProbability(data: LottoDrawSearchDto): Promise<LottoProbabilityDto> {
+  async calculateProbability(
+    data: LottoDrawSearchDto,
+    subscriptionTier: SubscriptionTierCode,
+  ): Promise<LottoProbabilityDto> {
+    // Enforce date range based on subscription tier
+    if (data.dateFrom) {
+      data.dateFrom = enforceMinDate(data.dateFrom, subscriptionTier);
+    }
+
     this.validatePayload(data);
     const estonianLottoDraws: LottoDrawRelations[] = await this.lottoDrawService.findDraws(data);
 
@@ -62,18 +71,11 @@ export class LottoProbabilityService {
   }
 
   private validatePayload(payload: LottoDrawSearchDto) {
-    const {lottoType, dateFrom, dateTo} = payload;
+    const {lottoType} = payload;
 
     if (!ALL_PROBABILITY_LOTTO.includes(lottoType)) {
       this.loggerService.logError({
         message: `Lotto type ${lottoType} is not supported.`,
-        errorConstructor: HttpErrors.BadRequest,
-      });
-    }
-
-    if (!isDateBefore(dateFrom, dateTo)) {
-      this.loggerService.logError({
-        message: 'Date data is incorrect.',
         errorConstructor: HttpErrors.BadRequest,
       });
     }

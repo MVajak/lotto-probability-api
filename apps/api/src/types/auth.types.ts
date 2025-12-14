@@ -1,4 +1,13 @@
-import type {Subscription, SubscriptionTierCode, User} from '@lotto/database';
+import type {UserProfile} from '@loopback/security';
+import type {Subscription, User} from '@lotto/database';
+import type {SubscriptionTierCode} from '@lotto/shared';
+
+/**
+ * Extended UserProfile with custom fields from JWT
+ */
+export interface AuthenticatedUser extends UserProfile {
+  subscriptionTier: SubscriptionTierCode;
+}
 
 /**
  * JWT Token Pair

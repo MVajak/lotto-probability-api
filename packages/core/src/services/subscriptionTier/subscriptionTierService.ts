@@ -1,8 +1,9 @@
 import {BindingScope, injectable} from '@loopback/core';
 import {repository} from '@loopback/repository';
 
-import type {SubscriptionTier, SubscriptionTierCode} from '@lotto/database';
+import type {SubscriptionTier} from '@lotto/database';
 import {SubscriptionTierRepository} from '@lotto/database';
+import type {SubscriptionTierCode} from '@lotto/shared';
 
 @injectable({scope: BindingScope.SINGLETON})
 export class SubscriptionTierService {

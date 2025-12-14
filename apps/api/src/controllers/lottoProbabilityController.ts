@@ -1,4 +1,4 @@
-import {authenticate} from '@loopback/authentication';
+import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {getModelSchemaRef, post, requestBody, response} from '@loopback/rest';
 
@@ -7,9 +7,12 @@ import {
   LottoProbabilityDto,
   NumberHistoryRequestDto,
   NumberHistoryResponseDto,
+  TierGatedResponse,
 } from '@lotto/core';
 import type {LottoProbabilityService} from '@lotto/core';
 import type {NumberHistoryService} from '@lotto/core';
+
+import type {AuthenticatedUser} from '../types/auth.types';
 
 export class LottoProbabilityController {
   constructor(
@@ -30,6 +33,7 @@ export class LottoProbabilityController {
     },
   })
   async calculateLottoProbability(
+    @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
     @requestBody({
       content: {
         'application/json': {
@@ -41,10 +45,11 @@ export class LottoProbabilityController {
     })
     data: LottoDrawSearchDto,
   ): Promise<LottoProbabilityDto> {
-    return this.lottoProbabilityService.calculateProbability(data);
+    return this.lottoProbabilityService.calculateProbability(data, currentUser.subscriptionTier);
   }
 
   @authenticate('jwt')
+  @TierGatedResponse(NumberHistoryResponseDto)
   @post('/number-history')
   @response(200, {
     description: 'Historical data for a specific number',
@@ -55,6 +60,7 @@ export class LottoProbabilityController {
     },
   })
   async getNumberHistory(
+    @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
     @requestBody({
       content: {
         'application/json': {
@@ -64,6 +70,6 @@ export class LottoProbabilityController {
     })
     data: NumberHistoryRequestDto,
   ): Promise<NumberHistoryResponseDto> {
-    return this.numberHistoryService.getNumberHistory(data);
+    return this.numberHistoryService.getNumberHistory(data, currentUser.subscriptionTier);
   }
 }

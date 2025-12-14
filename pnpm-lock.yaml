@@ -193,6 +193,9 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
       stripe:
         specifier: ^20.0.0
         version: 20.0.0(@types/node@25.0.1)

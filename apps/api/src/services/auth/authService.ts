@@ -2,8 +2,9 @@ import {BindingScope, inject, injectable} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 
-import type {Subscription, SubscriptionTierCode, User} from '@lotto/database';
+import type {Subscription, User} from '@lotto/database';
 import {SubscriptionRepository, SubscriptionTierRepository, UserRepository} from '@lotto/database';
+import type {SubscriptionTierCode} from '@lotto/shared';
 import {
   type AuthSubscriptionResponse,
   type AuthTokens,
@@ -86,9 +87,7 @@ export class AuthService {
     const user = await this.userRepository.findByEmail(normalizedEmail);
 
     if (!user) {
-      throw new HttpErrors.Unauthorized(
-        'Invalid email or verification code. Please try again.',
-      );
+      throw new HttpErrors.Unauthorized('Invalid email or verification code. Please try again.');
     }
 
     // Verify OTP for this user

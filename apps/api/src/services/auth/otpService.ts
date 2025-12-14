@@ -18,11 +18,7 @@ export class OTPService {
   /**
    * Generate a 6-digit OTP code for a user
    */
-  async generateOTP(
-    userId: string,
-    ipAddress?: string,
-    userAgent?: string,
-  ): Promise<OTPToken> {
+  async generateOTP(userId: string, ipAddress?: string, userAgent?: string): Promise<OTPToken> {
     // Generate cryptographically secure 6-digit code
     const code = this.generateSecureCode();
 
