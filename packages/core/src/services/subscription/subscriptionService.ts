@@ -3,20 +3,10 @@ import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import type Stripe from 'stripe';
 
-import type {
-  Subscription,
-  SubscriptionEventType,
-  SubscriptionStatus,
-  SubscriptionTier,
-  SubscriptionTierCode,
-} from '@lotto/database';
-import {
-  SubscriptionHistoryRepository,
-  SubscriptionRepository,
-  SubscriptionTierRepository,
-  UserRepository,
-} from '@lotto/database';
+import type {Subscription, SubscriptionTier, SubscriptionTierCode} from '@lotto/database';
+import {SubscriptionRepository, SubscriptionTierRepository, UserRepository} from '@lotto/database';
 import type {StripeService} from '../stripe/stripeService';
+import type {SubscriptionHistoryService} from './subscriptionHistoryService';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -51,12 +41,12 @@ export class SubscriptionService {
   constructor(
     @inject('services.StripeService')
     private stripeService: StripeService,
+    @inject('services.SubscriptionHistoryService')
+    private subscriptionHistoryService: SubscriptionHistoryService,
     @repository(SubscriptionRepository)
     private subscriptionRepository: SubscriptionRepository,
     @repository(SubscriptionTierRepository)
     private subscriptionTierRepository: SubscriptionTierRepository,
-    @repository(SubscriptionHistoryRepository)
-    private subscriptionHistoryRepository: SubscriptionHistoryRepository,
     @repository(UserRepository)
     private userRepository: UserRepository,
   ) {}
@@ -160,7 +150,7 @@ export class SubscriptionService {
       return;
     }
 
-    const oldTier = await this.subscriptionTierRepository.findById(subscription.tierId);
+    const oldTierId = subscription.tierId;
 
     const stripeSub = session.subscription
       ? await this.stripeService.getSubscription(session.subscription as string)
@@ -169,18 +159,16 @@ export class SubscriptionService {
     const updateData = this.buildSubscriptionUpdate(newTier, session, stripeSub);
     await this.subscriptionRepository.updateById(subscription.id, updateData);
 
-    await this.createHistoryEntry({
+    await this.subscriptionHistoryService.createEntry({
       subscriptionId: subscription.id,
       userId,
-      eventType: 'upgraded',
-      fromTier: oldTier.code,
-      toTier: newTier.code,
+      oldTierId,
+      newTierId: newTier.id,
       fromStatus: subscription.status,
       toStatus: 'active',
+      eventType: 'upgraded',
       stripeEventId: session.id,
     });
-
-    console.log(`✅ User ${userId} upgraded to ${tierCode}`);
   }
 
   /**
@@ -208,7 +196,6 @@ export class SubscriptionService {
     }
 
     await this.subscriptionRepository.updateById(subscription.id, updateData);
-    console.log(`📝 Subscription ${subscription.id} updated`);
   }
 
   /**
@@ -230,7 +217,7 @@ export class SubscriptionService {
       return;
     }
 
-    const oldTier = await this.subscriptionTierRepository.findById(subscription.tierId);
+    const oldTierId = subscription.tierId;
 
     await this.subscriptionRepository.updateById(subscription.id, {
       tierId: freeTier.id,
@@ -243,18 +230,15 @@ export class SubscriptionService {
       canceledAt: new Date(),
     });
 
-    await this.createHistoryEntry({
+    await this.subscriptionHistoryService.createEntry({
       subscriptionId: subscription.id,
       userId: subscription.userId,
-      eventType: 'downgraded',
-      fromTier: oldTier.code,
-      toTier: 'FREE',
+      oldTierId,
+      newTierId: freeTier.id,
       fromStatus: subscription.status,
       toStatus: 'active',
       stripeEventId: stripeSub.id,
     });
-
-    console.log(`⬇️ Subscription ${subscription.id} downgraded to FREE`);
   }
 
   /**
@@ -277,21 +261,17 @@ export class SubscriptionService {
       status: 'past_due',
     });
 
-    const tier = await this.subscriptionTierRepository.findById(subscription.tierId);
-
-    await this.createHistoryEntry({
+    await this.subscriptionHistoryService.createEntry({
       subscriptionId: subscription.id,
       userId: subscription.userId,
-      eventType: 'payment_failed',
-      fromTier: tier.code,
-      toTier: tier.code,
+      oldTierId: subscription.tierId,
+      newTierId: subscription.tierId,
       fromStatus: subscription.status,
       toStatus: 'past_due',
+      eventType: 'payment_failed',
       reason: 'Payment failed',
       stripeEventId: invoice.id,
     });
-
-    console.log(`⚠️ Payment failed for subscription ${subscription.id}`);
   }
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -384,22 +364,5 @@ export class SubscriptionService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const subscriptionData = (invoice as any).subscription;
     return typeof subscriptionData === 'string' ? subscriptionData : (subscriptionData?.id ?? null);
-  }
-
-  private async createHistoryEntry(data: {
-    subscriptionId: string;
-    userId: string;
-    eventType: SubscriptionEventType;
-    fromTier: SubscriptionTierCode;
-    toTier: SubscriptionTierCode;
-    fromStatus: SubscriptionStatus;
-    toStatus: SubscriptionStatus;
-    stripeEventId?: string;
-    reason?: string;
-  }): Promise<void> {
-    await this.subscriptionHistoryRepository.create({
-      ...data,
-      createdAt: new Date(),
-    });
   }
 }

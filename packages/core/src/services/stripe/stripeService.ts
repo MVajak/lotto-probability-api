@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 
 @injectable({scope: BindingScope.SINGLETON})
 export class StripeService {
-  private stripe: Stripe;
+  private readonly stripe: Stripe;
 
   constructor() {
     const secretKey = process.env.STRIPE_SECRET_KEY;

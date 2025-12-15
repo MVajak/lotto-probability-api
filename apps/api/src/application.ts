@@ -28,6 +28,8 @@ import {
   LottoProbabilityService,
   NumberHistoryService,
   StripeService,
+  SubscriptionAdminService,
+  SubscriptionHistoryService,
   SubscriptionService,
   SubscriptionTierService,
   UKLotteryClient,
@@ -37,6 +39,7 @@ import {
 import {
   AuthController,
   LottoProbabilityController,
+  SubscriptionAdminController,
   SubscriptionController,
   SubscriptionTierController,
 } from './controllers';
@@ -87,7 +90,9 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.bind('services.AuthService').toClass(AuthService);
     this.bind('services.SubscriptionTierService').toClass(SubscriptionTierService);
     this.bind('services.StripeService').toClass(StripeService);
+    this.bind('services.SubscriptionHistoryService').toClass(SubscriptionHistoryService);
     this.bind('services.SubscriptionService').toClass(SubscriptionService);
+    this.bind('services.SubscriptionAdminService').toClass(SubscriptionAdminService);
 
     // Authentication - AFTER services are bound
     this.component(AuthenticationComponent);
@@ -106,6 +111,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.controller(LottoProbabilityController);
     this.controller(AuthController);
     this.controller(SubscriptionController);
+    this.controller(SubscriptionAdminController);
     this.controller(SubscriptionTierController);
 
     this.projectRoot = __dirname;

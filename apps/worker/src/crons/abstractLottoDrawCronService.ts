@@ -106,6 +106,7 @@ export abstract class AbstractLottoDrawCronService {
    * This is ~90% identical between Estonian and US services
    */
   protected async saveLottoData(transformedDraws: TransformedDraw[]): Promise<void> {
+    const lottoType = transformedDraws[0].gameTypeName;
     const transaction = await this.dataSource.beginTransaction(IsolationLevel.READ_COMMITTED);
 
     try {
@@ -128,9 +129,7 @@ export abstract class AbstractLottoDrawCronService {
         newlyInsertedDraws.push(...savedDraws);
       }
 
-      if (newlyInsertedDraws.length > 0) {
-        this.loggerService.log(`Inserted ${newlyInsertedDraws.length} new draws`);
-      }
+      const newDrawsCount = newlyInsertedDraws.length;
 
       // Fetch ALL draws from DB that match the ones from API
       // IMPORTANT: Use the same transaction so we can see the rows we just inserted
@@ -183,21 +182,27 @@ export abstract class AbstractLottoDrawCronService {
       }
 
       // Upsert results - ON CONFLICT DO NOTHING
+      let newResultsCount = 0;
       if (drawResults.length) {
         const resultChunks = chunk(drawResults, config.repository.chunkSize);
-        let totalInserted = 0;
         for (const chunkedItems of resultChunks) {
           const insertedResults = await this.lottoDrawResultService.upsertAll(chunkedItems, {
             transaction,
           });
-          totalInserted += insertedResults.length;
-        }
-        if (totalInserted > 0) {
-          this.loggerService.log(`Inserted ${totalInserted} new draw results`);
+          newResultsCount += insertedResults.length;
         }
       }
 
       await transaction.commit();
+
+      // Log summary
+      if (newDrawsCount > 0 || newResultsCount > 0) {
+        this.loggerService.log(
+          `${lottoType}: Inserted ${newDrawsCount} draws, ${newResultsCount} results`,
+        );
+      } else {
+        this.loggerService.log(`${lottoType}: Already up to date`);
+      }
     } catch (error) {
       await transaction.rollback();
       throw error;

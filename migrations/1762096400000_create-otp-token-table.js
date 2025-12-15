@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 
 exports.up = pgm => {
-  pgm.createTable('magic_link_token', {
+  pgm.createTable('otp_token', {
     id: {
       type: 'uuid',
       primaryKey: true,
@@ -22,22 +22,22 @@ exports.up = pgm => {
   });
 
   // Indexes
-  pgm.createIndex('magic_link_token', 'token', {name: 'idx_magic_link_token_token'});
-  pgm.createIndex('magic_link_token', 'user_id', {name: 'idx_magic_link_token_user_id'});
-  pgm.createIndex('magic_link_token', 'expires_at', {name: 'idx_magic_link_token_expires_at'});
+  pgm.createIndex('otp_token', 'token', {name: 'idx_otp_token_token'});
+  pgm.createIndex('otp_token', 'user_id', {name: 'idx_otp_token_user_id'});
+  pgm.createIndex('otp_token', 'expires_at', {name: 'idx_otp_token_expires_at'});
 
   // Clean up expired tokens automatically (optional - can also do via cron)
   pgm.sql(`
-    CREATE OR REPLACE FUNCTION delete_expired_magic_link_tokens()
+    CREATE OR REPLACE FUNCTION delete_expired_otp_tokens()
     RETURNS void AS $$
     BEGIN
-      DELETE FROM magic_link_token WHERE expires_at < NOW() - INTERVAL '1 day';
+      DELETE FROM otp_token WHERE expires_at < NOW() - INTERVAL '1 day';
     END;
     $$ LANGUAGE plpgsql;
   `);
 };
 
 exports.down = pgm => {
-  pgm.dropFunction('delete_expired_magic_link_tokens', [], {ifExists: true});
-  pgm.dropTable('magic_link_token');
+  pgm.dropFunction('delete_expired_otp_tokens', [], {ifExists: true});
+  pgm.dropTable('otp_token');
 };

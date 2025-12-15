@@ -31,12 +31,12 @@ exports.up = pgm => {
       type: 'varchar(20)',
       notNull: false,
       default: null,
-      check: "from_tier IS NULL OR from_tier IN ('free', 'pro', 'premium')",
+      check: "from_tier IS NULL OR from_tier IN ('FREE', 'PRO', 'PREMIUM')",
     },
     to_tier: {
       type: 'varchar(20)',
       notNull: true,
-      check: "to_tier IN ('free', 'pro', 'premium')",
+      check: "to_tier IN ('FREE', 'PRO', 'PREMIUM')",
     },
     from_status: {
       type: 'varchar(20)',
