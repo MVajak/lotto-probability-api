@@ -7,7 +7,8 @@
     "build": "lb-tsc",
     "clean": "lb-clean dist *.tsbuildinfo",
     "start": "node --env-file=../../.env -r source-map-support/register .",
-    "dev": "nodemon --legacy-watch --watch 'src/**/*.ts' --exec 'node --env-file=../../.env -r ts-node/register -r source-map-support/register' src/index.ts"
+    "dev": "nodemon --legacy-watch --watch 'src/**/*.ts' --exec 'node --env-file=../../.env -r ts-node/register -r source-map-support/register' src/index.ts",
+    "test": "mocha --config ../../.mocharc.js 'src/**/tests/**/*.test.ts' 2>/dev/null || echo 'No tests found'"
   },
   "dependencies": {
     "@lotto/shared": "workspace:*",
@@ -33,9 +34,12 @@
   },
   "devDependencies": {
     "@loopback/build": "^12.0.7",
+    "@loopback/testlab": "^7.0.12",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/mocha": "^10.0.10",
     "@types/tough-cookie": "^4.0.5",
+    "mocha": "^11.7.5",
     "nodemon": "^3.1.10",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2"

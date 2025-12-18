@@ -1,7 +1,17 @@
-import type {AutocorrelationAnalysis, MarkovChainAnalysis} from '../../../models/LottoNumbers';
+import {MIN_DRAWS_FOR_STATISTICS} from '@lotto/shared';
+
+import type {AutocorrelationAnalysis, MarkovChainAnalysis} from '../../../models';
+
+import {
+  CORRELATION_INTERPRETATION_THRESHOLD,
+  GAMBLERS_FALLACY_THRESHOLD_MULTIPLIER,
+  HOT_HAND_THRESHOLD_MULTIPLIER,
+} from './constants';
 
 /**
  * Calculate autocorrelation for a binary time series (appeared/not appeared)
+ *
+ * Uses single-pass variance calculation with the formula: Var(X) = E[X²] - E[X]²
  *
  * @param appearanceSequence - Binary array where 1 = appeared, 0 = not appeared
  * @param maxLag - Maximum lag to calculate (default: 5)
@@ -13,16 +23,20 @@ export function calculateAutocorrelation(
 ): AutocorrelationAnalysis | undefined {
   const n = appearanceSequence.length;
 
-  // Need at least 30 draws for meaningful autocorrelation
-  if (n < 20) {
+  // Need sufficient draws for meaningful autocorrelation
+  if (n < MIN_DRAWS_FOR_STATISTICS) {
     return undefined;
   }
 
-  // Calculate mean
-  const mean = appearanceSequence.reduce((sum, val) => sum + val, 0) / n;
-
-  // Calculate variance
-  const variance = appearanceSequence.reduce((sum, val) => sum + (val - mean) ** 2, 0) / n;
+  // Single-pass calculation for mean and variance using: Var(X) = E[X²] - E[X]²
+  let sum = 0;
+  let sumSquared = 0;
+  for (const val of appearanceSequence) {
+    sum += val;
+    sumSquared += val * val;
+  }
+  const mean = sum / n;
+  const variance = sumSquared / n - mean * mean;
 
   if (variance === 0) {
     // No variance means all values are the same (all 0s or all 1s)
@@ -39,8 +53,12 @@ export function calculateAutocorrelation(
   let hasSignificantCorrelation = false;
   let sumCorrelations = 0;
 
+  // Pre-calculate constants outside the loop
+  const standardError = 1 / Math.sqrt(n);
+  const maxLagLimit = Math.min(maxLag, Math.floor(n / 4));
+
   // Calculate autocorrelation for each lag
-  for (let lag = 1; lag <= Math.min(maxLag, Math.floor(n / 4)); lag++) {
+  for (let lag = 1; lag <= maxLagLimit; lag++) {
     let covariance = 0;
 
     // Calculate covariance at this lag
@@ -51,10 +69,6 @@ export function calculateAutocorrelation(
 
     // Autocorrelation coefficient
     const correlation = covariance / variance;
-
-    // Standard error for testing significance (under null hypothesis of no correlation)
-    // For large samples, standard error ≈ 1/sqrt(n)
-    const standardError = 1 / Math.sqrt(n);
 
     // Calculate z-score and p-value (two-tailed test)
     const zScore = Math.abs(correlation) / standardError;
@@ -82,9 +96,9 @@ export function calculateAutocorrelation(
 
   if (hasSignificantCorrelation) {
     const avgCorrelation = sumCorrelations / lagCorrelations.length;
-    if (avgCorrelation > 0.1) {
+    if (avgCorrelation > CORRELATION_INTERPRETATION_THRESHOLD) {
       interpretation = 'positive_correlation';
-    } else if (avgCorrelation < -0.1) {
+    } else if (avgCorrelation < -CORRELATION_INTERPRETATION_THRESHOLD) {
       interpretation = 'negative_correlation';
     }
   }
@@ -98,6 +112,13 @@ export function calculateAutocorrelation(
 /**
  * Calculate Markov chain transition probabilities
  *
+ * Uses array-based indexing for branch-free transition counting:
+ * - Index formula: current * 2 + next
+ * - transitions[0] = 0→0 (notAppearedToNotAppeared)
+ * - transitions[1] = 0→1 (notAppearedToAppeared)
+ * - transitions[2] = 1→0 (appearedToNotAppeared)
+ * - transitions[3] = 1→1 (appearedToAppeared)
+ *
  * @param appearanceSequence - Binary array where 1 = appeared, 0 = not appeared
  * @param theoreticalProbability - Theoretical probability of appearance
  * @returns Markov chain analysis
@@ -108,31 +129,24 @@ export function calculateMarkovChain(
 ): MarkovChainAnalysis | undefined {
   const n = appearanceSequence.length;
 
-  // Need at least 20 draws for meaningful Markov analysis
-  if (n < 20) {
+  // Need sufficient draws for meaningful Markov analysis
+  if (n < MIN_DRAWS_FOR_STATISTICS) {
     return undefined;
   }
 
-  // Count transitions
-  let appearedToAppeared = 0;
-  let appearedToNotAppeared = 0;
-  let notAppearedToAppeared = 0;
-  let notAppearedToNotAppeared = 0;
-
+  // Count transitions using array indexing (branch-free)
+  // Index: current * 2 + next → [0→0, 0→1, 1→0, 1→1]
+  const transitions = [0, 0, 0, 0];
   for (let i = 0; i < n - 1; i++) {
-    const current = appearanceSequence[i];
-    const next = appearanceSequence[i + 1];
-
-    if (current === 1 && next === 1) {
-      appearedToAppeared++;
-    } else if (current === 1 && next === 0) {
-      appearedToNotAppeared++;
-    } else if (current === 0 && next === 1) {
-      notAppearedToAppeared++;
-    } else {
-      notAppearedToNotAppeared++;
-    }
+    const idx = appearanceSequence[i] * 2 + appearanceSequence[i + 1];
+    transitions[idx]++;
   }
+
+  // Extract counts: [0→0, 0→1, 1→0, 1→1]
+  const notAppearedToNotAppeared = transitions[0];
+  const notAppearedToAppeared = transitions[1];
+  const appearedToNotAppeared = transitions[2];
+  const appearedToAppeared = transitions[3];
 
   // Calculate transition probabilities
   const totalFromAppeared = appearedToAppeared + appearedToNotAppeared;
@@ -151,13 +165,11 @@ export function calculateMarkovChain(
   const steadyStateProbability =
     probNotAppearedToAppeared / (probNotAppearedToAppeared + probAppearedToNotAppeared);
 
-  // Determine interpretation
+  // Determine interpretation using extracted constants
+  const hotHandThreshold = theoreticalProbability * HOT_HAND_THRESHOLD_MULTIPLIER;
+  const gamblersFallacyThreshold = theoreticalProbability * GAMBLERS_FALLACY_THRESHOLD_MULTIPLIER;
+
   let interpretation: 'memoryless' | 'hot_hand' | 'gamblers_fallacy';
-
-  // Compare transition probabilities to theoretical probability
-  const hotHandThreshold = theoreticalProbability * 1.5; // 50% higher
-  const gamblersFallacyThreshold = theoreticalProbability * 0.5; // 50% lower
-
   if (probAppearedToAppeared > hotHandThreshold) {
     interpretation = 'hot_hand';
   } else if (probAppearedToAppeared < gamblersFallacyThreshold) {

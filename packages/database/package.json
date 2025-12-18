@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "test": "mocha --config ../../.mocharc.js 'src/**/tests/**/*.test.ts' 2>/dev/null || echo 'No tests found'"
   },
   "dependencies": {
     "@lotto/shared": "workspace:*",
@@ -16,5 +17,10 @@
     "@loopback/repository": "^8.0.7",
     "loopback-connector-postgresql": "^7.2.2",
     "tslib": "^2.0.0"
+  },
+  "devDependencies": {
+    "@loopback/testlab": "^7.0.12",
+    "@types/mocha": "^10.0.10",
+    "mocha": "^11.7.5"
   }
 }

@@ -5,12 +5,12 @@ import {getModelSchemaRef, post, requestBody, response} from '@loopback/rest';
 import {
   LottoDrawSearchDto,
   LottoProbabilityDto,
-  NumberHistoryRequestDto,
-  NumberHistoryResponseDto,
+  NumberDetailRequestDto,
+  NumberDetailResponseDto,
   TierGatedResponse,
 } from '@lotto/core';
 import type {LottoProbabilityService} from '@lotto/core';
-import type {NumberHistoryService} from '@lotto/core';
+import type {NumberDetailService} from '@lotto/core';
 
 import type {AuthenticatedUser} from '../types/auth.types';
 
@@ -18,8 +18,8 @@ export class LottoProbabilityController {
   constructor(
     @inject('services.LottoProbabilityService')
     private lottoProbabilityService: LottoProbabilityService,
-    @inject('services.NumberHistoryService')
-    private numberHistoryService: NumberHistoryService,
+    @inject('services.NumberDetailService')
+    private numberDetailService: NumberDetailService,
   ) {}
 
   @authenticate('jwt')
@@ -49,27 +49,27 @@ export class LottoProbabilityController {
   }
 
   @authenticate('jwt')
-  @TierGatedResponse(NumberHistoryResponseDto)
-  @post('/number-history')
+  @TierGatedResponse(NumberDetailResponseDto)
+  @post('/number-detail')
   @response(200, {
-    description: 'Historical data for a specific number',
+    description: 'Comprehensive statistics for a specific number',
     content: {
       'application/json': {
-        schema: getModelSchemaRef(NumberHistoryResponseDto),
+        schema: getModelSchemaRef(NumberDetailResponseDto),
       },
     },
   })
-  async getNumberHistory(
+  async getNumberDetail(
     @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(NumberHistoryRequestDto),
+          schema: getModelSchemaRef(NumberDetailRequestDto),
         },
       },
     })
-    data: NumberHistoryRequestDto,
-  ): Promise<NumberHistoryResponseDto> {
-    return this.numberHistoryService.getNumberHistory(data, currentUser.subscriptionTier);
+    data: NumberDetailRequestDto,
+  ): Promise<NumberDetailResponseDto> {
+    return this.numberDetailService.getNumberDetail(data, currentUser.subscriptionTier);
   }
 }

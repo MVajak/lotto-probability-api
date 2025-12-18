@@ -14,7 +14,7 @@ export * from './services/logger/loggerService';
 export * from './services/lottoDraw/lottoDrawService';
 export * from './services/lottoDrawResult/lottoDrawResultService';
 export * from './services/lottoProbability/lottoProbabilityService';
-export * from './services/numberHistory/numberHistoryService';
+export * from './services/numberDetail/numberDetailService';
 export * from './services/stripe/stripeService';
 export * from './services/subscription';
 export * from './services/subscriptionTier/subscriptionTierService';

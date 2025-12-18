@@ -35,7 +35,8 @@ export class SubscriptionHistoryService {
     ]);
 
     const eventType =
-      data.eventType ?? this.determineEventType(oldTier.code, oldTier.price, newTier.code, newTier.price);
+      data.eventType ??
+      this.determineEventType(oldTier.code, oldTier.price, newTier.code, newTier.price);
 
     await this.subscriptionHistoryRepository.create({
       subscriptionId: data.subscriptionId,

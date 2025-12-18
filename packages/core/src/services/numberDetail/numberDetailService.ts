@@ -1,6 +1,6 @@
 import {BindingScope, inject, injectable} from '@loopback/core';
 import {HttpErrors} from '@loopback/rest';
-import {groupBy} from 'lodash';
+import {groupBy, keyBy} from 'lodash';
 
 import type {
   LottoDraw,
@@ -10,30 +10,38 @@ import type {
 } from '@lotto/database';
 import type {LottoType, SubscriptionTierCode} from '@lotto/shared';
 
-import {calculateWilsonConfidenceInterval, enforceMinDate, hasFeature} from '@lotto/shared';
+import {
+  MIN_DRAWS_FOR_STATISTICS,
+  calculateWilsonConfidenceInterval,
+  enforceMinDate,
+  hasFeature,
+} from '@lotto/shared';
 import type {
   ConfidenceIntervalDto,
   DeviationAnalysisDto,
   DrawOccurrence,
-  NumberHistoryRequestDto,
-  NumberHistoryResponseDto,
+  NumberDetailRequestDto,
+  NumberDetailResponseDto,
 } from '../../models';
 import {calculateLotteryTheoreticalProbability} from '../../utils';
 import {getLotteryConfig} from '../lottoProbability/helpers/lotteryConfigs';
 
 import {
   buildAppearanceSequence,
+  buildNumberSummary,
   buildTimeline,
   calculateAutocorrelation,
   calculateConfidenceIntervalDto,
   calculateDeviationAnalysis,
   calculateMarkovChain,
-  calculateNumberSummary,
+  calculateMonteCarloSimulation,
+  calculatePairAnalysis,
+  calculateSeasonalPatterns,
   calculateTrendAnalysis,
 } from './utils';
 
 @injectable({scope: BindingScope.TRANSIENT})
-export class NumberHistoryService {
+export class NumberDetailService {
   constructor(
     @inject('repositories.LottoDrawRepository')
     protected lottoDrawRepository: LottoDrawRepository,
@@ -42,16 +50,16 @@ export class NumberHistoryService {
   ) {}
 
   /**
-   * Get historical data for a specific number within a date range
+   * Get detailed analysis for a specific number within a date range
    *
    * @param request - Request containing number, lottery type, and date range
    * @param subscriptionTier - User's subscription tier for feature gating
-   * @returns Historical data with statistics and all draw occurrences
+   * @returns Detailed analysis with statistics and all draw occurrences
    */
-  async getNumberHistory(
-    request: NumberHistoryRequestDto,
+  async getNumberDetail(
+    request: NumberDetailRequestDto,
     subscriptionTier: SubscriptionTierCode,
-  ): Promise<NumberHistoryResponseDto> {
+  ): Promise<NumberDetailResponseDto> {
     const {lottoType, number, dateFrom, dateTo, useSecondaryNumbers, position} = request;
 
     // Validate inputs
@@ -91,13 +99,24 @@ export class NumberHistoryService {
       0.95,
     );
 
+    // Create lookup of draw IDs where the number appeared for O(1) access
+    const drawsWithNumberById = keyBy(drawsWithNumber, 'id');
+
+    // Calculate last seen information
+    const lastSeen = this.calculateLastSeenForNumber(
+      allDrawsInPeriod,
+      drawsWithNumber,
+      drawsWithNumberById,
+    );
+
     // Calculate summary
-    const summary = calculateNumberSummary(
+    const summary = buildNumberSummary(
       number,
       drawsWithNumber.length,
       totalDraws.count,
       theoreticalProb,
       wilsonCI,
+      lastSeen,
     );
 
     // Build appearance sequence once for all analyses
@@ -115,31 +134,58 @@ export class NumberHistoryService {
         )
       : undefined;
 
-    // PRO+ tier features: Wilson CI and Deviation analysis
     let confidenceInterval: ConfidenceIntervalDto | undefined;
     let deviation: DeviationAnalysisDto | undefined;
 
+    // PRO+ tier features: Wilson CI
     if (hasFeature(subscriptionTier, 'WILSON_CI')) {
-      // Reuse Wilson CI from summary calculation (no duplicate computation)
       confidenceInterval = calculateConfidenceIntervalDto(wilsonCI);
     }
 
+    // PRO+ tier features: Deviation analysis
     if (hasFeature(subscriptionTier, 'STD_DEVIATION')) {
       deviation = calculateDeviationAnalysis(frequency, theoreticalProb, confidenceInterval);
     }
 
-    // PREMIUM tier features: Autocorrelation and Markov Chain analysis
+    // PRO+ tier feature: Timeline showing all draws with appearance flag
+    const timeline = hasFeature(subscriptionTier, 'TIMELINE')
+      ? buildTimeline(allDrawsInPeriod, drawsWithNumber)
+      : undefined;
+
+    // PREMIUM tier features: Autocorrelation
     const autocorrelation = hasFeature(subscriptionTier, 'AUTOCORRELATION')
       ? calculateAutocorrelation(appearanceSequence)
       : undefined;
 
+    // PREMIUM tier features: Markov Chain analysis
     const markovChain = hasFeature(subscriptionTier, 'MARKOV_CHAIN')
       ? calculateMarkovChain(appearanceSequence, theoreticalProb)
       : undefined;
 
-    // PRO+ tier feature: Timeline showing all draws with appearance flag
-    const timeline = hasFeature(subscriptionTier, 'TIMELINE')
-      ? buildTimeline(allDrawsInPeriod, drawsWithNumber)
+    // PREMIUM tier feature: Pair analysis
+    const pairAnalysis = hasFeature(subscriptionTier, 'PAIR_ANALYSIS')
+      ? await this.calculatePairAnalysisWithAllDraws(
+          number,
+          allDrawsInPeriod,
+          drawsWithNumber,
+          totalDraws.count,
+          useSecondaryNumbers,
+        )
+      : undefined;
+
+    // PREMIUM tier feature: Monte Carlo simulation
+    const monteCarlo = hasFeature(subscriptionTier, 'MONTE_CARLO')
+      ? calculateMonteCarloSimulation(drawsWithNumber.length, totalDraws.count, theoreticalProb)
+      : undefined;
+
+    // PREMIUM tier feature: Seasonal patterns
+    const seasonalPatterns = hasFeature(subscriptionTier, 'SEASONAL_PATTERNS')
+      ? calculateSeasonalPatterns(
+          allDrawsInPeriod.map(draw => ({
+            drawDate: draw.drawDate,
+            hasSearchedNumber: Boolean(drawsWithNumberById[draw.id]),
+          })),
+        )
       : undefined;
 
     return {
@@ -149,6 +195,9 @@ export class NumberHistoryService {
       deviation,
       autocorrelation,
       markovChain,
+      pairAnalysis,
+      monteCarlo,
+      seasonalPatterns,
       occurrences,
       timeline,
       periodStart: enforcedDateFrom,
@@ -275,12 +324,120 @@ export class NumberHistoryService {
   }
 
   /**
+   * Calculate last seen information for the searched number
+   *
+   * @param allDrawsInPeriod - All draws ordered by date ASC
+   * @param drawsWithNumber - Draws where the number appeared
+   * @param drawsWithNumberById - Pre-computed lookup for O(1) access
+   * @returns LastSeenInput with drawsAgo and date
+   */
+  private calculateLastSeenForNumber(
+    allDrawsInPeriod: LottoDraw[],
+    drawsWithNumber: LottoDraw[],
+    drawsWithNumberById: Record<string, LottoDraw>,
+  ): {drawsAgo: number; date: string | null} {
+    const totalDraws = allDrawsInPeriod.length;
+
+    if (totalDraws === 0 || drawsWithNumber.length === 0) {
+      // Number never appeared or no draws in period
+      return {
+        drawsAgo: totalDraws,
+        date: null,
+      };
+    }
+
+    // Iterate from the end (most recent) to find the most recent appearance
+    for (let i = totalDraws - 1; i >= 0; i--) {
+      const draw = allDrawsInPeriod[i];
+      if (drawsWithNumberById[draw.id]) {
+        // Found the most recent appearance
+        // drawsAgo = number of draws after this one = (totalDraws - 1) - i
+        return {
+          drawsAgo: totalDraws - 1 - i,
+          date: draw.drawDate.toISOString(),
+        };
+      }
+    }
+
+    // Number never appeared (shouldn't reach here if drawsWithNumber.length > 0)
+    return {
+      drawsAgo: totalDraws,
+      date: null,
+    };
+  }
+
+  /**
+   * Calculate pair analysis with ALL draws in the period.
+   * This correctly uses primary OR secondary numbers based on useSecondaryNumbers flag.
+   *
+   * @param searchNumber - The number being analyzed
+   * @param allDrawsInPeriod - All draws in the period
+   * @param drawsWithNumber - Draws where the searched number appeared
+   * @param totalDrawsCount - Total number of draws
+   * @param useSecondaryNumbers - Whether to analyze secondary numbers pool
+   * @returns Pair analysis or undefined if insufficient data
+   */
+  private async calculatePairAnalysisWithAllDraws(
+    searchNumber: number,
+    allDrawsInPeriod: LottoDraw[],
+    drawsWithNumber: LottoDraw[],
+    totalDrawsCount: number,
+    useSecondaryNumbers?: boolean,
+  ) {
+    // Early exit: check draw count before any expensive operations
+    if (totalDrawsCount < MIN_DRAWS_FOR_STATISTICS) {
+      return undefined;
+    }
+
+    // Fetch results for ALL draws in the period
+    const allDrawIds = allDrawsInPeriod.map(draw => draw.id);
+    const allDrawResults = await this.lottoDrawResultRepository.find({
+      where: {drawId: {inq: allDrawIds}},
+      order: ['drawId ASC', 'winClass ASC'],
+    });
+
+    // Group results by draw ID
+    const resultsByDrawId = groupBy(allDrawResults, 'drawId');
+
+    // Create a Set of draw IDs where the searched number appeared for O(1) lookup
+    const drawsWithNumberIds = new Set(drawsWithNumber.map(d => d.id));
+
+    // Build draw data for pair analysis using the CORRECT number pool
+    const drawsData = allDrawsInPeriod.map(draw => {
+      const drawResults = resultsByDrawId[draw.id] || [];
+      const numbers: number[] = [];
+
+      for (const result of drawResults) {
+        // Use secondary numbers if useSecondaryNumbers is true, otherwise primary
+        const numberSource = useSecondaryNumbers ? result.secWinningNumber : result.winningNumber;
+
+        if (numberSource) {
+          const parts = numberSource.split(',');
+          for (const part of parts) {
+            const num = Number.parseInt(part, 10);
+            if (!Number.isNaN(num)) {
+              numbers.push(num);
+            }
+          }
+        }
+      }
+
+      return {
+        numbers,
+        hasSearchedNumber: drawsWithNumberIds.has(draw.id),
+      };
+    });
+
+    return calculatePairAnalysis(searchNumber, drawsData, totalDrawsCount);
+  }
+
+  /**
    * Validate request parameters
    *
    * @param request - Request to validate
    * @throws HttpErrors.BadRequest if validation fails
    */
-  private validateRequest(request: Pick<NumberHistoryRequestDto, 'dateFrom' | 'dateTo'>): void {
+  private validateRequest(request: Pick<NumberDetailRequestDto, 'dateFrom' | 'dateTo'>): void {
     const {dateFrom, dateTo} = request;
 
     // Validate dates

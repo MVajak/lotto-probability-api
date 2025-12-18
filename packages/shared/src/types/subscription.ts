@@ -1,16 +1,21 @@
 /**
  * Subscription tier codes
- * Note: This is defined in shared so it can be used by both API and UI
  */
 export type SubscriptionTierCode = 'FREE' | 'PRO' | 'PREMIUM';
 
 /**
- * Features that can be gated by subscription tier
+ * All subscription features stored in the database.
+ * This is the single source of truth for feature names.
  */
 export type SubscriptionFeature =
+  // PRO tier analysis features
   | 'TIMELINE'
   | 'TRENDS'
   | 'WILSON_CI'
   | 'STD_DEVIATION'
+  // PREMIUM tier analysis features
   | 'MARKOV_CHAIN'
-  | 'AUTOCORRELATION';
+  | 'AUTOCORRELATION'
+  | 'PAIR_ANALYSIS'
+  | 'MONTE_CARLO'
+  | 'SEASONAL_PATTERNS';

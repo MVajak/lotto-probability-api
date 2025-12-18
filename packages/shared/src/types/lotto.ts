@@ -65,6 +65,9 @@ export interface NumberFrequencyStat {
 
   // Structured interpretation (i18n-friendly)
   interpretation: FrequencyInterpretation;
+
+  // Rank by frequency (1 = most frequent)
+  rank: number;
 }
 
 export enum DateFormat {

@@ -1,7 +1,8 @@
 import {Entity, belongsTo, model, property} from '@loopback/repository';
 
+import type {SubscriptionTierCode} from '@lotto/shared';
+
 import {Subscription, type SubscriptionStatus} from '../Subscription';
-import type {SubscriptionTierCode} from '../SubscriptionTier';
 import {User} from '../User';
 
 export type SubscriptionEventType =

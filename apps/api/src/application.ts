@@ -26,7 +26,7 @@ import {
   LottoDrawResultService,
   LottoDrawService,
   LottoProbabilityService,
-  NumberHistoryService,
+  NumberDetailService,
   StripeService,
   SubscriptionAdminService,
   SubscriptionHistoryService,
@@ -79,7 +79,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
 
     // Services - MUST be bound before authentication strategy
     this.bind('services.LottoProbabilityService').toClass(LottoProbabilityService);
-    this.bind('services.NumberHistoryService').toClass(NumberHistoryService);
+    this.bind('services.NumberDetailService').toClass(NumberDetailService);
     this.bind('services.LottoDrawService').toClass(LottoDrawService);
     this.bind('services.LottoDrawResultService').toClass(LottoDrawResultService);
     this.bind('services.CsrfService').toClass(CsrfService);

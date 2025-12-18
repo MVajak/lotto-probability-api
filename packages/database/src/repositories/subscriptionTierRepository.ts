@@ -1,12 +1,10 @@
 import {inject} from '@loopback/core';
 import {DefaultCrudRepository} from '@loopback/repository';
 
+import type {SubscriptionTierCode} from '@lotto/shared';
+
 import type {PostgresDataSource} from '../datasources';
-import {
-  SubscriptionTier,
-  type SubscriptionTierCode,
-  type SubscriptionTierRelations,
-} from '../models';
+import {SubscriptionTier, type SubscriptionTierRelations} from '../models';
 
 export class SubscriptionTierRepository extends DefaultCrudRepository<
   SubscriptionTier,

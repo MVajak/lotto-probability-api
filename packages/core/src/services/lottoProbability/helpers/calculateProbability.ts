@@ -1,7 +1,8 @@
 import type {LottoType, NumberFrequencyStat} from '@lotto/shared';
 import {safeBig} from '@lotto/shared';
-import {calculateLotteryTheoreticalProbability, getNumberRange} from '../../../utils/lottery';
+import {calculateLotteryTheoreticalProbability, getNumberRange} from '../../../utils';
 
+import {calculateRank} from '../utils';
 import {interpretFrequency} from './interpretation';
 import {getLotteryConfig} from './lotteryConfigs';
 
@@ -13,7 +14,7 @@ import {getLotteryConfig} from './lotteryConfigs';
  * - User-friendly interpretation (frequent/rare/normal)
  *
  * Note: Detailed statistical data (confidence intervals, deviation analysis)
- * is available via the /number-history endpoint for individual numbers.
+ * is available via the /number-detail endpoint for individual numbers.
  *
  * @param numbers - Array of numbers that appeared
  * @param lottoType - Type of lottery
@@ -47,18 +48,23 @@ export function calculateNumberStatsWithCI(
   const config = getLotteryConfig(lottoType);
   const theoreticalProb = calculateLotteryTheoreticalProbability(config, useSecondaryNumbers);
 
-  // First pass: Calculate all frequencies for percentile ranking
+  // First pass: Calculate all frequencies for percentile ranking and rank calculation
+  const frequencyMap = new Map<number, number>();
   const allFrequencies: number[] = [];
   for (let digit = start; digit <= end; digit++) {
     const count = countMap.get(digit) || 0;
     const frequency = totalDraws > 0 ? count / totalDraws : 0;
+    frequencyMap.set(digit, frequency);
     allFrequencies.push(frequency);
   }
+
+  // Calculate ranks for all numbers
+  const rankMap = calculateRank(frequencyMap);
 
   // Second pass: Calculate stats for each possible number
   for (let digit = start; digit <= end; digit++) {
     const count = countMap.get(digit) || 0;
-    const frequency = totalDraws > 0 ? count / totalDraws : 0;
+    const frequency = frequencyMap.get(digit) || 0;
 
     // Get user-friendly interpretation based on percentile ranking
     const interpretation = interpretFrequency(
@@ -76,6 +82,7 @@ export function calculateNumberStatsWithCI(
       totalDraws,
       frequency,
       interpretation,
+      rank: rankMap.get(digit) || 0,
     });
   }
 
@@ -88,7 +95,7 @@ export function calculateNumberStatsWithCI(
  * For positional lotteries (like Jokker), analyze each position separately
  *
  * Note: Detailed statistical data (confidence intervals, deviation analysis)
- * is available via the /number-history endpoint for individual numbers.
+ * is available via the /number-detail endpoint for individual numbers.
  *
  * @param sets - Array of number sets (each draw)
  * @param lottoType - Type of lottery
@@ -128,18 +135,23 @@ export function calculatePositionalNumberStatsWithCI(
     const totalAtPosition = sets.length;
     const {start, end} = getNumberRange(lottoType, useSecondaryNumbers);
 
-    // First pass: Calculate all frequencies for this position for percentile ranking
+    // First pass: Calculate all frequencies for this position for percentile ranking and rank
+    const frequencyMapAtPosition = new Map<number, number>();
     const allFrequenciesAtPosition: number[] = [];
     for (let digit = start; digit <= end; digit++) {
       const count = digitCounts[pos].get(digit) ?? 0;
       const frequency = count / totalAtPosition;
+      frequencyMapAtPosition.set(digit, frequency);
       allFrequenciesAtPosition.push(frequency);
     }
+
+    // Calculate ranks for all numbers at this position
+    const rankMapAtPosition = calculateRank(frequencyMapAtPosition);
 
     // Second pass: Calculate stats for each digit at this position
     for (let digit = start; digit <= end; digit++) {
       const count = digitCounts[pos].get(digit) ?? 0;
-      const frequency = count / totalAtPosition;
+      const frequency = frequencyMapAtPosition.get(digit) ?? 0;
 
       // Get interpretation based on percentile ranking
       const interpretation = interpretFrequency(
@@ -157,6 +169,7 @@ export function calculatePositionalNumberStatsWithCI(
         totalDraws: totalAtPosition,
         frequency,
         interpretation,
+        rank: rankMapAtPosition.get(digit) || 0,
       });
     }
   }

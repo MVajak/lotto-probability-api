@@ -87,27 +87,22 @@ export function calculateTrendAnalysis(
 
   // Calculate streaks (consecutive draws where number appeared)
   // Using appearanceSequence which is a binary array [0,1,0,1,1,0,1,0,1]
-  let currentStreak = 0;
+  // Single pass: track longest streak and current streak simultaneously
   let longestStreak = 0;
   let tempStreak = 0;
 
   for (const appeared of appearanceSequence) {
     if (appeared === 1) {
       tempStreak++;
-      longestStreak = Math.max(longestStreak, tempStreak);
+      if (tempStreak > longestStreak) {
+        longestStreak = tempStreak;
+      }
     } else {
       tempStreak = 0;
     }
   }
-
-  // Current streak: count consecutive 1s from the end
-  for (let i = appearanceSequence.length - 1; i >= 0; i--) {
-    if (appearanceSequence[i] === 1) {
-      currentStreak++;
-    } else {
-      break;
-    }
-  }
+  // After the loop, tempStreak holds the trailing streak count (current streak)
+  const currentStreak = tempStreak;
 
   // Calculate time series (monthly aggregates)
   const timeSeries = calculateTimeSeries(
@@ -128,6 +123,14 @@ export function calculateTrendAnalysis(
   };
 }
 
+/** Precomputed zero-padded month strings to avoid repeated padStart calls */
+const PADDED_MONTHS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+
+/** Generate month key in YYYY-MM format */
+function toMonthKey(year: number, month: number): string {
+  return `${year}-${PADDED_MONTHS[month]}`;
+}
+
 /**
  * Calculate monthly time series data for charting.
  * Aggregates appearances by month and compares to expected value.
@@ -146,10 +149,6 @@ export function calculateTimeSeries(
   totalDraws: number,
   theoreticalProb: number,
 ): TimeSeriesEntry[] {
-  // Use plain object instead of Map for better performance
-  const monthlyData: Record<string, {appearances: number; expectedAppearances: number}> = {};
-
-  // Initialize all months in the range
   const startDate = new Date(startTime);
   const endDate = new Date(endTime);
   const startYear = startDate.getFullYear();
@@ -162,12 +161,17 @@ export function calculateTimeSeries(
   const expectedPerMonth = totalMonths > 0 ? (totalDraws * theoreticalProb) / totalMonths : 0;
   const roundedExpected = Math.round(expectedPerMonth * 100) / 100;
 
-  // Initialize months
+  // Build result array directly (already in chronological order)
+  // Use Map for O(1) lookup during occurrence counting
+  const monthIndexMap = new Map<string, number>();
+  const result: TimeSeriesEntry[] = new Array(totalMonths);
+
   let year = startYear;
   let month = startMonth;
   for (let i = 0; i < totalMonths; i++) {
-    const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
-    monthlyData[monthKey] = {appearances: 0, expectedAppearances: roundedExpected};
+    const monthKey = toMonthKey(year, month);
+    monthIndexMap.set(monthKey, i);
+    result[i] = {month: monthKey, appearances: 0, expectedAppearances: roundedExpected};
 
     month++;
     if (month > 11) {
@@ -176,22 +180,15 @@ export function calculateTimeSeries(
     }
   }
 
-  // Count appearances per month
+  // Count appearances per month using direct index lookup
   for (const occurrence of occurrences) {
     const date = occurrence.drawDate;
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const data = monthlyData[monthKey];
-    if (data) {
-      data.appearances++;
+    const monthKey = toMonthKey(date.getFullYear(), date.getMonth());
+    const idx = monthIndexMap.get(monthKey);
+    if (idx !== undefined) {
+      result[idx].appearances++;
     }
   }
 
-  // Convert to sorted array
-  return Object.entries(monthlyData)
-    .map(([month, data]) => ({
-      month,
-      appearances: data.appearances,
-      expectedAppearances: data.expectedAppearances,
-    }))
-    .sort((a, b) => a.month.localeCompare(b.month));
+  return result;
 }

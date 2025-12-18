@@ -3,8 +3,9 @@ import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import type Stripe from 'stripe';
 
-import type {Subscription, SubscriptionTier, SubscriptionTierCode} from '@lotto/database';
+import type {Subscription, SubscriptionTier} from '@lotto/database';
 import {SubscriptionRepository, SubscriptionTierRepository, UserRepository} from '@lotto/database';
+import type {SubscriptionTierCode} from '@lotto/shared';
 import type {StripeService} from '../stripe/stripeService';
 import type {SubscriptionHistoryService} from './subscriptionHistoryService';
 

@@ -10,9 +10,9 @@ const TIER_GATED_RESPONSE_KEY = Symbol('tierGatedResponse');
  *
  * @example
  * ```typescript
- * @TierGatedResponse(NumberHistoryResponseDto)
- * @post('/number-history')
- * async getNumberHistory(...): Promise<NumberHistoryResponseDto> { ... }
+ * @TierGatedResponse(NumberDetailResponseDto)
+ * @post('/number-detail')
+ * async getNumberDetail(...): Promise<NumberDetailResponseDto> { ... }
  * ```
  */
 export function TierGatedResponse(responseClass: Function): MethodDecorator {

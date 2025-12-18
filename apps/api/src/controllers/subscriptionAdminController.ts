@@ -1,7 +1,7 @@
-  import {AuthenticationBindings, authenticate} from '@loopback/authentication';
+import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {patch, requestBody, response} from '@loopback/rest';
-import {securityId, type UserProfile} from '@loopback/security';
+import {type UserProfile, securityId} from '@loopback/security';
 
 import type {SubscriptionAdminService} from '@lotto/core';
 

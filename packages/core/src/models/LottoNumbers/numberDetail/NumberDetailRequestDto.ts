@@ -3,10 +3,10 @@ import {model, property} from '@loopback/repository';
 import type {LottoType} from '@lotto/shared';
 
 /**
- * Request DTO for fetching historical data of a specific number
+ * Request DTO for fetching detailed statistics of a specific number
  */
 @model()
-export class NumberHistoryRequestDto {
+export class NumberDetailRequestDto {
   @property({
     type: 'string',
     required: true,
@@ -17,7 +17,7 @@ export class NumberHistoryRequestDto {
   @property({
     type: 'number',
     required: true,
-    description: 'The number to get history for',
+    description: 'The number to get details for',
   })
   number: number;
 
