@@ -12,3 +12,6 @@ export * from './USLotto';
 
 // UK Lotto DTOs
 export * from './UKLotto';
+
+// User DTOs
+export * from './User';

@@ -33,6 +33,7 @@ import {
   SubscriptionService,
   SubscriptionTierService,
   UKLotteryClient,
+  UserService,
 } from '@lotto/core';
 
 // Local imports (API-specific)
@@ -42,6 +43,7 @@ import {
   SubscriptionAdminController,
   SubscriptionController,
   SubscriptionTierController,
+  UserController,
 } from './controllers';
 import {TierGatingInterceptor} from './interceptors';
 import {JWTAuthenticationStrategy} from './middleware';
@@ -93,6 +95,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.bind('services.SubscriptionHistoryService').toClass(SubscriptionHistoryService);
     this.bind('services.SubscriptionService').toClass(SubscriptionService);
     this.bind('services.SubscriptionAdminService').toClass(SubscriptionAdminService);
+    this.bind('services.UserService').toClass(UserService);
 
     // Authentication - AFTER services are bound
     this.component(AuthenticationComponent);
@@ -113,6 +116,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.controller(SubscriptionController);
     this.controller(SubscriptionAdminController);
     this.controller(SubscriptionTierController);
+    this.controller(UserController);
 
     this.projectRoot = __dirname;
     this.bootOptions = {

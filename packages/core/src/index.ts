@@ -18,6 +18,7 @@ export * from './services/numberDetail/numberDetailService';
 export * from './services/stripe/stripeService';
 export * from './services/subscription';
 export * from './services/subscriptionTier/subscriptionTierService';
+export * from './services/user';
 
 // Models (DTOs)
 export * from './models';
