@@ -77,19 +77,6 @@ export class StripeService {
   }
 
   /**
-   * Create a Stripe Billing Portal session for managing subscription
-   */
-  async createBillingPortalSession(
-    customerId: string,
-    returnUrl: string,
-  ): Promise<Stripe.BillingPortal.Session> {
-    return this.stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: returnUrl,
-    });
-  }
-
-  /**
    * Retrieve a subscription by ID
    */
   async getSubscription(subscriptionId: string): Promise<Stripe.Subscription | null> {

@@ -4,8 +4,11 @@ import type {SubscriptionTierCode} from '@lotto/shared';
 
 /**
  * Extended UserProfile with custom fields from JWT
+ * Makes id and email required (they're always set by our JWT strategy)
  */
 export interface AuthenticatedUser extends UserProfile {
+  id: string;
+  email: string;
   subscriptionTier: SubscriptionTierCode;
 }
 

@@ -21,18 +21,6 @@ export interface CreateCheckoutParams {
   cancelUrl: string;
 }
 
-export interface CurrentSubscriptionResponse {
-  id: string;
-  tier: {
-    code: SubscriptionTierCode;
-    price: number;
-    features: string[];
-  };
-  status: string;
-  currentPeriodEnd: Date | null;
-  cancelAtPeriodEnd: boolean;
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Service
 // ─────────────────────────────────────────────────────────────────────────────
@@ -86,51 +74,80 @@ export class SubscriptionService {
   }
 
   /**
-   * Create a Stripe Billing Portal session
+   * Handle incoming Stripe webhook
+   * Verifies signature and routes event to appropriate handler
    */
-  async createPortalSession(userId: string, returnUrl: string): Promise<string> {
+  async handleWebhook(rawBody: Buffer, signature: string): Promise<void> {
+    const event = this.stripeService.constructWebhookEvent(rawBody, signature);
+    await this.routeWebhookEvent(event);
+  }
+
+  /**
+   * Cancel subscription at end of current billing period
+   * User keeps access until period ends, then reverts to FREE
+   */
+  async cancelSubscription(userId: string): Promise<void> {
     const subscription = await this.getRequiredSubscription(userId);
 
-    if (!subscription.stripeCustomerId) {
-      throw new HttpErrors.BadRequest('No active paid subscription found.');
+    // Validate user has an active paid subscription
+    if (!subscription.stripeSubscriptionId) {
+      throw new HttpErrors.BadRequest('No active paid subscription to cancel.');
     }
 
-    const session = await this.stripeService.createBillingPortalSession(
-      subscription.stripeCustomerId,
-      returnUrl,
-    );
+    // Check if already set to cancel
+    if (subscription.cancelAtPeriodEnd) {
+      throw new HttpErrors.Conflict('Subscription is already set to cancel at period end.');
+    }
 
-    return session.url;
-  }
+    // Cancel in Stripe
+    await this.stripeService.cancelSubscriptionAtPeriodEnd(subscription.stripeSubscriptionId);
 
-  /**
-   * Get current subscription with tier details
-   */
-  async getCurrentSubscription(userId: string): Promise<CurrentSubscriptionResponse> {
-    const subscription = await this.getRequiredSubscription(userId);
-    const tier = await this.subscriptionTierRepository.findById(subscription.tierId);
+    // Update local DB
+    await this.subscriptionRepository.updateById(subscription.id, {
+      cancelAtPeriodEnd: true,
+    });
 
-    return {
-      id: subscription.id,
-      tier: {
-        code: tier.code,
-        price: tier.price,
-        features: tier.features,
-      },
-      status: subscription.status,
-      currentPeriodEnd: subscription.currentPeriodEnd ?? null,
-      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-    };
+    // Log to history
+    await this.subscriptionHistoryService.createEntry({
+      subscriptionId: subscription.id,
+      userId,
+      oldTierId: subscription.tierId,
+      newTierId: subscription.tierId,
+      fromStatus: subscription.status,
+      toStatus: subscription.status,
+      eventType: 'canceled',
+      reason: 'User requested cancellation',
+    });
   }
 
   // ───────────────────────────────────────────────────────────────────────────
-  // Webhook Handlers
+  // Private Webhook Handlers
   // ───────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Handle checkout.session.completed event
-   */
-  async handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  private async routeWebhookEvent(event: Stripe.Event): Promise<void> {
+    switch (event.type) {
+      case 'checkout.session.completed':
+        await this.handleCheckoutCompleted(event.data.object);
+        break;
+
+      case 'customer.subscription.updated':
+        await this.handleSubscriptionUpdated(event.data.object);
+        break;
+
+      case 'customer.subscription.deleted':
+        await this.handleSubscriptionDeleted(event.data.object);
+        break;
+
+      case 'invoice.payment_failed':
+        await this.handlePaymentFailed(event.data.object);
+        break;
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+  }
+
+  private async handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
     const userId = session.metadata?.userId;
     const tierCode = session.metadata?.tierCode as SubscriptionTierCode | undefined;
 
@@ -172,10 +189,7 @@ export class SubscriptionService {
     });
   }
 
-  /**
-   * Handle customer.subscription.updated event
-   */
-  async handleSubscriptionUpdated(stripeSub: Stripe.Subscription): Promise<void> {
+  private async handleSubscriptionUpdated(stripeSub: Stripe.Subscription): Promise<void> {
     const subscription = await this.subscriptionRepository.findOne({
       where: {stripeSubscriptionId: stripeSub.id},
     });
@@ -199,10 +213,7 @@ export class SubscriptionService {
     await this.subscriptionRepository.updateById(subscription.id, updateData);
   }
 
-  /**
-   * Handle customer.subscription.deleted event
-   */
-  async handleSubscriptionDeleted(stripeSub: Stripe.Subscription): Promise<void> {
+  private async handleSubscriptionDeleted(stripeSub: Stripe.Subscription): Promise<void> {
     const subscription = await this.subscriptionRepository.findOne({
       where: {stripeSubscriptionId: stripeSub.id},
     });
@@ -242,10 +253,7 @@ export class SubscriptionService {
     });
   }
 
-  /**
-   * Handle invoice.payment_failed event
-   */
-  async handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
+  private async handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
     const stripeSubscriptionId = this.extractSubscriptionId(invoice);
     if (!stripeSubscriptionId) return;
 

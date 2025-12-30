@@ -1,9 +1,10 @@
 import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {patch, requestBody, response} from '@loopback/rest';
-import {type UserProfile, securityId} from '@loopback/security';
 
 import type {SubscriptionAdminService} from '@lotto/core';
+
+import type {AuthenticatedUser} from '../types/auth.types';
 
 interface UpdateTierRequest {
   tierId: string;
@@ -24,8 +25,8 @@ export class SubscriptionAdminController {
   @response(204, {description: 'Subscription tier updated'})
   async updateTier(
     @requestBody() body: UpdateTierRequest,
-    @inject(AuthenticationBindings.CURRENT_USER) currentUser: UserProfile,
+    @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
   ): Promise<void> {
-    await this.subscriptionAdminService.updateUserTier(currentUser[securityId], body.tierId);
+    await this.subscriptionAdminService.updateUserTier(currentUser.id, body.tierId);
   }
 }

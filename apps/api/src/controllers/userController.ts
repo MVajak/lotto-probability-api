@@ -1,7 +1,6 @@
 import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {del, get, getModelSchemaRef, patch, requestBody, response} from '@loopback/rest';
-import type {UserProfile} from '@loopback/security';
 
 import {
   UpdateUserProfileDto,
@@ -9,6 +8,8 @@ import {
   UserProfileResponseDto,
   type UserService,
 } from '@lotto/core';
+
+import type {AuthenticatedUser} from '../types/auth.types';
 
 @authenticate('jwt')
 export class UserController {
@@ -31,10 +32,9 @@ export class UserController {
   })
   async getProfile(
     @inject(AuthenticationBindings.CURRENT_USER)
-    currentUser: UserProfile,
+    currentUser: AuthenticatedUser,
   ): Promise<UserProfileResponse> {
-    const userId = currentUser.id as string;
-    return this.userService.getUserProfile(userId);
+    return this.userService.getUserProfile(currentUser.id);
   }
 
   /**
@@ -51,7 +51,7 @@ export class UserController {
   })
   async updateProfile(
     @inject(AuthenticationBindings.CURRENT_USER)
-    currentUser: UserProfile,
+    currentUser: AuthenticatedUser,
     @requestBody({
       description: 'User profile fields to update',
       required: true,
@@ -63,8 +63,7 @@ export class UserController {
     })
     body: UpdateUserProfileDto,
   ): Promise<UserProfileResponse> {
-    const userId = currentUser.id as string;
-    return this.userService.updateUserProfile(userId, body);
+    return this.userService.updateUserProfile(currentUser.id, body);
   }
 
   /**
@@ -76,9 +75,8 @@ export class UserController {
   })
   async deleteProfile(
     @inject(AuthenticationBindings.CURRENT_USER)
-    currentUser: UserProfile,
+    currentUser: AuthenticatedUser,
   ): Promise<void> {
-    const userId = currentUser.id as string;
-    await this.userService.deleteUser(userId);
+    await this.userService.deleteUser(currentUser.id);
   }
 }

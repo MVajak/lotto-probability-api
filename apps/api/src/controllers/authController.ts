@@ -1,10 +1,14 @@
 import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {type Request, RestBindings, get, post, requestBody} from '@loopback/rest';
-import type {UserProfile} from '@loopback/security';
 
 import type {AuthService} from '../services';
-import type {AuthSubscriptionResponse, AuthTokens, AuthUserResponse} from '../types/auth.types';
+import type {
+  AuthSubscriptionResponse,
+  AuthTokens,
+  AuthUserResponse,
+  AuthenticatedUser,
+} from '../types/auth.types';
 
 export class AuthController {
   constructor(
@@ -130,10 +134,8 @@ export class AuthController {
   @get('/auth/me')
   async getCurrentUser(
     @inject(AuthenticationBindings.CURRENT_USER)
-    currentUser: UserProfile,
+    currentUser: AuthenticatedUser,
   ): Promise<{user: AuthUserResponse; subscription: AuthSubscriptionResponse}> {
-    // UserProfile has 'id' field which contains userId
-    const userId = currentUser.id as string;
-    return await this.authService.getCurrentUser(userId);
+    return await this.authService.getCurrentUser(currentUser.id);
   }
 }

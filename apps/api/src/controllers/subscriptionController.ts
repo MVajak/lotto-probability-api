@@ -1,18 +1,10 @@
-import {authenticate} from '@loopback/authentication';
+import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
-import {
-  type Request,
-  type Response,
-  RestBindings,
-  get,
-  post,
-  requestBody,
-  response,
-} from '@loopback/rest';
-import type Stripe from 'stripe';
+import {type Request, type Response, RestBindings, post, requestBody, response} from '@loopback/rest';
 
-import type {StripeService} from '@lotto/core';
-import type {CurrentSubscriptionResponse, SubscriptionService} from '@lotto/core';
+import type {SubscriptionService} from '@lotto/core';
+
+import type {AuthenticatedUser} from '../types/auth.types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Request Types
@@ -24,10 +16,6 @@ interface CreateCheckoutSessionRequest {
   cancelUrl: string;
 }
 
-interface CreatePortalSessionRequest {
-  returnUrl: string;
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Controller
 // ─────────────────────────────────────────────────────────────────────────────
@@ -36,8 +24,6 @@ export class SubscriptionController {
   constructor(
     @inject('services.SubscriptionService')
     private subscriptionService: SubscriptionService,
-    @inject('services.StripeService')
-    private stripeService: StripeService,
   ) {}
 
   @authenticate('jwt')
@@ -57,10 +43,10 @@ export class SubscriptionController {
   })
   async createCheckoutSession(
     @requestBody() body: CreateCheckoutSessionRequest,
-    @inject('authentication.currentUser') currentUser: {userId: string; email: string},
+    @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
   ): Promise<{checkoutUrl: string}> {
     const checkoutUrl = await this.subscriptionService.createCheckoutSession({
-      userId: currentUser.userId,
+      userId: currentUser.id,
       email: currentUser.email,
       tierCode: body.tierCode,
       successUrl: body.successUrl,
@@ -71,44 +57,28 @@ export class SubscriptionController {
   }
 
   @authenticate('jwt')
-  @post('/subscriptions/create-portal-session')
-  @response(200, {
-    description: 'Stripe Billing Portal URL',
-    content: {
-      'application/json': {
-        schema: {
-          type: 'object',
-          properties: {
-            portalUrl: {type: 'string'},
-          },
-        },
-      },
-    },
-  })
-  async createPortalSession(
-    @requestBody() body: CreatePortalSessionRequest,
-    @inject('authentication.currentUser') currentUser: {userId: string},
-  ): Promise<{portalUrl: string}> {
-    const portalUrl = await this.subscriptionService.createPortalSession(
-      currentUser.userId,
-      body.returnUrl,
-    );
-
-    return {portalUrl};
-  }
-
-  @authenticate('jwt')
-  @get('/subscriptions/current')
-  @response(200, {description: 'Current subscription details'})
-  async getCurrentSubscription(
-    @inject('authentication.currentUser') currentUser: {userId: string},
-  ): Promise<CurrentSubscriptionResponse> {
-    return this.subscriptionService.getCurrentSubscription(currentUser.userId);
+  @post('/subscriptions/cancel')
+  @response(204, {description: 'Subscription cancelled at period end'})
+  async cancelSubscription(
+    @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
+  ): Promise<void> {
+    await this.subscriptionService.cancelSubscription(currentUser.id);
   }
 
   @post('/subscriptions/webhook')
   @response(200, {description: 'Webhook processed'})
   async handleStripeWebhook(
+    @requestBody({
+      description: 'Stripe webhook payload',
+      required: true,
+      content: {
+        'application/json': {
+          'x-parser': 'raw',
+          schema: {type: 'object'},
+        },
+      },
+    })
+    rawBody: Buffer,
     @inject(RestBindings.Http.REQUEST) request: Request,
     @inject(RestBindings.Http.RESPONSE) response: Response,
   ): Promise<{received: boolean}> {
@@ -119,55 +89,13 @@ export class SubscriptionController {
       return {received: false};
     }
 
-    const rawBody = (request as Request & {rawBody?: Buffer}).rawBody;
-    if (!rawBody) {
-      response.status(400);
-      return {received: false};
-    }
-
-    let event: Stripe.Event;
     try {
-      event = this.stripeService.constructWebhookEvent(rawBody, signature);
-    } catch {
+      await this.subscriptionService.handleWebhook(rawBody, signature);
+      return {received: true};
+    } catch (err) {
+      console.error('[Webhook] Processing failed:', err);
       response.status(400);
       return {received: false};
-    }
-
-    await this.routeWebhookEvent(event);
-
-    return {received: true};
-  }
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // Private
-  // ───────────────────────────────────────────────────────────────────────────
-
-  private async routeWebhookEvent(event: Stripe.Event): Promise<void> {
-    switch (event.type) {
-      case 'checkout.session.completed':
-        await this.subscriptionService.handleCheckoutCompleted(
-          event.data.object as Stripe.Checkout.Session,
-        );
-        break;
-
-      case 'customer.subscription.updated':
-        await this.subscriptionService.handleSubscriptionUpdated(
-          event.data.object as Stripe.Subscription,
-        );
-        break;
-
-      case 'customer.subscription.deleted':
-        await this.subscriptionService.handleSubscriptionDeleted(
-          event.data.object as Stripe.Subscription,
-        );
-        break;
-
-      case 'invoice.payment_failed':
-        await this.subscriptionService.handlePaymentFailed(event.data.object as Stripe.Invoice);
-        break;
-
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
     }
   }
 }
