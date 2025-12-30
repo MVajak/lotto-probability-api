@@ -94,6 +94,13 @@ export class Subscription extends Entity {
   @property({
     type: 'date',
     required: false,
+    postgresql: {columnName: 'cancel_at'},
+  })
+  cancelAt?: Date | null;
+
+  @property({
+    type: 'date',
+    required: false,
     postgresql: {columnName: 'canceled_at'},
   })
   canceledAt?: Date | null;

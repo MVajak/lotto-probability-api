@@ -45,13 +45,21 @@ export class SubscriptionService {
   // ───────────────────────────────────────────────────────────────────────────
 
   /**
-   * Create a Stripe Checkout session for upgrading subscription
+   * Create a Stripe Checkout session for new subscription (FREE → Paid only)
+   * For tier changes between paid tiers, use changeTier() instead
    */
   async createCheckoutSession(params: CreateCheckoutParams): Promise<string> {
     const {userId, email, tierCode, successUrl, cancelUrl} = params;
 
     const targetTier = await this.getValidatedTargetTier(tierCode);
     const subscription = await this.getRequiredSubscription(userId);
+
+    // Block if user already has an active Stripe subscription
+    if (subscription.stripeSubscriptionId) {
+      throw new HttpErrors.BadRequest(
+        'You already have an active subscription. Use change-tier to switch plans.',
+      );
+    }
 
     await this.validateNotAlreadySubscribed(subscription.tierId, tierCode);
 
@@ -83,6 +91,109 @@ export class SubscriptionService {
   }
 
   /**
+   * Change subscription tier (PRO ↔ PREMIUM)
+   * Uses Stripe's subscription update for proper proration
+   */
+  async changeTier(userId: string, newTierCode: 'PRO' | 'PREMIUM'): Promise<void> {
+    const subscription = await this.getRequiredSubscription(userId);
+
+    // Must have existing Stripe subscription
+    if (!subscription.stripeSubscriptionId) {
+      throw new HttpErrors.BadRequest('No active subscription. Use checkout to subscribe.');
+    }
+
+    // Can't change to same tier
+    const currentTier = await this.subscriptionTierRepository.findById(subscription.tierId);
+    if (currentTier.code === newTierCode) {
+      throw new HttpErrors.Conflict('Already on this tier.');
+    }
+
+    // Get new tier
+    const newTier = await this.subscriptionTierRepository.findByCode(newTierCode);
+    if (!newTier?.stripePriceId) {
+      throw new HttpErrors.BadRequest('Tier not configured for payments.');
+    }
+
+    // If cancelled, resume first
+    if (subscription.cancelAtPeriodEnd) {
+      await this.stripeService.resumeSubscription(subscription.stripeSubscriptionId);
+    }
+
+    // Update subscription in Stripe (handles proration)
+    const updatedSub = await this.stripeService.updateSubscriptionPrice(
+      subscription.stripeSubscriptionId,
+      newTier.stripePriceId,
+    );
+
+    // Update local DB
+    const oldTierId = subscription.tierId;
+    const periodDates = this.extractPeriodDates(updatedSub);
+    await this.subscriptionRepository.updateById(subscription.id, {
+      tierId: newTier.id,
+      stripePriceId: newTier.stripePriceId,
+      cancelAtPeriodEnd: false,
+      cancelAt: this.extractCancelAt(updatedSub),
+      ...(periodDates && {
+        currentPeriodStart: periodDates.start,
+        currentPeriodEnd: periodDates.end,
+      }),
+    });
+
+    // Log history
+    const isUpgrade = currentTier.code === 'PRO' && newTierCode === 'PREMIUM';
+    await this.subscriptionHistoryService.createEntry({
+      subscriptionId: subscription.id,
+      userId,
+      oldTierId,
+      newTierId: newTier.id,
+      fromStatus: subscription.status,
+      toStatus: 'active',
+      eventType: isUpgrade ? 'upgraded' : 'downgraded',
+    });
+  }
+
+  /**
+   * Resume a cancelled subscription (undo cancel at period end)
+   */
+  async resumeSubscription(userId: string): Promise<void> {
+    const subscription = await this.getRequiredSubscription(userId);
+
+    if (!subscription.stripeSubscriptionId) {
+      throw new HttpErrors.BadRequest('No active subscription to resume.');
+    }
+
+    if (!subscription.cancelAtPeriodEnd) {
+      throw new HttpErrors.Conflict('Subscription is not cancelled.');
+    }
+
+    // Resume in Stripe - capture the response
+    const stripeSub = await this.stripeService.resumeSubscription(subscription.stripeSubscriptionId);
+
+    // Update local DB with period dates from Stripe
+    const periodDates = this.extractPeriodDates(stripeSub);
+    await this.subscriptionRepository.updateById(subscription.id, {
+      cancelAtPeriodEnd: false,
+      cancelAt: this.extractCancelAt(stripeSub),
+      ...(periodDates && {
+        currentPeriodStart: periodDates.start,
+        currentPeriodEnd: periodDates.end,
+      }),
+    });
+
+    // Log history
+    await this.subscriptionHistoryService.createEntry({
+      subscriptionId: subscription.id,
+      userId,
+      oldTierId: subscription.tierId,
+      newTierId: subscription.tierId,
+      fromStatus: subscription.status,
+      toStatus: 'active',
+      eventType: 'reactivated',
+      reason: 'User resumed cancelled subscription',
+    });
+  }
+
+  /**
    * Cancel subscription at end of current billing period
    * User keeps access until period ends, then reverts to FREE
    */
@@ -99,12 +210,19 @@ export class SubscriptionService {
       throw new HttpErrors.Conflict('Subscription is already set to cancel at period end.');
     }
 
-    // Cancel in Stripe
-    await this.stripeService.cancelSubscriptionAtPeriodEnd(subscription.stripeSubscriptionId);
+    // Cancel in Stripe and get updated subscription
+    const stripeSub = await this.stripeService.cancelSubscriptionAtPeriodEnd(
+      subscription.stripeSubscriptionId,
+    );
 
-    // Update local DB
+    // Update local DB with period end date and cancel_at
+    const periodDates = this.extractPeriodDates(stripeSub);
     await this.subscriptionRepository.updateById(subscription.id, {
       cancelAtPeriodEnd: true,
+      cancelAt: this.extractCancelAt(stripeSub),
+      ...(periodDates && {
+        currentPeriodEnd: periodDates.end,
+      }),
     });
 
     // Log to history
@@ -201,6 +319,7 @@ export class SubscriptionService {
 
     const updateData: Partial<Subscription> = {
       cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
+      cancelAt: this.extractCancelAt(stripeSub),
       status: stripeSub.status === 'active' ? 'active' : subscription.status,
     };
 
@@ -239,6 +358,7 @@ export class SubscriptionService {
       currentPeriodStart: null,
       currentPeriodEnd: null,
       cancelAtPeriodEnd: false,
+      cancelAt: null,
       canceledAt: new Date(),
     });
 
@@ -348,6 +468,7 @@ export class SubscriptionService {
       stripePriceId: newTier.stripePriceId ?? undefined,
       status: 'active',
       cancelAtPeriodEnd: false,
+      cancelAt: stripeSub ? this.extractCancelAt(stripeSub) : null,
     };
 
     const periodDates = stripeSub ? this.extractPeriodDates(stripeSub) : null;
@@ -367,6 +488,10 @@ export class SubscriptionService {
       start: new Date(firstItem.current_period_start * 1000),
       end: new Date(firstItem.current_period_end * 1000),
     };
+  }
+
+  private extractCancelAt(stripeSub: Stripe.Subscription): Date | null {
+    return stripeSub.cancel_at ? new Date(stripeSub.cancel_at * 1000) : null;
   }
 
   private extractSubscriptionId(invoice: Stripe.Invoice): string | null {

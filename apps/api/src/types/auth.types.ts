@@ -46,6 +46,7 @@ export interface AuthSubscriptionResponse {
   status: 'active' | 'canceled' | 'past_due' | 'trialing';
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
+  cancelAt: Date | null;
 }
 
 /**
@@ -80,5 +81,6 @@ export function toAuthSubscriptionResponse(
     status: subscription.status,
     currentPeriodEnd: subscription.currentPeriodEnd ?? null,
     cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+    cancelAt: subscription.cancelAt ?? null,
   };
 }

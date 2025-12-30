@@ -16,6 +16,10 @@ interface CreateCheckoutSessionRequest {
   cancelUrl: string;
 }
 
+interface ChangeTierRequest {
+  tierCode: 'PRO' | 'PREMIUM';
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Controller
 // ─────────────────────────────────────────────────────────────────────────────
@@ -54,6 +58,25 @@ export class SubscriptionController {
     });
 
     return {checkoutUrl};
+  }
+
+  @authenticate('jwt')
+  @post('/subscriptions/change-tier')
+  @response(204, {description: 'Tier changed successfully'})
+  async changeTier(
+    @requestBody() body: ChangeTierRequest,
+    @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
+  ): Promise<void> {
+    await this.subscriptionService.changeTier(currentUser.id, body.tierCode);
+  }
+
+  @authenticate('jwt')
+  @post('/subscriptions/resume')
+  @response(204, {description: 'Subscription resumed'})
+  async resumeSubscription(
+    @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
+  ): Promise<void> {
+    await this.subscriptionService.resumeSubscription(currentUser.id);
   }
 
   @authenticate('jwt')

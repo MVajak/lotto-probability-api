@@ -97,6 +97,31 @@ export class StripeService {
   }
 
   /**
+   * Resume a cancelled subscription (undo cancel_at_period_end)
+   */
+  async resumeSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
+    return this.stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: false,
+    });
+  }
+
+  /**
+   * Update subscription to a different price (tier change with proration)
+   */
+  async updateSubscriptionPrice(
+    subscriptionId: string,
+    newPriceId: string,
+  ): Promise<Stripe.Subscription> {
+    const subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
+    const itemId = subscription.items.data[0].id;
+
+    return this.stripe.subscriptions.update(subscriptionId, {
+      items: [{id: itemId, price: newPriceId}],
+      proration_behavior: 'create_prorations',
+    });
+  }
+
+  /**
    * Construct and verify a webhook event from Stripe
    */
   constructWebhookEvent(payload: Buffer, signature: string): Stripe.Event {
