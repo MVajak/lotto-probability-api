@@ -47,6 +47,7 @@ export interface AuthSubscriptionResponse {
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
   cancelAt: Date | null;
+  stripeSubscriptionId: string | null;
 }
 
 /**
@@ -82,5 +83,6 @@ export function toAuthSubscriptionResponse(
     currentPeriodEnd: subscription.currentPeriodEnd ?? null,
     cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
     cancelAt: subscription.cancelAt ?? null,
+    stripeSubscriptionId: subscription.stripeSubscriptionId ?? null,
   };
 }
