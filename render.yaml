@@ -4,8 +4,6 @@ services:
     name: lotto-probability-db
     plan: starter
     region: frankfurt
-    databaseName: lotto_probability
-    databaseUser: lotto_user
     ipAllowList: []
 
   # API Web Service
