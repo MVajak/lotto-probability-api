@@ -1,0 +1,158 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: lotto-probability-db
+    plan: starter
+    region: frankfurt
+    databaseName: lotto_probability
+    databaseUser: lotto_user
+    ipAllowList: []
+
+  # API Web Service
+  - type: web
+    name: lotto-probability-api
+    runtime: node
+    plan: starter
+    region: frankfurt
+    buildCommand: pnpm install && pnpm build && pnpm migrate
+    startCommand: pnpm start:api
+    healthCheckPath: /ping
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: HOST
+        value: 0.0.0.0
+      - key: APP_PORT
+        value: 3000
+      - key: APP_HOST
+        value: 0.0.0.0
+      - key: OPEN_API_SPEC_POST
+        value: 3000
+      - key: OPEN_API_SPEC_HOST
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lotto-probability-db
+          property: connectionString
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: lotto-probability-db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: lotto-probability-db
+          property: port
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: lotto-probability-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: lotto-probability-db
+          property: password
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: lotto-probability-db
+          property: database
+      - key: REPOSITORY_CHUNK_SIZE
+        value: 500
+      - key: JWT_SECRET
+        generateValue: true
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: DRAWS_RESET_INTERVAL
+        value: off
+      - key: EURO_JACKPOT_CRON_INTERVAL
+        value: off
+      - key: VIKING_LOTTO_CRON_INTERVAL
+        value: off
+      - key: BINGO_LOTTO_CRON_INTERVAL
+        value: off
+      - key: JOKKER_LOTTO_CRON_INTERVAL
+        value: off
+      - key: KENO_LOTTO_CRON_INTERVAL
+        value: off
+      - key: POWERBALL_CRON_INTERVAL
+        value: off
+      - key: MEGA_MILLIONS_CRON_INTERVAL
+        value: off
+      - key: CASH4LIFE_CRON_INTERVAL
+        value: off
+      - key: UK_EUROMILLIONS_CRON_INTERVAL
+        value: off
+      - key: UK_LOTTO_CRON_INTERVAL
+        value: off
+      - key: UK_THUNDERBALL_CRON_INTERVAL
+        value: off
+      - key: UK_SET_FOR_LIFE_CRON_INTERVAL
+        value: off
+
+  # Background Worker
+  - type: worker
+    name: lotto-probability-worker
+    runtime: node
+    plan: starter
+    region: frankfurt
+    buildCommand: pnpm install && pnpm build
+    startCommand: pnpm start:worker
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lotto-probability-db
+          property: connectionString
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: lotto-probability-db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: lotto-probability-db
+          property: port
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: lotto-probability-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: lotto-probability-db
+          property: password
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: lotto-probability-db
+          property: database
+      - key: REPOSITORY_CHUNK_SIZE
+        value: 500
+      - key: DRAWS_RESET_INTERVAL
+        sync: false
+      - key: EURO_JACKPOT_CRON_INTERVAL
+        sync: false
+      - key: VIKING_LOTTO_CRON_INTERVAL
+        sync: false
+      - key: BINGO_LOTTO_CRON_INTERVAL
+        sync: false
+      - key: JOKKER_LOTTO_CRON_INTERVAL
+        sync: false
+      - key: KENO_LOTTO_CRON_INTERVAL
+        sync: false
+      - key: POWERBALL_CRON_INTERVAL
+        sync: false
+      - key: MEGA_MILLIONS_CRON_INTERVAL
+        sync: false
+      - key: CASH4LIFE_CRON_INTERVAL
+        sync: false
+      - key: UK_EUROMILLIONS_CRON_INTERVAL
+        sync: false
+      - key: UK_LOTTO_CRON_INTERVAL
+        sync: false
+      - key: UK_THUNDERBALL_CRON_INTERVAL
+        sync: false
+      - key: UK_SET_FOR_LIFE_CRON_INTERVAL
+        sync: false

@@ -1,75 +1,223 @@
 # Lotto Probability API
 
-This application is generated using [LoopBack 4 CLI](https://loopback.io/doc/en/lb4/Command-line-interface.html) with the
-[initial project layout](https://loopback.io/doc/en/lb4/Loopback-application-layout.html).
+A lottery probability analysis API providing statistical analysis for various lottery games worldwide. Features include timeline analysis, trends, Wilson confidence intervals, standard deviation, Markov chains, autocorrelation, pair analysis, Monte Carlo simulations, and seasonal patterns.
 
-## Install dependencies
+## Features
 
-By default, dependencies were installed when this application was generated.
-Whenever dependencies in `package.json` are changed, run the following command:
+- **Multi-tier Subscriptions**: FREE, PRO ($2.49), and PREMIUM ($3.99) tiers with increasing feature sets
+- **JWT Authentication**: Email-based OTP verification
+- **Stripe Integration**: Subscription management and payment processing
+- **Background Worker**: Cron jobs for automated lottery data fetching
+- **Statistical Analysis**: Advanced probability calculations and pattern recognition
+- **Multi-region Support**: Estonian, US, and UK lottery games
 
-```sh
-npm install
-```
+## Tech Stack
 
-To only install resolved dependencies in `package-lock.json`:
+- **Framework**: LoopBack 4 (Node.js/TypeScript)
+- **Database**: PostgreSQL 15
+- **Package Manager**: pnpm (monorepo workspace)
+- **Payments**: Stripe
+- **Email**: Resend API
 
-```sh
-npm ci
-```
+## Prerequisites
 
-## Run the application
+- Node.js >= 20.0.0
+- pnpm >= 10.0.0
+- PostgreSQL 15+
+- Stripe account (for subscription features)
 
-```sh
-npm start
-```
+## Local Development Setup
 
-You can also run `node .` to skip the build step.
-
-Open http://127.0.0.1:3000 in your browser.
-
-## Rebuild the project
-
-To incrementally build the project:
+### 1. Install dependencies
 
 ```sh
-npm run build
+pnpm install
 ```
 
-To force a full build by cleaning up cached artifacts:
+### 2. Set up environment variables
+
+Copy the example environment file and update with your values:
 
 ```sh
-npm run rebuild
+cp .env.example .env
 ```
 
-## Fix code style and formatting issues
+Required environment variables:
+- `JWT_SECRET`: Generate a secure random string
+- `STRIPE_SECRET_KEY`: Your Stripe secret key
+- `STRIPE_WEBHOOK_SECRET`: Your Stripe webhook secret
+- `DATABASE_URL`: PostgreSQL connection string (auto-configured if using Docker Compose)
+
+### 3. Start the database
 
 ```sh
-npm run lint
+docker-compose up -d postgres
 ```
 
-To automatically fix such issues:
+### 4. Run migrations
 
 ```sh
-npm run lint:fix
+pnpm migrate
 ```
 
-## Other useful commands
-
-- `npm run migrate`: Migrate database schemas for models
-- `npm run openapi-spec`: Generate OpenAPI spec into a file
-- `npm run docker:build`: Build a Docker image for this application
-- `npm run docker:run`: Run this application inside a Docker container
-
-## Tests
+### 5. Build packages
 
 ```sh
-npm test
+pnpm build
 ```
 
-## What's next
+### 6. Start the development servers
 
-Please check out [LoopBack 4 documentation](https://loopback.io/doc/en/lb4/) to
-understand how you can continue to add features to this application.
+```sh
+pnpm dev
+```
 
-[![LoopBack](https://github.com/loopbackio/loopback-next/raw/master/docs/site/imgs/branding/Powered-by-LoopBack-Badge-(blue)-@2x.png)](http://loopback.io/)
+This starts both the API server and the background worker.
+
+- **API**: http://127.0.0.1:3000
+- **API Explorer**: http://127.0.0.1:3000/explorer
+
+### Individual Services
+
+Run API only:
+```sh
+pnpm dev:api
+```
+
+Run worker only:
+```sh
+pnpm dev:worker
+```
+
+## Production Deployment (Render)
+
+### Quick Deploy
+
+1. **Push to GitHub**: Ensure your code is in a GitHub repository
+
+2. **Deploy to Render**:
+   - Go to [render.com](https://render.com)
+   - Click "New +" → "Blueprint"
+   - Connect your GitHub repository
+   - Render will automatically detect `render.yaml` and create all services
+
+3. **Set environment variables** in Render dashboard:
+   - `STRIPE_SECRET_KEY`: Your Stripe secret key
+   - `STRIPE_WEBHOOK_SECRET`: Your Stripe webhook secret
+   - `RESEND_API_KEY`: Your Resend API key (optional)
+   - Configure cron intervals for lottery data fetching (optional)
+
+### Manual Render Setup
+
+If not using Blueprint, create these services manually:
+
+1. **PostgreSQL Database**
+   - Name: `lotto-probability-db`
+   - Plan: Starter or higher
+   - Region: Frankfurt (or your preference)
+
+2. **Web Service (API)**
+   - Name: `lotto-probability-api`
+   - Environment: Node
+   - Build Command: `pnpm install && pnpm build && pnpm migrate`
+   - Start Command: `pnpm start:api`
+   - Health Check Path: `/ping`
+   - Connect to database and set environment variables
+
+3. **Background Worker**
+   - Name: `lotto-probability-worker`
+   - Environment: Node
+   - Build Command: `pnpm install && pnpm build`
+   - Start Command: `pnpm start:worker`
+   - Connect to same database
+
+## Database Migrations
+
+Create a new migration:
+```sh
+pnpm migrate:create migration-name
+```
+
+Run migrations:
+```sh
+pnpm migrate
+```
+
+Rollback last migration:
+```sh
+pnpm migrate:down
+```
+
+## Code Quality
+
+Format code:
+```sh
+pnpm format
+```
+
+Lint and auto-fix:
+```sh
+pnpm lint:fix
+```
+
+Run tests:
+```sh
+pnpm test
+```
+
+## Project Structure
+
+```
+lotto-probability-api/
+├── apps/
+│   ├── api/          # Main REST API server
+│   └── worker/       # Background worker for cron jobs
+├── packages/
+│   ├── core/         # Business logic, services
+│   ├── database/     # Database models, repositories
+│   └── shared/       # Shared utilities and config
+├── migrations/       # PostgreSQL migrations
+├── .env.example      # Example environment variables
+└── render.yaml       # Render deployment configuration
+```
+
+## Subscription Tiers
+
+- **FREE**: Basic access
+- **PRO ($2.49/mo)**: Timeline, trends, Wilson CI, standard deviation
+- **PREMIUM ($3.99/mo)**: All PRO features + Markov chains, autocorrelation, pair analysis, Monte Carlo, seasonal patterns
+
+## Supported Lotteries
+
+### Estonian
+EuroJackpot, Viking Lotto, Bingo Lotto, Jokker, Keno
+
+### United States
+Powerball, Mega Millions, Cash4Life
+
+### United Kingdom
+EuroMillions, Lotto, Thunderball, Set For Life
+
+## Cron Job Configuration
+
+Configure lottery data fetching intervals via environment variables. Examples:
+
+```env
+POWERBALL_CRON_INTERVAL='0 7 * * 0,2,4'  # Sun,Tue,Thu at 7AM UTC
+MEGA_MILLIONS_CRON_INTERVAL='0 7 * * 3,6'  # Wed,Sat at 7AM UTC
+CASH4LIFE_CRON_INTERVAL='0 5 * * *'  # Daily at 5AM UTC
+```
+
+Set to `off` to disable specific cron jobs.
+
+## API Documentation
+
+Once running, visit the API Explorer at `/explorer` to see all available endpoints and try them out interactively.
+
+## License
+
+UNLICENSED
+
+## Author
+
+Mihkel Vajak
