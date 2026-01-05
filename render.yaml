@@ -1,11 +1,10 @@
-services:
+databases:
   # PostgreSQL Database
-  - type: pserv
-    name: lotto-probability-db
+  - name: lotto-probability-db
     plan: starter
     region: frankfurt
-    ipAllowList: []
 
+services:
   # API Web Service
   - type: web
     name: lotto-probability-api
