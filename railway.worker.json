@@ -4,6 +4,6 @@
     "buildCommand": "pnpm install && pnpm build"
   },
   "deploy": {
-    "startCommand": "pnpm migrate && pnpm start:api"
+    "startCommand": "node -r source-map-support/register apps/worker/dist/index.js"
   }
 }
