@@ -1,0 +1,31 @@
+# Dockerfile for API Service
+FROM node:20-alpine AS base
+
+# Install pnpm
+RUN npm install -g pnpm@10.19.0
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/worker/package.json ./apps/worker/
+COPY packages/core/package.json ./packages/core/
+COPY packages/database/package.json ./packages/database/
+COPY packages/shared/package.json ./packages/shared/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build all packages
+RUN pnpm build
+
+# Expose port
+EXPOSE 3000
+
+# Start API (migrations will run via buildCommand in fly.toml)
+CMD ["pnpm", "start:api"]

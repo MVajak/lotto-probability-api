@@ -1,0 +1,74 @@
+# Fly.io configuration for API Service
+app = "lotto-probability-api"
+primary_region = "fra" # Frankfurt
+
+[build]
+  dockerfile = "Dockerfile.api"
+
+[deploy]
+  release_command = "pnpm migrate"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+  HOST = "0.0.0.0"
+  APP_PORT = "8080"
+  APP_HOST = "0.0.0.0"
+  OPEN_API_SPEC_POST = "8080"
+  REPOSITORY_CHUNK_SIZE = "500"
+  DRAWS_RESET_INTERVAL = "off"
+  EURO_JACKPOT_CRON_INTERVAL = "off"
+  VIKING_LOTTO_CRON_INTERVAL = "off"
+  BINGO_LOTTO_CRON_INTERVAL = "off"
+  JOKKER_LOTTO_CRON_INTERVAL = "off"
+  KENO_LOTTO_CRON_INTERVAL = "off"
+  POWERBALL_CRON_INTERVAL = "off"
+  MEGA_MILLIONS_CRON_INTERVAL = "off"
+  CASH4LIFE_CRON_INTERVAL = "off"
+  UK_EUROMILLIONS_CRON_INTERVAL = "off"
+  UK_LOTTO_CRON_INTERVAL = "off"
+  UK_THUNDERBALL_CRON_INTERVAL = "off"
+  UK_SET_FOR_LIFE_CRON_INTERVAL = "off"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 250
+    soft_limit = 200
+
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "10s"
+  method = "GET"
+  path = "/ping"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
