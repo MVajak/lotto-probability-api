@@ -40,6 +40,7 @@ import {
 import {
   AuthController,
   LottoProbabilityController,
+  PingController,
   SubscriptionAdminController,
   SubscriptionController,
   SubscriptionTierController,
@@ -111,6 +112,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.bind('clients.UKLotteryClient').toClass(UKLotteryClient);
 
     // Controllers
+    this.controller(PingController);
     this.controller(LottoProbabilityController);
     this.controller(AuthController);
     this.controller(SubscriptionController);

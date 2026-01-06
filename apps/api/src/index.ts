@@ -16,10 +16,6 @@ export async function main(options: ApplicationConfig = {}) {
 }
 
 if (require.main === module) {
-  // Debug: Log environment variables
-  console.log('Environment:', { HOST: process.env.HOST, PORT: process.env.PORT });
-
-  // Run the application
   const appConfig = {
     rest: {
       port: config.app.port,
