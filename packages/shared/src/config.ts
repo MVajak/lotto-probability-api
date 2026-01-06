@@ -43,4 +43,9 @@ export const config = {
     megaMillionsResourceId: '5xaw-6ayf',
     cash4LifeResourceId: 'kwxv-fwze',
   },
+  email: {
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    fromEmail: process.env.FROM_EMAIL || 'noreply@yourdomain.com',
+    appName: process.env.APP_NAME || 'LottoLens',
+  },
 };

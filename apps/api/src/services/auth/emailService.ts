@@ -1,16 +1,16 @@
-import {BindingScope, inject, injectable} from '@loopback/core';
+import {BindingScope, injectable} from '@loopback/core';
+import {config} from '@lotto/shared';
 
 @injectable({scope: BindingScope.SINGLETON})
 export class EmailService {
   private readonly RESEND_API_KEY: string;
-  private readonly FROM_EMAIL: string = 'noreply@yourdomain.com'; // TODO: Change this!
-  private readonly APP_NAME: string = 'LottoProbability';
+  private readonly FROM_EMAIL: string;
+  private readonly APP_NAME: string;
 
-  constructor(
-    @inject('email.resendApiKey', {optional: true})
-    resendApiKey?: string,
-  ) {
-    this.RESEND_API_KEY = resendApiKey || process.env.RESEND_API_KEY || '';
+  constructor() {
+    this.RESEND_API_KEY = config.email.resendApiKey;
+    this.FROM_EMAIL = config.email.fromEmail;
+    this.APP_NAME = config.email.appName;
 
     if (!this.RESEND_API_KEY) {
       console.warn(
