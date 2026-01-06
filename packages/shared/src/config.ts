@@ -20,20 +20,17 @@ export const config = {
     host: process.env.OPEN_API_SPEC_HOST || 'localhost',
   },
   crons: {
-    resetDrawsInterval: process.env.DRAWS_RESET_INTERVAL || 'off',
+    resetDrawsInterval: process.env.DRAWS_RESET_CRON_INTERVAL || 'off',
     // Estonian lotteries
-    euroJackpotInterval: process.env.EURO_JACKPOT_CRON_INTERVAL || 'off',
-    vikingLottoInterval: process.env.VIKING_LOTTO_CRON_INTERVAL || 'off',
-    bingoLottoInterval: process.env.BINGO_LOTTO_CRON_INTERVAL || 'off',
-    jokkerLottoInterval: process.env.JOKKER_LOTTO_CRON_INTERVAL || 'off',
-    kenoLottoInterval: process.env.KENO_LOTTO_CRON_INTERVAL || 'off',
+    euroJackpotInterval: process.env.EST_EURO_JACKPOT_CRON_INTERVAL || 'off',
+    vikingLottoInterval: process.env.EST_VIKING_LOTTO_CRON_INTERVAL || 'off',
+    bingoLottoInterval: process.env.EST_BINGO_LOTTO_CRON_INTERVAL || 'off',
+    jokkerLottoInterval: process.env.EST_JOKKER_LOTTO_CRON_INTERVAL || 'off',
+    kenoLottoInterval: process.env.EST_KENO_LOTTO_CRON_INTERVAL || 'off',
     // US lotteries (~3 hours after draws)
-    // '0 7 * * 0,2,4'
-    powerballInterval: process.env.POWERBALL_CRON_INTERVAL || 'off', // Sun,Tue,Thu 7AM UTC
-    // '0 7 * * 3,6'
-    megaMillionsInterval: process.env.MEGA_MILLIONS_CRON_INTERVAL || 'off', // Wed,Sat 7AM UTC
-    // '0 5 * * *'
-    cash4LifeInterval: process.env.CASH4LIFE_CRON_INTERVAL || 'off', // Daily 5AM UTC
+    powerballInterval: process.env.US_POWERBALL_CRON_INTERVAL || 'off', // Sun,Tue,Thu 7AM UTC
+    megaMillionsInterval: process.env.US_MEGA_MILLIONS_CRON_INTERVAL || 'off', // Wed,Sat 7AM UTC
+    cash4LifeInterval: process.env.US_CASH4LIFE_CRON_INTERVAL || 'off', // Daily 5AM UTC
     // UK lotteries
     ukEuroMillionsInterval: process.env.UK_EUROMILLIONS_CRON_INTERVAL || 'off', // Tue,Fri
     ukLottoInterval: process.env.UK_LOTTO_CRON_INTERVAL || 'off', // Wed,Sat
