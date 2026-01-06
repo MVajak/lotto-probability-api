@@ -1,18 +1,21 @@
 import {BindingScope, injectable} from '@loopback/core';
 import {config} from '@lotto/shared';
+import {Resend} from 'resend';
 
 @injectable({scope: BindingScope.SINGLETON})
 export class EmailService {
-  private readonly RESEND_API_KEY: string;
+  private readonly resend: Resend | null;
   private readonly FROM_EMAIL: string;
   private readonly APP_NAME: string;
 
   constructor() {
-    this.RESEND_API_KEY = config.email.resendApiKey;
     this.FROM_EMAIL = config.email.fromEmail;
     this.APP_NAME = config.email.appName;
 
-    if (!this.RESEND_API_KEY) {
+    if (config.email.resendApiKey) {
+      this.resend = new Resend(config.email.resendApiKey);
+    } else {
+      this.resend = null;
       console.warn(
         '⚠️  WARNING: RESEND_API_KEY not set. Email sending will be simulated (logged to console). Add RESEND_API_KEY to .env for production.',
       );
@@ -23,7 +26,7 @@ export class EmailService {
    * Send OTP verification code email
    */
   async sendOTPEmail(email: string, code: string): Promise<void> {
-    if (!this.RESEND_API_KEY) {
+    if (!this.resend) {
       // Development mode - log to console
       console.log('\n╔═══════════════════════════════════════════════════════════════════╗');
       console.log('║  📧  [DEV MODE] OTP Verification Code                             ║');
@@ -38,31 +41,19 @@ export class EmailService {
       return;
     }
 
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: this.FROM_EMAIL,
-          to: email,
-          subject: `${code} is your ${this.APP_NAME} verification code`,
-          html: this.generateOTPEmailHTML(code),
-        }),
-      });
+    const {data, error} = await this.resend.emails.send({
+      from: `${this.APP_NAME} <${this.FROM_EMAIL}>`,
+      to: [email],
+      subject: `Your ${this.APP_NAME} login verification code`,
+      html: this.generateOTPEmailHTML(code),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`Email sending failed: ${response.statusText} - ${errorData}`);
-      }
-
-      console.log(`✅ OTP email sent to ${email}`);
-    } catch (error) {
+    if (error) {
       console.error('❌ Failed to send OTP email:', error);
-      throw error;
+      throw new Error(`Email sending failed: ${error.message}`);
     }
+
+    console.log(`✅ OTP email sent to ${email}`, data);
   }
 
   /**
