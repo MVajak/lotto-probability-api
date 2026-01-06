@@ -12,8 +12,8 @@ export const config = {
     database: process.env.POSTGRES_DB || 'lotto_probability',
   },
   app: {
-    port: Number(process.env.APP_PORT ?? 3000),
-    host: process.env.APP_HOST || '127.0.0.1',
+    port: Number(process.env.PORT ?? 3000),
+    host: process.env.HOST || '0.0.0.0',
   },
   openApiSpec: {
     port: Number(process.env.OPEN_API_SPEC_POST ?? 3000),

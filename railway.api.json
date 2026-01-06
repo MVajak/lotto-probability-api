@@ -4,6 +4,8 @@
     "buildCommand": "pnpm install && pnpm build"
   },
   "deploy": {
-    "startCommand": "pnpm migrate && node apps/api/dist/index.js"
+    "startCommand": "pnpm migrate && node apps/api/dist/index.js",
+    "healthcheckPath": "/ping",
+    "healthcheckTimeout": 300
   }
 }

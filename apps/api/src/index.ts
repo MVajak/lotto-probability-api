@@ -1,3 +1,4 @@
+import {config} from '@lotto/shared';
 import {type ApplicationConfig, LottoApiApplication} from './application';
 
 export * from './application';
@@ -19,10 +20,10 @@ if (require.main === module) {
   console.log('Environment:', { HOST: process.env.HOST, PORT: process.env.PORT });
 
   // Run the application
-  const config = {
+  const appConfig = {
     rest: {
-      port: +(process.env.PORT ?? 3000),
-      host: process.env.HOST ?? '127.0.0.1',
+      port: config.app.port,
+      host: config.app.host,
       // The `gracePeriodForClose` provides a graceful close for http/https
       // servers with keep-alive clients. The default value is `Infinity`
       // (don't force-close). If you want to immediately destroy all sockets
@@ -35,7 +36,7 @@ if (require.main === module) {
       },
     },
   };
-  main(config).catch(err => {
+  main(appConfig).catch(err => {
     console.error('Cannot start the application.', err);
     process.exit(1);
   });
