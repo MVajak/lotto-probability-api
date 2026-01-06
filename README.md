@@ -89,7 +89,143 @@ Run worker only:
 pnpm dev:worker
 ```
 
-## Production Deployment (Render)
+## Production Deployment (Fly.io) - Recommended ⭐
+
+Fly.io offers the best value with a generous free tier that can host your entire stack at no cost!
+
+### Prerequisites
+
+1. **Install Fly CLI**:
+   ```sh
+   # macOS/Linux
+   curl -L https://fly.io/install.sh | sh
+
+   # Windows
+   iwr https://fly.io/install.ps1 -useb | iex
+   ```
+
+2. **Sign up and authenticate**:
+   ```sh
+   fly auth signup  # or: fly auth login
+   ```
+
+### Step 1: Create PostgreSQL Database
+
+```sh
+fly postgres create --name lotto-probability-db --region fra --initial-cluster-size 1 --vm-size shared-cpu-1x --volume-size 1
+```
+
+Save the connection details shown (you'll need them for environment variables).
+
+### Step 2: Deploy API Service
+
+```sh
+# From project root
+fly launch --config fly.api.toml --no-deploy
+
+# Set secrets
+fly secrets set \
+  DATABASE_URL="postgres://user:password@host:5432/dbname" \
+  JWT_SECRET="your-secret-jwt-key" \
+  STRIPE_SECRET_KEY="sk_..." \
+  STRIPE_WEBHOOK_SECRET="whsec_..." \
+  RESEND_API_KEY="re_..." \
+  -a lotto-probability-api
+
+# Deploy
+fly deploy --config fly.api.toml
+```
+
+### Step 3: Deploy Worker Service
+
+```sh
+# From project root
+fly launch --config fly.worker.toml --no-deploy
+
+# Set secrets (same DATABASE_URL as API)
+fly secrets set \
+  DATABASE_URL="postgres://user:password@host:5432/dbname" \
+  -a lotto-probability-worker
+
+# Optional: Configure cron intervals
+fly secrets set \
+  POWERBALL_CRON_INTERVAL="0 7 * * 0,2,4" \
+  MEGA_MILLIONS_CRON_INTERVAL="0 7 * * 3,6" \
+  -a lotto-probability-worker
+
+# Deploy
+fly deploy --config fly.worker.toml
+```
+
+### Step 4: Verify Deployment
+
+```sh
+# Check API status
+fly status -a lotto-probability-api
+
+# View API logs
+fly logs -a lotto-probability-api
+
+# Check worker status
+fly status -a lotto-probability-worker
+
+# Open API in browser
+fly open -a lotto-probability-api
+```
+
+### Environment Variables Reference
+
+Set these secrets for both services:
+
+**Required:**
+- `DATABASE_URL` - PostgreSQL connection string (from Step 1)
+- `JWT_SECRET` - Secure random string for JWT signing
+- `STRIPE_SECRET_KEY` - Stripe API secret key
+- `STRIPE_WEBHOOK_SECRET` - Stripe webhook secret
+
+**Optional:**
+- `RESEND_API_KEY` - For email sending (will log to console if not set)
+- `OPEN_API_SPEC_HOST` - Your custom domain (if using one)
+- Cron intervals for lottery data fetching (see fly.worker.toml)
+
+### Costs
+
+**Free Tier Includes:**
+- 3 shared-cpu VMs with 256MB RAM
+- 3GB persistent storage
+- 160GB outbound transfer
+- **Estimated cost: $0/month** (if within limits) or ~$5-10/month
+
+### Updating Your App
+
+```sh
+# Update API
+fly deploy --config fly.api.toml
+
+# Update Worker
+fly deploy --config fly.worker.toml
+```
+
+### Useful Commands
+
+```sh
+# View logs in real-time
+fly logs -a lotto-probability-api -f
+
+# SSH into container
+fly ssh console -a lotto-probability-api
+
+# Scale up/down
+fly scale count 2 -a lotto-probability-api
+fly scale memory 512 -a lotto-probability-api
+
+# Check costs
+fly dashboard -a lotto-probability-api
+```
+
+---
+
+## Alternative: Production Deployment (Render)
 
 ### Quick Deploy
 
