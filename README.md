@@ -89,183 +89,164 @@ Run worker only:
 pnpm dev:worker
 ```
 
-## Production Deployment (Fly.io) - Recommended ⭐
+## Production Deployment (Railway) ⭐
 
-Fly.io offers the best value with a generous free tier that can host your entire stack at no cost!
+Railway provides the simplest deployment experience with everything managed in one dashboard.
 
-### Prerequisites
+### Quick Deploy (5 Minutes)
 
-1. **Install Fly CLI**:
-   ```sh
-   # macOS/Linux
-   curl -L https://fly.io/install.sh | sh
+**Cost: ~$15/month** (PostgreSQL ~$5 + API ~$5 + Worker ~$5)
 
-   # Windows
-   iwr https://fly.io/install.ps1 -useb | iex
-   ```
+### Step 1: Create New Project
 
-2. **Sign up and authenticate**:
-   ```sh
-   fly auth signup  # or: fly auth login
-   ```
+1. Go to [railway.app](https://railway.app) and sign in with GitHub
+2. Click "New Project"
+3. Select "Deploy from GitHub repo"
+4. Choose your `lotto-probability-api` repository
+5. Railway will create a project
 
-### Step 1: Create PostgreSQL Database
+### Step 2: Add PostgreSQL Database
 
-```sh
-fly postgres create --name lotto-probability-db --region fra --initial-cluster-size 1 --vm-size shared-cpu-1x --volume-size 1
-```
+1. In your project, click "+ New"
+2. Select "Database" → "Add PostgreSQL"
+3. Railway automatically provisions the database
+4. The `DATABASE_URL` is automatically available to all services in your project
 
-Save the connection details shown (you'll need them for environment variables).
+### Step 3: Add API Service
 
-### Step 2: Deploy API Service
+1. Click "+ New" → "GitHub Repo"
+2. Select your repository (same one)
+3. Configure the service:
+   - **Service Name**: `api`
+   - **Start Command**: `pnpm start:api`
+   - **Build Command**: (leave empty - Railway auto-detects)
+4. Railway will automatically build and deploy
 
-```sh
-# From project root
-fly launch --config fly.api.toml --no-deploy
+### Step 4: Add Worker Service
 
-# Set secrets
-fly secrets set \
-  DATABASE_URL="postgres://user:password@host:5432/dbname" \
-  JWT_SECRET="your-secret-jwt-key" \
-  STRIPE_SECRET_KEY="sk_..." \
-  STRIPE_WEBHOOK_SECRET="whsec_..." \
-  RESEND_API_KEY="re_..." \
-  -a lotto-probability-api
+1. Click "+ New" → "GitHub Repo"
+2. Select your repository again (yes, same repo!)
+3. Configure the service:
+   - **Service Name**: `worker`
+   - **Start Command**: `pnpm start:worker`
+   - **Build Command**: (leave empty - Railway auto-detects)
+4. Railway will automatically build and deploy
 
-# Deploy
-fly deploy --config fly.api.toml
-```
+### Step 5: Set Environment Variables
 
-### Step 3: Deploy Worker Service
-
-```sh
-# From project root
-fly launch --config fly.worker.toml --no-deploy
-
-# Set secrets (same DATABASE_URL as API)
-fly secrets set \
-  DATABASE_URL="postgres://user:password@host:5432/dbname" \
-  -a lotto-probability-worker
-
-# Optional: Configure cron intervals
-fly secrets set \
-  POWERBALL_CRON_INTERVAL="0 7 * * 0,2,4" \
-  MEGA_MILLIONS_CRON_INTERVAL="0 7 * * 3,6" \
-  -a lotto-probability-worker
-
-# Deploy
-fly deploy --config fly.worker.toml
-```
-
-### Step 4: Verify Deployment
-
-```sh
-# Check API status
-fly status -a lotto-probability-api
-
-# View API logs
-fly logs -a lotto-probability-api
-
-# Check worker status
-fly status -a lotto-probability-worker
-
-# Open API in browser
-fly open -a lotto-probability-api
-```
-
-### Environment Variables Reference
-
-Set these secrets for both services:
+Click on the **API service** and add variables:
 
 **Required:**
-- `DATABASE_URL` - PostgreSQL connection string (from Step 1)
-- `JWT_SECRET` - Secure random string for JWT signing
-- `STRIPE_SECRET_KEY` - Stripe API secret key
-- `STRIPE_WEBHOOK_SECRET` - Stripe webhook secret
+```
+JWT_SECRET=your-secure-random-jwt-secret
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
 
 **Optional:**
-- `RESEND_API_KEY` - For email sending (will log to console if not set)
-- `OPEN_API_SPEC_HOST` - Your custom domain (if using one)
-- Cron intervals for lottery data fetching (see fly.worker.toml)
+```
+RESEND_API_KEY=re_...
+OPEN_API_SPEC_HOST=your-api-domain.railway.app
+PORT=3000
+HOST=0.0.0.0
+```
 
-### Costs
+Click on the **Worker service** and add the same variables (Railway shares `DATABASE_URL` automatically).
 
-**Free Tier Includes:**
-- 3 shared-cpu VMs with 256MB RAM
-- 3GB persistent storage
-- 160GB outbound transfer
-- **Estimated cost: $0/month** (if within limits) or ~$5-10/month
+**Optional - Configure Cron Jobs:**
+```
+POWERBALL_CRON_INTERVAL=0 7 * * 0,2,4
+MEGA_MILLIONS_CRON_INTERVAL=0 7 * * 3,6
+CASH4LIFE_CRON_INTERVAL=0 5 * * *
+```
+Set any you don't need to `off`.
+
+### Step 6: Run Database Migrations
+
+After the API service deploys:
+
+1. Click on the **API service**
+2. Go to "Settings" tab
+3. Scroll to "Deploy"
+4. Add **Custom Start Command**: `pnpm migrate && pnpm start:api`
+5. Redeploy the service
+
+Or run migrations manually once via the Railway CLI:
+```sh
+railway login
+railway link
+railway run pnpm migrate
+```
+
+### Step 7: Verify Deployment
+
+1. Click on the **API service**
+2. Go to "Settings" → "Networking"
+3. Click "Generate Domain" to get a public URL
+4. Visit `https://your-api.railway.app/ping` to verify it's running
+5. Visit `https://your-api.railway.app/explorer` to see the API docs
+
+### Features You Get
+
+✅ **Auto-deploy on git push** - Push to main and Railway deploys automatically
+✅ **Unified dashboard** - All services, logs, and metrics in one place
+✅ **Automatic HTTPS** - SSL certificates included
+✅ **Easy rollbacks** - One-click rollback to previous deployments
+✅ **Environment branching** - Create staging environments easily
+✅ **Logs & monitoring** - Built-in logging and performance metrics
 
 ### Updating Your App
 
+Just push to your GitHub repository:
 ```sh
-# Update API
-fly deploy --config fly.api.toml
-
-# Update Worker
-fly deploy --config fly.worker.toml
+git push origin main
 ```
 
-### Useful Commands
+Railway automatically:
+1. Detects the push
+2. Builds your services
+3. Runs tests (if configured)
+4. Deploys the new version
+5. Zero-downtime deployment
 
+### Useful Railway Commands
+
+View logs:
 ```sh
-# View logs in real-time
-fly logs -a lotto-probability-api -f
-
-# SSH into container
-fly ssh console -a lotto-probability-api
-
-# Scale up/down
-fly scale count 2 -a lotto-probability-api
-fly scale memory 512 -a lotto-probability-api
-
-# Check costs
-fly dashboard -a lotto-probability-api
+railway logs
 ```
 
----
+Run commands:
+```sh
+railway run pnpm migrate
+railway run pnpm migrate:create new-migration
+```
 
-## Alternative: Production Deployment (Render)
+Open dashboard:
+```sh
+railway open
+```
 
-### Quick Deploy
+### Cost Breakdown
 
-1. **Push to GitHub**: Ensure your code is in a GitHub repository
+- **PostgreSQL**: ~$5/month (500MB storage, shared CPU)
+- **API Service**: ~$5/month (512MB RAM, shared CPU)
+- **Worker Service**: ~$5/month (512MB RAM, shared CPU)
+- **Total**: ~$15/month
 
-2. **Deploy to Render**:
-   - Go to [render.com](https://render.com)
-   - Click "New +" → "Blueprint"
-   - Connect your GitHub repository
-   - Render will automatically detect `render.yaml` and create all services
+**Includes:**
+- Automatic deploys
+- HTTPS/SSL
+- Logging & monitoring
+- 100GB bandwidth
+- Unlimited deployments
 
-3. **Set environment variables** in Render dashboard:
-   - `STRIPE_SECRET_KEY`: Your Stripe secret key
-   - `STRIPE_WEBHOOK_SECRET`: Your Stripe webhook secret
-   - `RESEND_API_KEY`: Your Resend API key (optional)
-   - Configure cron intervals for lottery data fetching (optional)
+### Custom Domain (Optional)
 
-### Manual Render Setup
-
-If not using Blueprint, create these services manually:
-
-1. **PostgreSQL Database**
-   - Name: `lotto-probability-db`
-   - Plan: Starter or higher
-   - Region: Frankfurt (or your preference)
-
-2. **Web Service (API)**
-   - Name: `lotto-probability-api`
-   - Environment: Node
-   - Build Command: `pnpm install && pnpm build && pnpm migrate`
-   - Start Command: `pnpm start:api`
-   - Health Check Path: `/ping`
-   - Connect to database and set environment variables
-
-3. **Background Worker**
-   - Name: `lotto-probability-worker`
-   - Environment: Node
-   - Build Command: `pnpm install && pnpm build`
-   - Start Command: `pnpm start:worker`
-   - Connect to same database
+1. Click on API service → "Settings" → "Networking"
+2. Add your custom domain
+3. Update your DNS records as shown
+4. Railway handles SSL automatically
 
 ## Database Migrations
 
@@ -313,8 +294,7 @@ lotto-probability-api/
 │   ├── database/     # Database models, repositories
 │   └── shared/       # Shared utilities and config
 ├── migrations/       # PostgreSQL migrations
-├── .env.example      # Example environment variables
-└── render.yaml       # Render deployment configuration
+└── .env.example      # Example environment variables
 ```
 
 ## Subscription Tiers
