@@ -73,13 +73,20 @@ export abstract class AbstractLottoDrawCronService {
 
   /**
    * Get the default date range for regular cron fetches
-   * Returns last 24 hours - sufficient for scheduled cron jobs
+   * Returns last 6 months - TEMPORARY
    */
   protected getDefaultDateRange(): {dateFrom: Date; dateTo: Date} {
     const now = new Date();
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    return {dateFrom: twentyFourHoursAgo, dateTo: now};
+    const sixMonthsAgo = new Date(now);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    return {dateFrom: sixMonthsAgo, dateTo: now};
   }
+
+  // protected getDefaultDateRange(): {dateFrom: Date; dateTo: Date} {
+  //   const now = new Date();
+  //   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  //   return {dateFrom: twentyFourHoursAgo, dateTo: now};
+  // }
 
   /**
    * Fetch draws from the source API and transform to common format
@@ -170,6 +177,9 @@ export abstract class AbstractLottoDrawCronService {
         if (!matchingDraw) continue;
 
         for (const result of draw.results) {
+          // Skip results with null winningNumber (required by DB schema)
+          if (!result.winningNumber) continue;
+
           drawResults.push(
             new LottoDrawResultCreateDto({
               winClass: result.winClass,

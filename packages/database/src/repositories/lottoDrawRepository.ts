@@ -38,6 +38,7 @@ export class LottoDrawRepository extends BaseRepository<
    * @param dateTo - End date
    * @param position - Optional position (for positional games like Jokker)
    * @param useSecondaryNumbers - If true, search in sec_winning_number; if false, search in winning_number
+   * @param winClass - Optional win class filter (for games like BINGO with multiple prize tiers)
    * @param options - Query options
    * @returns Array of draws with their results
    */
@@ -48,6 +49,7 @@ export class LottoDrawRepository extends BaseRepository<
     dateTo: Date,
     position?: number,
     useSecondaryNumbers?: boolean,
+    winClass?: number,
     options?: Options,
   ): Promise<LottoDraw[]> {
     const connector = this.dataSource.connector;
@@ -84,11 +86,20 @@ export class LottoDrawRepository extends BaseRepository<
     `;
 
     const params: (string | Date | number)[] = [gameTypeName, dateFrom, dateTo, number];
+    let paramIndex = 5;
 
-    // Add position filter for positional games
+    // Add position filter for positional games (like Jokker)
     if (position !== undefined) {
-      sql += ' AND ldr.win_class = $5';
+      sql += ` AND ldr.win_class = $${paramIndex}`;
       params.push(position);
+      paramIndex++;
+    }
+
+    // Add win class filter for games with multiple prize tiers (like BINGO)
+    if (winClass !== undefined) {
+      sql += ` AND ldr.win_class = $${paramIndex}`;
+      params.push(winClass);
+      paramIndex++;
     }
 
     sql += ' ORDER BY ld.draw_date DESC';

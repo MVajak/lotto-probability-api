@@ -60,7 +60,7 @@ export class NumberDetailService {
     request: NumberDetailRequestDto,
     subscriptionTier: SubscriptionTierCode,
   ): Promise<NumberDetailResponseDto> {
-    const {lottoType, number, dateFrom, dateTo, useSecondaryNumbers, position} = request;
+    const {lottoType, number, dateFrom, dateTo, useSecondaryNumbers, position, winClass} = request;
 
     // Validate inputs
     this.validateRequest(request);
@@ -82,6 +82,7 @@ export class NumberDetailService {
       number,
       position,
       useSecondaryNumbers,
+      winClass,
     );
 
     // Build occurrences with parsed numbers
@@ -215,6 +216,7 @@ export class NumberDetailService {
     number: number,
     position?: number,
     useSecondaryNumbers?: boolean,
+    winClass?: number,
   ) {
     return Promise.all([
       // Draws containing this number
@@ -225,6 +227,7 @@ export class NumberDetailService {
         endDate,
         position,
         useSecondaryNumbers,
+        winClass,
       ),
       // Total draws in period
       this.lottoDrawRepository.count({

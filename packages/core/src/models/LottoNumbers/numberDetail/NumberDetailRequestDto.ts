@@ -48,4 +48,11 @@ export class NumberDetailRequestDto {
     description: 'Position index for positional games (like Jokker)',
   })
   position?: number;
+
+  @property({
+    type: 'number',
+    required: false,
+    description: 'Win class for games with multiple prize tiers (like BINGO)',
+  })
+  winClass?: number;
 }
