@@ -71,23 +71,22 @@ export abstract class AbstractLottoDrawCronService {
     await this.saveLottoData(transformedDraws);
   }
 
-  /**
-   * Get the default date range for regular cron fetches
-   * Returns last 5 years - TEMPORARY
-   */
-  protected getDefaultDateRange(): {dateFrom: Date; dateTo: Date} {
-    const now = new Date();
-    const fiveYearsAgo = new Date(now);
-    fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
-    return {dateFrom: fiveYearsAgo, dateTo: now};
-  }
-
-  // TODO
+  // /**
+  //  * Get the default date range for regular cron fetches
+  //  * Returns last 5 years - TEMPORARY
+  //  */
   // protected getDefaultDateRange(): {dateFrom: Date; dateTo: Date} {
   //   const now = new Date();
-  //   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  //   return {dateFrom: twentyFourHoursAgo, dateTo: now};
+  //   const fiveYearsAgo = new Date(now);
+  //   fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+  //   return {dateFrom: fiveYearsAgo, dateTo: now};
   // }
+
+  protected getDefaultDateRange(): {dateFrom: Date; dateTo: Date} {
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    return {dateFrom: twentyFourHoursAgo, dateTo: now};
+  }
 
   /**
    * Fetch draws from the source API and transform to common format
