@@ -8,13 +8,18 @@ import type {
   UKLottoDrawDto,
   UKSetForLifeDrawDto,
   UKThunderballDrawDto,
-} from '../models/UKLotto';
+} from '../models';
 import type {LoggerService} from '../services/logger/loggerService';
-import {parseCSVRows} from '../utils/csv';
+import {parseCSVRows} from '../utils';
 
 export const UK_LOTTERY_BASE_URL = 'https://www.national-lottery.co.uk';
 
-export type UKLotteryGameSlug = 'euromillions' | 'lotto' | 'thunderball' | 'set-for-life' | 'lotto-hotpicks';
+export type UKLotteryGameSlug =
+  | 'euromillions'
+  | 'lotto'
+  | 'thunderball'
+  | 'set-for-life'
+  | 'lotto-hotpicks';
 
 @injectable({scope: BindingScope.SINGLETON})
 export class UKLotteryClient {

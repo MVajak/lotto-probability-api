@@ -3,17 +3,19 @@ import axios, {type AxiosInstance} from 'axios';
 import {omit} from 'lodash';
 
 import {LottoType} from '@lotto/shared';
-import type {EstonianLottoDrawDto} from '../../models/EstonianLotto/EstonianLottoDrawDto';
-import type {EstonianLottoDrawsResultDto} from '../../models/EstonianLotto/EstonianLottoDrawsResultDto';
-import type {EstonianLottoPayloadDto} from '../../models/EstonianLotto/EstonianLottoPayloadDto';
+import type {
+  EstonianLottoDrawDto,
+  EstonianLottoDrawsResultDto,
+  EstonianLottoPayloadDto,
+} from '../../models';
 import {LoggerService} from '../../services/logger/loggerService';
+import {createStubInstance, createStubInstances} from '../../test-utils/mocking';
 import {
   ESTONIAN_LOTTO_DRAWS_URL,
   ESTONIAN_LOTTO_RESULT_URL,
   EstonianLottoApiClient,
 } from '../EstonianLottoApiClient';
 import {getEstonianLottoHeaders} from '../helpers/getEstonianLottoHeaders';
-import {createStubInstance, createStubInstances} from '../test-utils/mocking';
 import type {EstonianLottoSearchDto} from '../types';
 
 describe('EstonianLottoApiClient', () => {
@@ -68,15 +70,15 @@ describe('EstonianLottoApiClient', () => {
 
   describe('getEstonianLottoDraws', () => {
     const fakePayload = createStubInstance<EstonianLottoPayloadDto>({
-      gameTypes: LottoType.EURO,
+      gameTypes: LottoType.EUROJACKPOT,
       dateFrom: '2024-01-01',
     });
 
     const fakeResponseData: EstonianLottoDrawsResultDto = {
       drawCount: 2,
       draws: createStubInstances<EstonianLottoDrawDto>([
-        {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
-        {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
+        {gameTypeName: LottoType.EUROJACKPOT, drawLabel: '2024-01-01', results: []},
+        {gameTypeName: LottoType.EUROJACKPOT, drawLabel: '2024-01-01', results: []},
       ]),
     };
 
@@ -147,7 +149,7 @@ describe('EstonianLottoApiClient', () => {
   describe('getAllEstonianLottoDraws', () => {
     let getDrawsStub: sinon.SinonStub;
     const searchDto = createStubInstance<EstonianLottoSearchDto>({
-      lottoType: LottoType.EURO,
+      lottoType: LottoType.EUROJACKPOT,
       dateFrom: '2024-01-01',
       dateTo: '2024-01-31',
     });
@@ -163,8 +165,8 @@ describe('EstonianLottoApiClient', () => {
     it('should return all results from a single-page response', async () => {
       const firstPageResult: EstonianLottoDrawsResultDto = {
         draws: createStubInstances<EstonianLottoDrawDto>([
-          {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
-          {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
+          {gameTypeName: LottoType.EUROJACKPOT, drawLabel: '2024-01-01', results: []},
+          {gameTypeName: LottoType.EUROJACKPOT, drawLabel: '2024-01-01', results: []},
         ]),
         drawCount: 2,
       };
@@ -203,21 +205,21 @@ describe('EstonianLottoApiClient', () => {
     it('should return combined results from multiple pages', async () => {
       const firstPage: EstonianLottoDrawsResultDto = {
         draws: createStubInstances<EstonianLottoDrawDto>([
-          {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
+          {gameTypeName: LottoType.EUROJACKPOT, drawLabel: '2024-01-01', results: []},
         ]),
         drawCount: 3,
       };
 
       const secondPage: EstonianLottoDrawsResultDto = {
         draws: createStubInstances<EstonianLottoDrawDto>([
-          {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
+          {gameTypeName: LottoType.EUROJACKPOT, drawLabel: '2024-01-01', results: []},
         ]),
         drawCount: 3,
       };
 
       const thirdPage: EstonianLottoDrawsResultDto = {
         draws: createStubInstances<EstonianLottoDrawDto>([
-          {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
+          {gameTypeName: LottoType.EUROJACKPOT, drawLabel: '2024-01-01', results: []},
         ]),
         drawCount: 3,
       };
@@ -235,7 +237,7 @@ describe('EstonianLottoApiClient', () => {
     it('should stop fetching if a page returns empty draws', async () => {
       const firstPage: EstonianLottoDrawsResultDto = {
         draws: createStubInstances<EstonianLottoDrawDto>([
-          {gameTypeName: LottoType.EURO, drawLabel: '2024-01-01', results: []},
+          {gameTypeName: LottoType.EUROJACKPOT, drawLabel: '2024-01-01', results: []},
         ]),
         drawCount: 3,
       };

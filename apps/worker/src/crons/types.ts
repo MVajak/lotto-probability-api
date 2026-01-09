@@ -18,7 +18,7 @@ export const LOTTERY_CONFIG: Record<
   }
 > = {
   // Estonian lotteries
-  [LottoType.EURO]: {
+  [LottoType.EUROJACKPOT]: {
     configKey: 'euroJackpotInterval',
     region: 'estonian',
     historyStart: '2021-05-28T22:00:00',
@@ -28,40 +28,40 @@ export const LOTTERY_CONFIG: Record<
     region: 'estonian',
     historyStart: '2021-05-26T20:00:00',
   },
-  [LottoType.BINGO]: {
+  [LottoType.EST_BINGO]: {
     configKey: 'bingoLottoInterval',
     region: 'estonian',
     historyStart: '2021-05-26T18:30:00',
   },
-  [LottoType.JOKKER]: {
+  [LottoType.EST_JOKKER]: {
     configKey: 'jokkerLottoInterval',
     region: 'estonian',
     historyStart: '2023-01-03T18:35:00',
   },
-  [LottoType.KENO]: {
+  [LottoType.EST_KENO]: {
     configKey: 'kenoLottoInterval',
     region: 'estonian',
     historyStart: '2021-05-25T14:15:00',
   },
   // US lotteries
-  [LottoType.POWERBALL]: {
+  [LottoType.US_POWERBALL]: {
     configKey: 'powerballInterval',
     region: 'us',
     historyStart: '2019-12-01T00:00:00',
   },
-  [LottoType.MEGA_MILLIONS]: {
+  [LottoType.US_MEGA_MILLIONS]: {
     configKey: 'megaMillionsInterval',
     region: 'us',
     historyStart: '2019-12-01T00:00:00',
   },
-  [LottoType.CASH4LIFE]: {
+  [LottoType.US_CASH4LIFE]: {
     configKey: 'cash4LifeInterval',
     region: 'us',
     historyStart: '2019-12-01T00:00:00',
   },
   // UK lotteries
-  [LottoType.UK_EUROMILLIONS]: {
-    configKey: 'ukEuroMillionsInterval',
+  [LottoType.EUROMILLIONS]: {
+    configKey: 'euroMillionsInterval',
     region: 'uk',
     historyStart: '2020-12-01T00:00:00',
   },

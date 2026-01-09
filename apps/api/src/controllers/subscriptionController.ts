@@ -1,6 +1,13 @@
 import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
-import {type Request, type Response, RestBindings, post, requestBody, response} from '@loopback/rest';
+import {
+  type Request,
+  type Response,
+  RestBindings,
+  post,
+  requestBody,
+  response,
+} from '@loopback/rest';
 
 import type {LoggerService, SubscriptionService} from '@lotto/core';
 
@@ -51,7 +58,9 @@ export class SubscriptionController {
     @requestBody() body: CreateCheckoutSessionRequest,
     @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
   ): Promise<{checkoutUrl: string}> {
-    this.loggerService.log(`Checkout session request: user=${currentUser.id} tier=${body.tierCode}`);
+    this.loggerService.log(
+      `Checkout session request: user=${currentUser.id} tier=${body.tierCode}`,
+    );
     const checkoutUrl = await this.subscriptionService.createCheckoutSession({
       userId: currentUser.id,
       email: currentUser.email,
@@ -122,7 +131,9 @@ export class SubscriptionController {
       await this.subscriptionService.handleWebhook(rawBody, signature);
       return {received: true};
     } catch (err) {
-      this.loggerService.log(`Webhook processing failed: ${err instanceof Error ? err.message : err}`);
+      this.loggerService.log(
+        `Webhook processing failed: ${err instanceof Error ? err.message : err}`,
+      );
       response.status(400);
       return {received: false};
     }

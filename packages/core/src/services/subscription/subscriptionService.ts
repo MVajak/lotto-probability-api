@@ -170,7 +170,9 @@ export class SubscriptionService {
     }
 
     // Resume in Stripe - capture the response
-    const stripeSub = await this.stripeService.resumeSubscription(subscription.stripeSubscriptionId);
+    const stripeSub = await this.stripeService.resumeSubscription(
+      subscription.stripeSubscriptionId,
+    );
 
     // Update local DB with period dates from Stripe
     const periodDates = this.extractPeriodDates(stripeSub);
@@ -385,7 +387,9 @@ export class SubscriptionService {
     });
 
     if (!subscription) {
-      this.loggerService.log(`Subscription not found for Stripe subscription ${stripeSubscriptionId}`);
+      this.loggerService.log(
+        `Subscription not found for Stripe subscription ${stripeSubscriptionId}`,
+      );
       return;
     }
 

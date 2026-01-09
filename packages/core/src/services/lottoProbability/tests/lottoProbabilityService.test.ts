@@ -1,8 +1,8 @@
 import {expect, sinon} from '@loopback/testlab';
 
+import type {LottoDrawRelations, LottoDrawResult} from '@lotto/database';
 import {LottoType} from '@lotto/shared';
-import type {LottoDrawRelations, LottoDrawResult} from '../../../models';
-import type {LottoDrawSearchDto} from '../../../models/LottoNumbers';
+import type {LottoDrawSearchDto} from '../../../models';
 import {createStubInstance, createStubInstances} from '../../../test-utils/mocking';
 import {LoggerService} from '../../logger/loggerService';
 import {LottoDrawService} from '../../lottoDraw/lottoDrawService';
@@ -36,14 +36,14 @@ describe('LottoProbabilityService', () => {
 
   it('returns probability DTO for overall probability type', async () => {
     const data: LottoDrawSearchDto = {
-      lottoType: LottoType.EURO,
+      lottoType: LottoType.EUROJACKPOT,
       dateFrom: '2023-01-01',
       dateTo: '2023-01-31',
     };
 
     const result = await service.calculateProbability(data);
 
-    expect(result.lottoType).to.equal(LottoType.EURO);
+    expect(result.lottoType).to.equal(LottoType.EUROJACKPOT);
     expect(result.totalDraws).to.equal(1);
     expect(result.probabilityNumbers).to.have.length(1);
     expect(result.probabilityNumbers[0].winClass).to.equal(0);
@@ -53,7 +53,7 @@ describe('LottoProbabilityService', () => {
 
   it('returns probability DTO for positional probability type', async () => {
     const data: LottoDrawSearchDto = {
-      lottoType: LottoType.JOKKER,
+      lottoType: LottoType.EST_JOKKER,
       dateFrom: '2023-01-01',
       dateTo: '2023-01-31',
     };
@@ -71,7 +71,7 @@ describe('LottoProbabilityService', () => {
 
     const result = await service.calculateProbability(data);
 
-    expect(result.lottoType).to.equal(LottoType.JOKKER);
+    expect(result.lottoType).to.equal(LottoType.EST_JOKKER);
     expect(result.probabilityNumbers).to.have.length(1);
     expect(result.probabilityNumbers[0].winClass).to.equal(null);
     expect(result.probabilityNumbers[0].winningNumbersCount).to.be.Array();

@@ -48,11 +48,11 @@ export class USLottoDrawCronService extends AbstractLottoDrawCronService {
     dateTo: Date,
   ): Promise<TransformedDraw[]> {
     switch (lottoType) {
-      case LottoType.POWERBALL:
+      case LottoType.US_POWERBALL:
         return this.fetchAndTransformPowerball(dateFrom, dateTo);
-      case LottoType.MEGA_MILLIONS:
+      case LottoType.US_MEGA_MILLIONS:
         return this.fetchAndTransformMegaMillions(dateFrom, dateTo);
-      case LottoType.CASH4LIFE:
+      case LottoType.US_CASH4LIFE:
         return this.fetchAndTransformCash4Life(dateFrom, dateTo);
       default:
         this.loggerService.log(`Unsupported US lottery type: ${lottoType}`);
@@ -87,7 +87,7 @@ export class USLottoDrawCronService extends AbstractLottoDrawCronService {
       return {
         drawDate,
         drawLabel: generateUSLottoDrawLabel(drawDate),
-        gameTypeName: LottoType.POWERBALL,
+        gameTypeName: LottoType.US_POWERBALL,
         externalDrawId: null,
         results: [
           {
@@ -116,7 +116,7 @@ export class USLottoDrawCronService extends AbstractLottoDrawCronService {
       return {
         drawDate,
         drawLabel: generateUSLottoDrawLabel(drawDate),
-        gameTypeName: LottoType.MEGA_MILLIONS,
+        gameTypeName: LottoType.US_MEGA_MILLIONS,
         externalDrawId: null,
         results: [
           {
@@ -145,7 +145,7 @@ export class USLottoDrawCronService extends AbstractLottoDrawCronService {
       return {
         drawDate,
         drawLabel: generateUSLottoDrawLabel(drawDate),
-        gameTypeName: LottoType.CASH4LIFE,
+        gameTypeName: LottoType.US_CASH4LIFE,
         externalDrawId: null,
         results: [
           {

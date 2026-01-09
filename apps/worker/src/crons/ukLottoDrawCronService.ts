@@ -29,7 +29,7 @@ interface UKDrawDto {
 
 /**
  * Cron service for fetching and saving UK lottery draws
- * Handles: UK_EUROMILLIONS, UK_LOTTO, UK_THUNDERBALL, UK_SET_FOR_LIFE, UK_HOT_PICKS
+ * Handles: EUROMILLIONS, UK_LOTTO, UK_THUNDERBALL, UK_SET_FOR_LIFE, UK_HOT_PICKS
  */
 @injectable({scope: BindingScope.SINGLETON})
 export class UKLottoDrawCronService extends AbstractLottoDrawCronService {
@@ -57,11 +57,11 @@ export class UKLottoDrawCronService extends AbstractLottoDrawCronService {
     dateTo: Date,
   ): Promise<TransformedDraw[]> {
     switch (lottoType) {
-      case LottoType.UK_EUROMILLIONS:
+      case LottoType.EUROMILLIONS:
         return this.fetchAndTransform(
           () => this.ukLotteryClient.fetchEuroMillionsDraws(),
           transformEuroMillionsNumbers,
-          LottoType.UK_EUROMILLIONS,
+          LottoType.EUROMILLIONS,
           dateFrom,
           dateTo,
         );

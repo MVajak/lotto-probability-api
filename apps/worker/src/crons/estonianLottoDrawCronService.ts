@@ -14,7 +14,7 @@ import {AbstractLottoDrawCronService, type TransformedDraw} from './abstractLott
 
 /**
  * Cron service for fetching and saving Estonian lottery draws
- * Handles: EURO, VIKINGLOTTO, KENO, JOKKER, BINGO
+ * Handles: EUROJACKPOT, VIKINGLOTTO, KENO, JOKKER, BINGO
  */
 @injectable({scope: BindingScope.SINGLETON})
 export class EstonianLottoDrawCronService extends AbstractLottoDrawCronService {

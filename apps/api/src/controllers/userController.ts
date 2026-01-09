@@ -2,11 +2,7 @@ import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {del, get, getModelSchemaRef, patch, requestBody, response} from '@loopback/rest';
 
-import {
-  UpdateUserProfileDto,
-  type UserProfileResponse,
-  UserProfileResponseDto,
-} from '@lotto/core';
+import {UpdateUserProfileDto, type UserProfileResponse, UserProfileResponseDto} from '@lotto/core';
 import type {LoggerService, UserService} from '@lotto/core';
 
 import type {AuthenticatedUser} from '../types/auth.types';

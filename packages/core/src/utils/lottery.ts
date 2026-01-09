@@ -1,4 +1,7 @@
-import {LottoType, calculateTheoreticalProbability as calculateProbability} from '@lotto/shared';
+import {
+  type LottoType,
+  calculateTheoreticalProbability as calculateProbability,
+} from '@lotto/shared';
 import {
   type LotteryConfig,
   getLotteryConfig,
@@ -18,9 +21,9 @@ import {
  * @returns Number range with start and end values
  *
  * @example
- * getNumberRange(LottoType.EURO, false);  // {start: 1, end: 50}
- * getNumberRange(LottoType.EURO, true);   // {start: 1, end: 12}
- * getNumberRange(LottoType.BINGO, false, 5);  // {start: 31, end: 45} (center)
+ * getNumberRange(LottoType.EUROJACKPOT, false);  // {start: 1, end: 50}
+ * getNumberRange(LottoType.EUROJACKPOT, true);   // {start: 1, end: 12}
+ * getNumberRange(LottoType.EST_BINGO, false, 5);  // {start: 31, end: 45} (center)
  * getNumberRange(LottoType.ES_LA_PRIMITIVA, false, 2);  // {start: 0, end: 9} (reintegro)
  */
 export function getNumberRange(
@@ -34,7 +37,9 @@ export function getNumberRange(
   if (winClass !== undefined && config.winClassConfig?.[winClass]) {
     const wcConfig = config.winClassConfig[winClass];
     const range =
-      useSecondaryNumbers && wcConfig.secondaryRange ? wcConfig.secondaryRange : wcConfig.primaryRange;
+      useSecondaryNumbers && wcConfig.secondaryRange
+        ? wcConfig.secondaryRange
+        : wcConfig.primaryRange;
     return {start: range.min, end: range.max};
   }
 
@@ -60,7 +65,7 @@ export function getNumberRange(
  * @returns Theoretical probability (0 to 1)
  *
  * @example
- * const config = getLotteryConfig(LottoType.EURO);
+ * const config = getLotteryConfig(LottoType.EUROJACKPOT);
  * const prob = calculateLotteryTheoreticalProbability(config, false);
  * // Returns 5/50 = 0.10 (10%)
  */

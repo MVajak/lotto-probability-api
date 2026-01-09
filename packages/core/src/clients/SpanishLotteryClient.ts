@@ -2,14 +2,15 @@ import {BindingScope, inject, injectable} from '@loopback/core';
 import {HttpErrors} from '@loopback/rest';
 import axios from 'axios';
 
+import {LottoType} from '@lotto/shared';
 import type {SpanishLotteryDrawDto} from '../models';
 import type {LoggerService} from '../services/logger/loggerService';
 import {
   parseBonolotoDescription,
-  parseElGordoDescription, parseLaPrimitivaDescription,
+  parseElGordoDescription,
+  parseLaPrimitivaDescription,
   parseRSSDate,
 } from './helpers/spanishLottoTransformers';
-import {LottoType} from '@lotto/shared';
 
 export const SPANISH_LOTTERY_BASE_URL = 'https://www.loteriasyapuestas.es';
 

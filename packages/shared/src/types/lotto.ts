@@ -1,16 +1,13 @@
 export enum LottoType {
-  // European lotteries (Estonian)
-  EURO = 'EURO',
-  VIKINGLOTTO = 'VIKINGLOTTO',
-  BINGO = 'BINGO',
-  KENO = 'KENO',
-  JOKKER = 'JOKKER',
+  // Estonian
+  EST_BINGO = 'EST_BINGO',
+  EST_KENO = 'EST_KENO',
+  EST_JOKKER = 'EST_JOKKER',
   // US lotteries
-  POWERBALL = 'POWERBALL',
-  MEGA_MILLIONS = 'MEGA_MILLIONS',
-  CASH4LIFE = 'CASH4LIFE',
+  US_POWERBALL = 'US_POWERBALL',
+  US_MEGA_MILLIONS = 'US_MEGA_MILLIONS',
+  US_CASH4LIFE = 'US_CASH4LIFE',
   // UK lotteries
-  UK_EUROMILLIONS = 'UK_EUROMILLIONS',
   UK_LOTTO = 'UK_LOTTO',
   UK_THUNDERBALL = 'UK_THUNDERBALL',
   UK_SET_FOR_LIFE = 'UK_SET_FOR_LIFE',
@@ -19,6 +16,10 @@ export enum LottoType {
   ES_LA_PRIMITIVA = 'ES_LA_PRIMITIVA',
   ES_BONOLOTO = 'ES_BONOLOTO',
   ES_EL_GORDO = 'ES_EL_GORDO',
+  // Shared
+  VIKINGLOTTO = 'VIKINGLOTTO',
+  EUROJACKPOT = 'EUROJACKPOT',
+  EUROMILLIONS = 'EUROMILLIONS',
 }
 
 /**
@@ -80,16 +81,16 @@ export enum DateFormat {
 }
 
 export const OVERALL_PROBABILITY_LOTTO = [
-  LottoType.EURO,
+  LottoType.EUROJACKPOT,
   LottoType.VIKINGLOTTO,
-  LottoType.KENO,
-  LottoType.BINGO,
+  LottoType.EST_KENO,
+  LottoType.EST_BINGO,
   // US lotteries
-  LottoType.POWERBALL,
-  LottoType.MEGA_MILLIONS,
-  LottoType.CASH4LIFE,
+  LottoType.US_POWERBALL,
+  LottoType.US_MEGA_MILLIONS,
+  LottoType.US_CASH4LIFE,
   // UK lotteries
-  LottoType.UK_EUROMILLIONS,
+  LottoType.EUROMILLIONS,
   LottoType.UK_LOTTO,
   LottoType.UK_THUNDERBALL,
   LottoType.UK_SET_FOR_LIFE,
@@ -100,7 +101,7 @@ export const OVERALL_PROBABILITY_LOTTO = [
   LottoType.ES_EL_GORDO,
 ];
 
-export const POSITIONAL_PROBABILITY_LOTTO = [LottoType.JOKKER];
+export const POSITIONAL_PROBABILITY_LOTTO = [LottoType.EST_JOKKER];
 
 export const ALL_PROBABILITY_LOTTO = [
   ...OVERALL_PROBABILITY_LOTTO,
