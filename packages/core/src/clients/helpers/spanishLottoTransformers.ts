@@ -76,6 +76,32 @@ export function parseElGordoDescription(description: string): {
 }
 
 /**
+ * Parse Eurodreams RSS description
+ * Actual format: "<b>05 - 15 - 24 - 26 - 31 - 34</b> Sueño: <b>1</b>"
+ * Note: Eurodreams has 6 main numbers (1-40) and 1 "Sueño" (Dream) number (1-5)
+ * The "Sueño" is mapped to complementario for consistency with other Spanish lotteries
+ */
+export function parseEurodreamsDescription(description: string): {
+  mainNumbers: number[];
+  complementario: number | undefined;
+} {
+  // Extract main numbers from <b>05 - 15 - 24 - 26 - 31 - 34</b>
+  const numsMatch = description.match(/<b>([\d\s-]+)<\/b>/);
+  const nums = numsMatch?.[1]
+    ?.split(/\s*-\s*/)
+    .map(n => Number.parseInt(n.trim(), 10))
+    .filter(n => !Number.isNaN(n));
+
+  // Extract "Sueño" from Sueño: <b>1</b>
+  const sueno = description.match(/Sueño:\s*<b>(\d+)<\/b>/i)?.[1];
+
+  return {
+    mainNumbers: nums || [],
+    complementario: sueno ? Number.parseInt(sueno, 10) : undefined,
+  };
+}
+
+/**
  * Parse RSS pubDate to ISO date string (YYYY-MM-DD)
  */
 export function parseRSSDate(pubDate: string): string {
@@ -107,6 +133,20 @@ export function transformElGordoResults(draw: SpanishLotteryDrawDto): DrawResult
       winClass: null,
       winningNumber: draw.mainNumbers.join(','),
       secWinningNumber: draw.reintegro?.toString() ?? null,
+    },
+  ];
+}
+
+/**
+ * Transform Eurodreams draw
+ * Single result row: main numbers + sueño as secondary
+ */
+export function transformEurodreamsResults(draw: SpanishLotteryDrawDto): DrawResult[] {
+  return [
+    {
+      winClass: null,
+      winningNumber: draw.mainNumbers.join(','),
+      secWinningNumber: draw.complementario?.toString() ?? null, // sueño stored in complementario
     },
   ];
 }

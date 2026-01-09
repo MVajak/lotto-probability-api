@@ -8,13 +8,14 @@ import type {LoggerService} from '../services/logger/loggerService';
 import {
   parseBonolotoDescription,
   parseElGordoDescription,
+  parseEurodreamsDescription,
   parseLaPrimitivaDescription,
   parseRSSDate,
 } from './helpers/spanishLottoTransformers';
 
 export const SPANISH_LOTTERY_BASE_URL = 'https://www.loteriasyapuestas.es';
 
-export type SpanishLotteryGameSlug = 'la-primitiva' | 'bonoloto' | 'gordo-primitiva';
+export type SpanishLotteryGameSlug = 'la-primitiva' | 'bonoloto' | 'gordo-primitiva' | 'eurodreams';
 
 interface RSSItem {
   title: string;
@@ -55,10 +56,21 @@ export class SpanishLotteryClient {
   }
 
   /**
+   * Fetch Eurodreams draws from RSS feed
+   * Note: Eurodreams uses a different URL pattern (no /resultados/)
+   */
+  async fetchEurodreamsDraws(): Promise<SpanishLotteryDrawDto[]> {
+    const items = await this.fetchRSS('eurodreams', false);
+    return this.parseEurodreamsItems(items);
+  }
+
+  /**
    * Fetch raw RSS data from Spanish lottery website
    */
-  private async fetchRSS(game: SpanishLotteryGameSlug): Promise<RSSItem[]> {
-    const url = `${SPANISH_LOTTERY_BASE_URL}/es/${game}/resultados/.formatoRSS`;
+  private async fetchRSS(game: SpanishLotteryGameSlug, includeResultados = true): Promise<RSSItem[]> {
+    const url = includeResultados
+      ? `${SPANISH_LOTTERY_BASE_URL}/es/${game}/resultados/.formatoRSS`
+      : `${SPANISH_LOTTERY_BASE_URL}/es/${game}/.formatoRSS`;
 
     try {
       const response = await axios.get<string>(url, {
@@ -129,6 +141,13 @@ export class SpanishLotteryClient {
    */
   private parseElGordoItems(items: RSSItem[]): SpanishLotteryDrawDto[] {
     return this.parseItems(items, parseElGordoDescription, 5, LottoType.ES_EL_GORDO);
+  }
+
+  /**
+   * Parse Eurodreams RSS items
+   */
+  private parseEurodreamsItems(items: RSSItem[]): SpanishLotteryDrawDto[] {
+    return this.parseItems(items, parseEurodreamsDescription, 6, LottoType.EURODREAMS);
   }
 
   /**

@@ -8,6 +8,7 @@ import {
   isInDateRange,
   transformBonolotoResults,
   transformElGordoResults,
+  transformEurodreamsResults,
   transformLaPrimitivaResults,
 } from '@lotto/core';
 import type {PostgresDataSource} from '@lotto/database';
@@ -17,7 +18,7 @@ import {AbstractLottoDrawCronService, type TransformedDraw} from './abstractLott
 
 /**
  * Cron service for fetching and saving Spanish lottery draws
- * Handles: ES_LA_PRIMITIVA, ES_BONOLOTO, ES_EL_GORDO
+ * Handles: ES_LA_PRIMITIVA, ES_BONOLOTO, ES_EL_GORDO, EURODREAMS
  */
 @injectable({scope: BindingScope.SINGLETON})
 export class SpanishLottoDrawCronService extends AbstractLottoDrawCronService {
@@ -51,6 +52,8 @@ export class SpanishLottoDrawCronService extends AbstractLottoDrawCronService {
         return this.fetchBonoloto(dateFrom, dateTo);
       case LottoType.ES_EL_GORDO:
         return this.fetchElGordo(dateFrom, dateTo);
+      case LottoType.EURODREAMS:
+        return this.fetchEurodreams(dateFrom, dateTo);
       default:
         this.loggerService.log(`Unsupported Spanish lottery type: ${lottoType}`);
         return [];
@@ -98,6 +101,16 @@ export class SpanishLottoDrawCronService extends AbstractLottoDrawCronService {
     );
   }
 
+  private fetchEurodreams(dateFrom: Date, dateTo: Date): Promise<TransformedDraw[]> {
+    return this.fetchAndTransform(
+      () => this.spanishLotteryClient.fetchEurodreamsDraws(),
+      transformEurodreamsResults,
+      LottoType.EURODREAMS,
+      dateFrom,
+      dateTo,
+    );
+  }
+
   /**
    * Generic fetch and transform for all Spanish lotteries
    */
@@ -110,6 +123,7 @@ export class SpanishLottoDrawCronService extends AbstractLottoDrawCronService {
   ): Promise<TransformedDraw[]> {
     const draws = await fetchFn();
 
+    console.log(draws);
     return draws
       .filter(draw => isInDateRange(new Date(draw.drawDate), dateFrom, dateTo))
       .map(draw => ({

@@ -1,7 +1,7 @@
 import {expect, sinon} from '@loopback/testlab';
 
 import type {LottoDrawRelations, LottoDrawResult} from '@lotto/database';
-import {LottoType} from '@lotto/shared';
+import {LottoType, type SubscriptionTierCode} from '@lotto/shared';
 import type {LottoDrawSearchDto} from '../../../models';
 import {createStubInstance, createStubInstances} from '../../../test-utils/mocking';
 import {LoggerService} from '../../logger/loggerService';
@@ -12,6 +12,8 @@ describe('LottoProbabilityService', () => {
   let service: LottoProbabilityService;
   let loggerServiceStub: sinon.SinonStubbedInstance<LoggerService>;
   let lottoDrawServiceStub: sinon.SinonStubbedInstance<LottoDrawService>;
+
+  const subscriptionTier: SubscriptionTierCode = 'FREE';
 
   const mockDraw = createStubInstance<LottoDrawRelations>({
     results: createStubInstances<LottoDrawResult>([
@@ -41,7 +43,7 @@ describe('LottoProbabilityService', () => {
       dateTo: '2023-01-31',
     };
 
-    const result = await service.calculateProbability(data);
+    const result = await service.calculateProbability(data, subscriptionTier);
 
     expect(result.lottoType).to.equal(LottoType.EUROJACKPOT);
     expect(result.totalDraws).to.equal(1);
@@ -69,7 +71,7 @@ describe('LottoProbabilityService', () => {
 
     lottoDrawServiceStub.findDraws.resolves([responseDraw]);
 
-    const result = await service.calculateProbability(data);
+    const result = await service.calculateProbability(data, subscriptionTier);
 
     expect(result.lottoType).to.equal(LottoType.EST_JOKKER);
     expect(result.probabilityNumbers).to.have.length(1);
@@ -87,7 +89,7 @@ describe('LottoProbabilityService', () => {
 
     lottoDrawServiceStub.findDraws.resolves([]);
 
-    const result = await service.calculateProbability(data);
+    const result = await service.calculateProbability(data, subscriptionTier);
     expect(result.probabilityNumbers).to.deepEqual([]);
   });
 });
