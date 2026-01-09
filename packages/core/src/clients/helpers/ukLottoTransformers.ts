@@ -1,5 +1,6 @@
 import type {
   UKEuroMillionsDrawDto,
+  UKHotPicksDrawDto,
   UKLottoDrawDto,
   UKSetForLifeDrawDto,
   UKThunderballDrawDto,
@@ -119,6 +120,25 @@ export function transformSetForLifeNumbers(draw: UKSetForLifeDrawDto): {
   return {
     main: mainNumbers.join(','),
     secondary: draw.lifeBall.toString(),
+  };
+}
+
+/**
+ * Transform Lotto HotPicks numbers to common format
+ * 6 main balls, no secondary
+ *
+ * @param draw - HotPicks draw DTO
+ * @returns Object with main numbers and empty secondary
+ */
+export function transformHotPicksNumbers(draw: UKHotPicksDrawDto): {
+  main: string;
+  secondary: string;
+} {
+  const mainNumbers = [draw.ball1, draw.ball2, draw.ball3, draw.ball4, draw.ball5, draw.ball6];
+
+  return {
+    main: mainNumbers.join(','),
+    secondary: '',
   };
 }
 

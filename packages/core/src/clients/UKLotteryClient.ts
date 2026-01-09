@@ -4,6 +4,7 @@ import axios from 'axios';
 
 import type {
   UKEuroMillionsDrawDto,
+  UKHotPicksDrawDto,
   UKLottoDrawDto,
   UKSetForLifeDrawDto,
   UKThunderballDrawDto,
@@ -13,7 +14,7 @@ import {parseCSVRows} from '../utils/csv';
 
 export const UK_LOTTERY_BASE_URL = 'https://www.national-lottery.co.uk';
 
-export type UKLotteryGameSlug = 'euromillions' | 'lotto' | 'thunderball' | 'set-for-life';
+export type UKLotteryGameSlug = 'euromillions' | 'lotto' | 'thunderball' | 'set-for-life' | 'lotto-hotpicks';
 
 @injectable({scope: BindingScope.SINGLETON})
 export class UKLotteryClient {
@@ -52,6 +53,14 @@ export class UKLotteryClient {
   async fetchSetForLifeDraws(): Promise<UKSetForLifeDrawDto[]> {
     const csv = await this.fetchCSV('set-for-life');
     return this.parseSetForLifeCSV(csv);
+  }
+
+  /**
+   * Fetch Lotto HotPicks draws from UK National Lottery CSV
+   */
+  async fetchHotPicksDraws(): Promise<UKHotPicksDrawDto[]> {
+    const csv = await this.fetchCSV('lotto-hotpicks');
+    return this.parseHotPicksCSV(csv);
   }
 
   /**
@@ -150,6 +159,26 @@ export class UKLotteryClient {
       ball4: Number.parseInt(cols[4], 10),
       ball5: Number.parseInt(cols[5], 10),
       lifeBall: Number.parseInt(cols[6], 10),
+      // cols[7-8] are Ball Set, Machine (skip)
+      drawNumber: Number.parseInt(cols[9], 10),
+    }));
+  }
+
+  /**
+   * Parse Lotto HotPicks CSV
+   * Columns: DrawDate,Ball 1,Ball 2,Ball 3,Ball 4,Ball 5,Ball 6,Ball Set,Machine,DrawNumber
+   */
+  private parseHotPicksCSV(csv: string): UKHotPicksDrawDto[] {
+    const rows = parseCSVRows(csv);
+
+    return rows.map(cols => ({
+      drawDate: cols[0],
+      ball1: Number.parseInt(cols[1], 10),
+      ball2: Number.parseInt(cols[2], 10),
+      ball3: Number.parseInt(cols[3], 10),
+      ball4: Number.parseInt(cols[4], 10),
+      ball5: Number.parseInt(cols[5], 10),
+      ball6: Number.parseInt(cols[6], 10),
       // cols[7-8] are Ball Set, Machine (skip)
       drawNumber: Number.parseInt(cols[9], 10),
     }));

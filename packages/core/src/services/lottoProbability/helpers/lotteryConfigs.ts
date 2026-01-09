@@ -130,6 +130,12 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryRange: {min: 1, max: 10},
     secondaryCount: 1,
   },
+  [LottoType.UK_HOT_PICKS]: {
+    type: LottoType.UK_HOT_PICKS,
+    name: 'Lotto HotPicks',
+    primaryRange: {min: 1, max: 59},
+    primaryCount: 6,
+  },
 };
 
 /**

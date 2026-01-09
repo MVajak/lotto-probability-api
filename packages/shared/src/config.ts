@@ -36,6 +36,7 @@ export const config = {
     ukLottoInterval: process.env.UK_LOTTO_CRON_INTERVAL || 'off', // Wed,Sat
     ukThunderballInterval: process.env.UK_THUNDERBALL_CRON_INTERVAL || 'off', // Tue,Wed,Fri,Sat
     ukSetForLifeInterval: process.env.UK_SET_FOR_LIFE_CRON_INTERVAL || 'off', // Mon,Thu
+    ukHotPicksInterval: process.env.UK_HOT_PICKS_CRON_INTERVAL || 'off', // Wed,Sat (same as UK Lotto)
   },
   dataNYGov: {
     baseUrl: 'https://data.ny.gov/resource',

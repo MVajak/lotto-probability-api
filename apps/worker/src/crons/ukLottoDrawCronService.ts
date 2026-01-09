@@ -8,6 +8,7 @@ import {
   isInDateRange,
   parseUKLottoDrawDate,
   transformEuroMillionsNumbers,
+  transformHotPicksNumbers,
   transformSetForLifeNumbers,
   transformThunderballNumbers,
   transformUKLottoNumbers,
@@ -28,7 +29,7 @@ interface UKDrawDto {
 
 /**
  * Cron service for fetching and saving UK lottery draws
- * Handles: UK_EUROMILLIONS, UK_LOTTO, UK_THUNDERBALL, UK_SET_FOR_LIFE
+ * Handles: UK_EUROMILLIONS, UK_LOTTO, UK_THUNDERBALL, UK_SET_FOR_LIFE, UK_HOT_PICKS
  */
 @injectable({scope: BindingScope.SINGLETON})
 export class UKLottoDrawCronService extends AbstractLottoDrawCronService {
@@ -85,6 +86,14 @@ export class UKLottoDrawCronService extends AbstractLottoDrawCronService {
           () => this.ukLotteryClient.fetchSetForLifeDraws(),
           transformSetForLifeNumbers,
           LottoType.UK_SET_FOR_LIFE,
+          dateFrom,
+          dateTo,
+        );
+      case LottoType.UK_HOT_PICKS:
+        return this.fetchAndTransform(
+          () => this.ukLotteryClient.fetchHotPicksDraws(),
+          transformHotPicksNumbers,
+          LottoType.UK_HOT_PICKS,
           dateFrom,
           dateTo,
         );
