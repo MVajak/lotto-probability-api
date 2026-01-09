@@ -25,28 +25,28 @@ export const LOTTERY_CONFIG: Record<
     region: 'estonian',
   },
   [LottoType.EST_BINGO]: {
-    configKey: 'bingoLottoInterval',
+    configKey: 'estBingoLottoInterval',
     region: 'estonian',
   },
   [LottoType.EST_JOKKER]: {
-    configKey: 'jokkerLottoInterval',
+    configKey: 'estJokkerLottoInterval',
     region: 'estonian',
   },
   [LottoType.EST_KENO]: {
-    configKey: 'kenoLottoInterval',
+    configKey: 'estKenoLottoInterval',
     region: 'estonian',
   },
   // Lotteries from US source
   [LottoType.US_POWERBALL]: {
-    configKey: 'powerballInterval',
+    configKey: 'usPowerballInterval',
     region: 'us',
   },
   [LottoType.US_MEGA_MILLIONS]: {
-    configKey: 'megaMillionsInterval',
+    configKey: 'usMegaMillionsInterval',
     region: 'us',
   },
   [LottoType.US_CASH4LIFE]: {
-    configKey: 'cash4LifeInterval',
+    configKey: 'usCash4LifeInterval',
     region: 'us',
   },
   // Lotteries from UK source

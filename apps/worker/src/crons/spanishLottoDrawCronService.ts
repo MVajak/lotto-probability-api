@@ -123,7 +123,6 @@ export class SpanishLottoDrawCronService extends AbstractLottoDrawCronService {
   ): Promise<TransformedDraw[]> {
     const draws = await fetchFn();
 
-    console.log(draws);
     return draws
       .filter(draw => isInDateRange(new Date(draw.drawDate), dateFrom, dateTo))
       .map(draw => ({

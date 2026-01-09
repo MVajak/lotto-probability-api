@@ -21,27 +21,27 @@ export const config = {
   },
   crons: {
     // Estonian lotteries
-    euroJackpotInterval: process.env.EST_EURO_JACKPOT_CRON_INTERVAL || 'off',
-    vikingLottoInterval: process.env.EST_VIKING_LOTTO_CRON_INTERVAL || 'off',
-    bingoLottoInterval: process.env.EST_BINGO_LOTTO_CRON_INTERVAL || 'off',
-    jokkerLottoInterval: process.env.EST_JOKKER_LOTTO_CRON_INTERVAL || 'off',
-    kenoLottoInterval: process.env.EST_KENO_LOTTO_CRON_INTERVAL || 'off',
+    estBingoLottoInterval: process.env.EST_BINGO_LOTTO_CRON_INTERVAL || 'off',
+    estJokkerLottoInterval: process.env.EST_JOKKER_LOTTO_CRON_INTERVAL || 'off',
+    estKenoLottoInterval: process.env.EST_KENO_LOTTO_CRON_INTERVAL || 'off',
     // US lotteries (~3 hours after draws)
-    powerballInterval: process.env.US_POWERBALL_CRON_INTERVAL || 'off', // Sun,Tue,Thu 7AM UTC
-    megaMillionsInterval: process.env.US_MEGA_MILLIONS_CRON_INTERVAL || 'off', // Wed,Sat 7AM UTC
-    cash4LifeInterval: process.env.US_CASH4LIFE_CRON_INTERVAL || 'off', // Daily 5AM UTC
+    usPowerballInterval: process.env.US_POWERBALL_CRON_INTERVAL || 'off',
+    usMegaMillionsInterval: process.env.US_MEGA_MILLIONS_CRON_INTERVAL || 'off',
+    usCash4LifeInterval: process.env.US_CASH4LIFE_CRON_INTERVAL || 'off',
     // UK lotteries
-    euroMillionsInterval: process.env.EUROMILLIONS_CRON_INTERVAL || 'off', // Tue,Fri
-    ukLottoInterval: process.env.UK_LOTTO_CRON_INTERVAL || 'off', // Wed,Sat
-    ukThunderballInterval: process.env.UK_THUNDERBALL_CRON_INTERVAL || 'off', // Tue,Wed,Fri,Sat
-    ukSetForLifeInterval: process.env.UK_SET_FOR_LIFE_CRON_INTERVAL || 'off', // Mon,Thu
-    ukHotPicksInterval: process.env.UK_HOT_PICKS_CRON_INTERVAL || 'off', // Wed,Sat (same as UK Lotto)
-    // Spanish lotteries (draws at 21:30 CET, fetch at 22:00 CET = 21:00 UTC)
-    esLaPrimitivaInterval: process.env.ES_LA_PRIMITIVA_CRON_INTERVAL || 'off', // Mon,Thu,Sat
-    esBonolotoInterval: process.env.ES_BONOLOTO_CRON_INTERVAL || 'off', // Mon-Sat
-    esElGordoInterval: process.env.ES_EL_GORDO_CRON_INTERVAL || 'off', // Sun
+    ukLottoInterval: process.env.UK_LOTTO_CRON_INTERVAL || 'off',
+    ukThunderballInterval: process.env.UK_THUNDERBALL_CRON_INTERVAL || 'off',
+    ukSetForLifeInterval: process.env.UK_SET_FOR_LIFE_CRON_INTERVAL || 'off',
+    ukHotPicksInterval: process.env.UK_HOT_PICKS_CRON_INTERVAL || 'off',
+    // Spanish lotteries
+    esLaPrimitivaInterval: process.env.ES_LA_PRIMITIVA_CRON_INTERVAL || 'off',
+    esBonolotoInterval: process.env.ES_BONOLOTO_CRON_INTERVAL || 'off',
+    esElGordoInterval: process.env.ES_EL_GORDO_CRON_INTERVAL || 'off',
     // Shared lotteries
-    euroDreamsInterval: process.env.EURODREAMS_CRON_INTERVAL || 'off', // Mon,Thu
+    euroMillionsInterval: process.env.EUROMILLIONS_CRON_INTERVAL || 'off',
+    euroJackpotInterval: process.env.EUROJACKPOT_CRON_INTERVAL || 'off',
+    vikingLottoInterval: process.env.VIKINGLOTTO_CRON_INTERVAL || 'off',
+    euroDreamsInterval: process.env.EURODREAMS_CRON_INTERVAL || 'off',
   },
   dataNYGov: {
     baseUrl: 'https://data.ny.gov/resource',
