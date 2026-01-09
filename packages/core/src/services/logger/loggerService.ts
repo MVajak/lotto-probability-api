@@ -12,6 +12,6 @@ export class LoggerService {
   }
 
   log(message: string): void {
-    console.info(message);
+    console.info(`[${new Date().toISOString()}] ${message}`);
   }
 }

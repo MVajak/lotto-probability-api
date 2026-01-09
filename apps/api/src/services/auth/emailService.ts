@@ -1,4 +1,5 @@
-import {BindingScope, injectable} from '@loopback/core';
+import {BindingScope, inject, injectable} from '@loopback/core';
+import type {LoggerService} from '@lotto/core';
 import {config} from '@lotto/shared';
 import {Resend} from 'resend';
 
@@ -8,7 +9,10 @@ export class EmailService {
   private readonly FROM_EMAIL: string;
   private readonly APP_NAME: string;
 
-  constructor() {
+  constructor(
+    @inject('services.LoggerService')
+    private loggerService: LoggerService,
+  ) {
     this.FROM_EMAIL = config.email.fromEmail;
     this.APP_NAME = config.email.appName;
 
@@ -16,8 +20,8 @@ export class EmailService {
       this.resend = new Resend(config.email.resendApiKey);
     } else {
       this.resend = null;
-      console.warn(
-        '⚠️  WARNING: RESEND_API_KEY not set. Email sending will be simulated (logged to console). Add RESEND_API_KEY to .env for production.',
+      this.loggerService.log(
+        'WARNING: RESEND_API_KEY not set. Email sending will be simulated (logged to console). Add RESEND_API_KEY to .env for production.',
       );
     }
   }
@@ -28,16 +32,7 @@ export class EmailService {
   async sendOTPEmail(email: string, code: string): Promise<void> {
     if (!this.resend) {
       // Development mode - log to console
-      console.log('\n╔═══════════════════════════════════════════════════════════════════╗');
-      console.log('║  📧  [DEV MODE] OTP Verification Code                             ║');
-      console.log('╠═══════════════════════════════════════════════════════════════════╣');
-      console.log(`║  To: ${email.padEnd(58)}║`);
-      console.log('╠═══════════════════════════════════════════════════════════════════╣');
-      console.log('║                                                                   ║');
-      console.log(`║     🔐 Your verification code:  ${code}                          ║`);
-      console.log('║                                                                   ║');
-      console.log('║  ⏱  Code expires in 10 minutes                                   ║');
-      console.log('╚═══════════════════════════════════════════════════════════════════╝\n');
+      this.loggerService.log(`[DEV MODE] OTP for ${email}: ${code} (expires in 10 minutes)`);
       return;
     }
 
@@ -49,11 +44,11 @@ export class EmailService {
     });
 
     if (error) {
-      console.error('❌ Failed to send OTP email:', error);
+      this.loggerService.log(`Failed to send OTP email: ${error.message}`);
       throw new Error(`Email sending failed: ${error.message}`);
     }
 
-    console.log(`✅ OTP email sent to ${email}`, data);
+    this.loggerService.log(`OTP email sent to ${email}`);
   }
 
   /**
@@ -164,7 +159,7 @@ export class EmailService {
    */
   async sendWelcomeEmail(email: string, firstName?: string): Promise<void> {
     const name = firstName || email.split('@')[0];
-    console.log(`📧 Welcome email would be sent to ${name} (${email})`);
+    this.loggerService.log(`Welcome email would be sent to ${name} (${email})`);
     // TODO: Implement welcome email with Resend
   }
 }

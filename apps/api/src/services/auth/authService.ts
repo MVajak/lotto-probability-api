@@ -2,6 +2,7 @@ import {BindingScope, inject, injectable} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 
+import type {LoggerService} from '@lotto/core';
 import type {Subscription, User} from '@lotto/database';
 import {SubscriptionRepository, SubscriptionTierRepository, UserRepository} from '@lotto/database';
 import type {SubscriptionTierCode} from '@lotto/shared';
@@ -20,6 +21,8 @@ import type {OTPService} from './otpService';
 @injectable({scope: BindingScope.TRANSIENT})
 export class AuthService {
   constructor(
+    @inject('services.LoggerService')
+    private loggerService: LoggerService,
     @repository(UserRepository)
     private userRepository: UserRepository,
     @repository(SubscriptionRepository)
@@ -57,9 +60,9 @@ export class AuthService {
     if (!user) {
       user = await this.createNewUser(normalizedEmail);
       isNewUser = true;
-      console.log(`✨ New user created: ${normalizedEmail}`);
+      this.loggerService.log(`✨ New user created: ${normalizedEmail}`);
     } else {
-      console.log(`👤 Existing user login request: ${normalizedEmail}`);
+      this.loggerService.log(`👤 Existing user login request: ${normalizedEmail}`);
     }
 
     // Generate and send OTP
@@ -105,7 +108,7 @@ export class AuthService {
     // Activate user on first login
     if (user.userState === 'pending') {
       await this.activateUser(user.id);
-      console.log(`✅ User activated: ${user.email}`);
+      this.loggerService.log(`✅ User activated: ${user.email}`);
     }
 
     // Track login
@@ -118,7 +121,7 @@ export class AuthService {
     // Generate JWT tokens
     const tokens = this.generateTokens(user, tierCode);
 
-    console.log(`🔐 User logged in: ${user.email} (${tierCode})`);
+    this.loggerService.log(`🔐 User logged in: ${user.email} (${tierCode})`);
 
     return tokens;
   }

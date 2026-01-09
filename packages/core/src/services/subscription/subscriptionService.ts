@@ -6,6 +6,7 @@ import type Stripe from 'stripe';
 import type {Subscription, SubscriptionTier} from '@lotto/database';
 import {SubscriptionRepository, SubscriptionTierRepository, UserRepository} from '@lotto/database';
 import type {SubscriptionTierCode} from '@lotto/shared';
+import type {LoggerService} from '../logger/loggerService';
 import type {StripeService} from '../stripe/stripeService';
 import type {SubscriptionHistoryService} from './subscriptionHistoryService';
 
@@ -28,6 +29,8 @@ export interface CreateCheckoutParams {
 @injectable({scope: BindingScope.TRANSIENT})
 export class SubscriptionService {
   constructor(
+    @inject('services.LoggerService')
+    private loggerService: LoggerService,
     @inject('services.StripeService')
     private stripeService: StripeService,
     @inject('services.SubscriptionHistoryService')
@@ -261,7 +264,7 @@ export class SubscriptionService {
         break;
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        this.loggerService.log(`Unhandled event type: ${event.type}`);
     }
   }
 
@@ -270,19 +273,19 @@ export class SubscriptionService {
     const tierCode = session.metadata?.tierCode as SubscriptionTierCode | undefined;
 
     if (!userId || !tierCode) {
-      console.error('Missing userId or tierCode in checkout session metadata');
+      this.loggerService.log('Missing userId or tierCode in checkout session metadata');
       return;
     }
 
     const newTier = await this.subscriptionTierRepository.findByCode(tierCode);
     if (!newTier) {
-      console.error(`Tier ${tierCode} not found`);
+      this.loggerService.log(`Tier ${tierCode} not found`);
       return;
     }
 
     const subscription = await this.subscriptionRepository.findByUserId(userId);
     if (!subscription) {
-      console.error(`Subscription not found for user ${userId}`);
+      this.loggerService.log(`Subscription not found for user ${userId}`);
       return;
     }
 
@@ -313,7 +316,7 @@ export class SubscriptionService {
     });
 
     if (!subscription) {
-      console.error(`Subscription not found for Stripe subscription ${stripeSub.id}`);
+      this.loggerService.log(`Subscription not found for Stripe subscription ${stripeSub.id}`);
       return;
     }
 
@@ -338,13 +341,13 @@ export class SubscriptionService {
     });
 
     if (!subscription) {
-      console.error(`Subscription not found for Stripe subscription ${stripeSub.id}`);
+      this.loggerService.log(`Subscription not found for Stripe subscription ${stripeSub.id}`);
       return;
     }
 
     const freeTier = await this.subscriptionTierRepository.findByCode('FREE');
     if (!freeTier) {
-      console.error('FREE tier not found');
+      this.loggerService.log('FREE tier not found');
       return;
     }
 
@@ -382,7 +385,7 @@ export class SubscriptionService {
     });
 
     if (!subscription) {
-      console.error(`Subscription not found for Stripe subscription ${stripeSubscriptionId}`);
+      this.loggerService.log(`Subscription not found for Stripe subscription ${stripeSubscriptionId}`);
       return;
     }
 
