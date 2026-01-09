@@ -2,7 +2,7 @@ import {AuthenticationBindings, authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {type Request, type Response, RestBindings, post, requestBody, response} from '@loopback/rest';
 
-import type {SubscriptionService} from '@lotto/core';
+import type {LoggerService, SubscriptionService} from '@lotto/core';
 
 import type {AuthenticatedUser} from '../types/auth.types';
 
@@ -26,6 +26,8 @@ interface ChangeTierRequest {
 
 export class SubscriptionController {
   constructor(
+    @inject('services.LoggerService')
+    private loggerService: LoggerService,
     @inject('services.SubscriptionService')
     private subscriptionService: SubscriptionService,
   ) {}
@@ -49,6 +51,7 @@ export class SubscriptionController {
     @requestBody() body: CreateCheckoutSessionRequest,
     @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
   ): Promise<{checkoutUrl: string}> {
+    this.loggerService.log(`Checkout session request: user=${currentUser.id} tier=${body.tierCode}`);
     const checkoutUrl = await this.subscriptionService.createCheckoutSession({
       userId: currentUser.id,
       email: currentUser.email,
@@ -67,6 +70,7 @@ export class SubscriptionController {
     @requestBody() body: ChangeTierRequest,
     @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
   ): Promise<void> {
+    this.loggerService.log(`Tier change request: user=${currentUser.id} newTier=${body.tierCode}`);
     await this.subscriptionService.changeTier(currentUser.id, body.tierCode);
   }
 
@@ -76,6 +80,7 @@ export class SubscriptionController {
   async resumeSubscription(
     @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
   ): Promise<void> {
+    this.loggerService.log(`Subscription resume request: user=${currentUser.id}`);
     await this.subscriptionService.resumeSubscription(currentUser.id);
   }
 
@@ -85,6 +90,7 @@ export class SubscriptionController {
   async cancelSubscription(
     @inject(AuthenticationBindings.CURRENT_USER) currentUser: AuthenticatedUser,
   ): Promise<void> {
+    this.loggerService.log(`Subscription cancel request: user=${currentUser.id}`);
     await this.subscriptionService.cancelSubscription(currentUser.id);
   }
 
@@ -116,7 +122,7 @@ export class SubscriptionController {
       await this.subscriptionService.handleWebhook(rawBody, signature);
       return {received: true};
     } catch (err) {
-      console.error('[Webhook] Processing failed:', err);
+      this.loggerService.log(`Webhook processing failed: ${err instanceof Error ? err.message : err}`);
       response.status(400);
       return {received: false};
     }

@@ -9,13 +9,14 @@ import {
   NumberDetailResponseDto,
   TierGatedResponse,
 } from '@lotto/core';
-import type {LottoProbabilityService} from '@lotto/core';
-import type {NumberDetailService} from '@lotto/core';
+import type {LoggerService, LottoProbabilityService, NumberDetailService} from '@lotto/core';
 
 import type {AuthenticatedUser} from '../types/auth.types';
 
 export class LottoProbabilityController {
   constructor(
+    @inject('services.LoggerService')
+    private loggerService: LoggerService,
     @inject('services.LottoProbabilityService')
     private lottoProbabilityService: LottoProbabilityService,
     @inject('services.NumberDetailService')
@@ -45,6 +46,9 @@ export class LottoProbabilityController {
     })
     data: LottoDrawSearchDto,
   ): Promise<LottoProbabilityDto> {
+    this.loggerService.log(
+      `Probability request: user=${currentUser.id} lottery=${data.lottoType} range=${data.dateFrom}..${data.dateTo}`,
+    );
     return this.lottoProbabilityService.calculateProbability(data, currentUser.subscriptionTier);
   }
 
@@ -70,6 +74,9 @@ export class LottoProbabilityController {
     })
     data: NumberDetailRequestDto,
   ): Promise<NumberDetailResponseDto> {
+    this.loggerService.log(
+      `Number detail request: user=${currentUser.id} lottery=${data.lottoType} number=${data.number}`,
+    );
     return this.numberDetailService.getNumberDetail(data, currentUser.subscriptionTier);
   }
 }
