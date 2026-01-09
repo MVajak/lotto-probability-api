@@ -90,7 +90,7 @@ export class NumberDetailService {
 
     // Calculate theoretical probability
     const config = getLotteryConfig(lottoType as LottoType);
-    const theoreticalProb = calculateLotteryTheoreticalProbability(config, useSecondaryNumbers);
+    const theoreticalProb = calculateLotteryTheoreticalProbability(config, useSecondaryNumbers, winClass);
     const frequency = totalDraws.count > 0 ? drawsWithNumber.length / totalDraws.count : 0;
 
     // Calculate Wilson CI at root level - reused by summary, CI DTO, and deviation analysis

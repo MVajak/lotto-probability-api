@@ -1,32 +1,34 @@
 import {LottoType} from '@lotto/shared';
 
 /**
+ * Number range with min/max values
+ */
+export interface NumberRange {
+  min: number;
+  max: number;
+}
+
+/**
+ * Base configuration for number pools (primary and secondary numbers)
+ * Used by both LotteryConfig (defaults) and per-winClass overrides
+ */
+export interface NumberPoolConfig {
+  primaryRange: NumberRange;
+  primaryCount: number;
+  secondaryRange?: NumberRange;
+  secondaryCount?: number;
+}
+
+/**
  * Configuration for a lottery game
  */
-export interface LotteryConfig {
+export interface LotteryConfig extends NumberPoolConfig {
   type: LottoType;
   name: string;
 
-  // Primary numbers (main draw)
-  primaryRange: {
-    min: number;
-    max: number;
-  };
-  primaryCount: number; // How many numbers are drawn
-
-  // Secondary numbers (bonus/star numbers)
-  secondaryRange?: {
-    min: number;
-    max: number;
-  };
-  secondaryCount?: number;
-
-  // Bingo-specific variants (different win patterns)
-  bingoVariants?: {
-    center: {min: number; max: number; winClass: number};
-    corner: {min: number; max: number; winClass: number};
-    diagonal: {min: number; max: number; winClass: number};
-  };
+  // Per-winClass overrides (optional)
+  // When a winClass has different number ranges than the defaults
+  winClassConfig?: Record<number, NumberPoolConfig>;
 }
 
 /**
@@ -60,10 +62,10 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     name: 'Bingo Lotto',
     primaryRange: {min: 1, max: 75},
     primaryCount: 6,
-    bingoVariants: {
-      center: {min: 31, max: 45, winClass: 5},
-      corner: {min: 1, max: 75, winClass: 4}, // Same as primary
-      diagonal: {min: 1, max: 75, winClass: 3}, // Same as primary
+    winClassConfig: {
+      3: {primaryRange: {min: 1, max: 75}, primaryCount: 6}, // diagonal
+      4: {primaryRange: {min: 1, max: 75}, primaryCount: 6}, // corner
+      5: {primaryRange: {min: 31, max: 45}, primaryCount: 1}, // center
     },
   },
   [LottoType.JOKKER]: {
@@ -135,6 +137,37 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     name: 'Lotto HotPicks',
     primaryRange: {min: 1, max: 59},
     primaryCount: 6,
+  },
+  // Spanish Lotteries
+  [LottoType.ES_LA_PRIMITIVA]: {
+    type: LottoType.ES_LA_PRIMITIVA,
+    name: 'La Primitiva',
+    primaryRange: {min: 1, max: 49},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 49}, // Complementario
+    secondaryCount: 1,
+    winClassConfig: {
+      2: {primaryRange: {min: 0, max: 9}, primaryCount: 1}, // Reintegro
+    },
+  },
+  [LottoType.ES_BONOLOTO]: {
+    type: LottoType.ES_BONOLOTO,
+    name: 'Bonoloto',
+    primaryRange: {min: 1, max: 49},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 49}, // Complementario
+    secondaryCount: 1,
+    winClassConfig: {
+      2: {primaryRange: {min: 0, max: 9}, primaryCount: 1}, // Reintegro
+    },
+  },
+  [LottoType.ES_EL_GORDO]: {
+    type: LottoType.ES_EL_GORDO,
+    name: 'El Gordo de la Primitiva',
+    primaryRange: {min: 1, max: 54},
+    primaryCount: 5,
+    secondaryRange: {min: 0, max: 9}, // Reintegro (called "Número clave" in El Gordo)
+    secondaryCount: 1,
   },
 };
 

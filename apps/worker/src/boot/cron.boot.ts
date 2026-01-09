@@ -7,6 +7,7 @@ import {
   type EstonianLottoDrawCronService,
   LOTTERY_CONFIG,
   type ResetLottoDrawsCronService,
+  type SpanishLottoDrawCronService,
   type UKLottoDrawCronService,
   type USLottoDrawCronService,
 } from '../crons';
@@ -22,6 +23,8 @@ export class CronBooter implements Booter {
     private usLottoDrawCronService: USLottoDrawCronService,
     @inject('services.UKLottoDrawCronService')
     private ukLottoDrawCronService: UKLottoDrawCronService,
+    @inject('services.SpanishLottoDrawCronService')
+    private spanishLottoDrawCronService: SpanishLottoDrawCronService,
   ) {}
 
   async load(): Promise<void> {
@@ -43,16 +46,24 @@ export class CronBooter implements Booter {
       throw new Error(`Invalid cron expression for ${lottoType}: ${cronSchedule}`);
     }
 
-    const service =
-      lotteryConfig.region === 'estonian'
-        ? this.estonianLottoDrawCronService
-        : lotteryConfig.region === 'us'
-          ? this.usLottoDrawCronService
-          : this.ukLottoDrawCronService;
+    const service = this.getServiceForRegion(lotteryConfig.region);
 
     schedule(cronSchedule, async () => {
       await service.saveLatestDraws(lottoType);
     });
+  }
+
+  private getServiceForRegion(region: 'estonian' | 'us' | 'uk' | 'spanish') {
+    switch (region) {
+      case 'estonian':
+        return this.estonianLottoDrawCronService;
+      case 'us':
+        return this.usLottoDrawCronService;
+      case 'uk':
+        return this.ukLottoDrawCronService;
+      case 'spanish':
+        return this.spanishLottoDrawCronService;
+    }
   }
 
   private scheduleReset(): void {

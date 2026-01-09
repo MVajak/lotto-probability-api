@@ -15,6 +15,10 @@ export enum LottoType {
   UK_THUNDERBALL = 'UK_THUNDERBALL',
   UK_SET_FOR_LIFE = 'UK_SET_FOR_LIFE',
   UK_HOT_PICKS = 'UK_HOT_PICKS',
+  // Spanish lotteries
+  ES_LA_PRIMITIVA = 'ES_LA_PRIMITIVA',
+  ES_BONOLOTO = 'ES_BONOLOTO',
+  ES_EL_GORDO = 'ES_EL_GORDO',
 }
 
 /**
@@ -90,6 +94,10 @@ export const OVERALL_PROBABILITY_LOTTO = [
   LottoType.UK_THUNDERBALL,
   LottoType.UK_SET_FOR_LIFE,
   LottoType.UK_HOT_PICKS,
+  // Spanish lotteries
+  LottoType.ES_LA_PRIMITIVA,
+  LottoType.ES_BONOLOTO,
+  LottoType.ES_EL_GORDO,
 ];
 
 export const POSITIONAL_PROBABILITY_LOTTO = [LottoType.JOKKER];

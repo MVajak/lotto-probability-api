@@ -13,11 +13,11 @@ export const LOTTERY_CONFIG: Record<
   LottoType,
   {
     configKey: CronConfigKey;
-    region: 'estonian' | 'us' | 'uk';
+    region: 'estonian' | 'us' | 'uk' | 'spanish';
     historyStart: string;
   }
 > = {
-  // Estonian lotteries (dates from eestiloto.ee/et/results)
+  // Estonian lotteries
   [LottoType.EURO]: {
     configKey: 'euroJackpotInterval',
     region: 'estonian',
@@ -43,7 +43,7 @@ export const LOTTERY_CONFIG: Record<
     region: 'estonian',
     historyStart: '2021-05-25T14:15:00',
   },
-  // US lotteries (5 years of historical data from data.ny.gov)
+  // US lotteries
   [LottoType.POWERBALL]: {
     configKey: 'powerballInterval',
     region: 'us',
@@ -59,7 +59,7 @@ export const LOTTERY_CONFIG: Record<
     region: 'us',
     historyStart: '2019-12-01T00:00:00',
   },
-  // UK lotteries (5 years of historical data from national-lottery.co.uk)
+  // UK lotteries
   [LottoType.UK_EUROMILLIONS]: {
     configKey: 'ukEuroMillionsInterval',
     region: 'uk',
@@ -83,6 +83,22 @@ export const LOTTERY_CONFIG: Record<
   [LottoType.UK_HOT_PICKS]: {
     configKey: 'ukHotPicksInterval',
     region: 'uk',
+    historyStart: '2020-12-01T00:00:00',
+  },
+  // Spanish lotteries
+  [LottoType.ES_LA_PRIMITIVA]: {
+    configKey: 'esLaPrimitivaInterval',
+    region: 'spanish',
+    historyStart: '2020-12-01T00:00:00',
+  },
+  [LottoType.ES_BONOLOTO]: {
+    configKey: 'esBonolotoInterval',
+    region: 'spanish',
+    historyStart: '2020-12-01T00:00:00',
+  },
+  [LottoType.ES_EL_GORDO]: {
+    configKey: 'esElGordoInterval',
+    region: 'spanish',
     historyStart: '2020-12-01T00:00:00',
   },
 };

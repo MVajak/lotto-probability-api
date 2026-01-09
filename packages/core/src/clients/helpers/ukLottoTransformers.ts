@@ -141,15 +141,3 @@ export function transformHotPicksNumbers(draw: UKHotPicksDrawDto): {
     secondary: '',
   };
 }
-
-/**
- * Check if a draw date is within the given date range
- *
- * @param drawDate - The parsed draw date
- * @param dateFrom - Start of range
- * @param dateTo - End of range
- * @returns True if draw is within range
- */
-export function isInDateRange(drawDate: Date, dateFrom: Date, dateTo: Date): boolean {
-  return drawDate >= dateFrom && drawDate <= dateTo;
-}

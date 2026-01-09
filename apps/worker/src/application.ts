@@ -13,6 +13,7 @@ import {
   LoggerService,
   LottoDrawResultService,
   LottoDrawService,
+  SpanishLotteryClient,
   UKLotteryClient,
 } from '@lotto/core';
 
@@ -21,6 +22,7 @@ import {CronBooter} from './boot/cron.boot';
 import {
   EstonianLottoDrawCronService,
   ResetLottoDrawsCronService,
+  SpanishLottoDrawCronService,
   UKLottoDrawCronService,
   USLottoDrawCronService,
 } from './crons';
@@ -53,11 +55,13 @@ export class LottoWorkerApplication extends BootMixin(RepositoryMixin(Applicatio
     this.bind('clients.EstonianLottoApiClient').toClass(EstonianLottoApiClient);
     this.bind('clients.DataNYGovClient').toClass(DataNYGovClient);
     this.bind('clients.UKLotteryClient').toClass(UKLotteryClient);
+    this.bind('clients.SpanishLotteryClient').toClass(SpanishLotteryClient);
 
     // Cron services
     this.bind('services.EstonianLottoDrawCronService').toClass(EstonianLottoDrawCronService);
     this.bind('services.USLottoDrawCronService').toClass(USLottoDrawCronService);
     this.bind('services.UKLottoDrawCronService').toClass(UKLottoDrawCronService);
+    this.bind('services.SpanishLottoDrawCronService').toClass(SpanishLottoDrawCronService);
     this.bind('services.ResetLottoDrawsCronService').toClass(ResetLottoDrawsCronService);
 
     // Booters

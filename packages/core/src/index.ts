@@ -2,11 +2,13 @@
 export * from './clients/EstonianLottoApiClient';
 export * from './clients/DataNYGovClient';
 export * from './clients/UKLotteryClient';
+export * from './clients/SpanishLotteryClient';
 export * from './clients/types';
 
 // Client helpers (transformers)
 export * from './clients/helpers/usLottoTransformers';
 export * from './clients/helpers/ukLottoTransformers';
+export * from './clients/helpers/spanishLottoTransformers';
 
 // Services
 export * from './services/csrf';

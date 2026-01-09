@@ -48,11 +48,11 @@ export class LottoProbabilityService {
     }
 
     this.validatePayload(data);
-    const estonianLottoDraws: LottoDrawRelations[] = await this.lottoDrawService.findDraws(data);
+    const lottoDraws: LottoDrawRelations[] = await this.lottoDrawService.findDraws(data);
 
-    const totalDraws = estonianLottoDraws.length;
+    const totalDraws = lottoDraws.length;
     const {lottoType} = data;
-    const result = this.calculateProbabilityByType(estonianLottoDraws, lottoType);
+    const result = this.calculateProbabilityByType(lottoDraws, lottoType);
 
     return this.buildLottoProbabilityDto(result, lottoType, totalDraws);
   }

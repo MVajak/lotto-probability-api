@@ -46,7 +46,7 @@ export function calculateNumberStatsWithCI(
 
   // Get lottery configuration for theoretical probability
   const config = getLotteryConfig(lottoType);
-  const theoreticalProb = calculateLotteryTheoreticalProbability(config, useSecondaryNumbers);
+  const theoreticalProb = calculateLotteryTheoreticalProbability(config, useSecondaryNumbers, winClass);
 
   // First pass: Calculate all frequencies for percentile ranking and rank calculation
   const frequencyMap = new Map<number, number>();

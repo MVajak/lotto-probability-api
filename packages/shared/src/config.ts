@@ -37,6 +37,10 @@ export const config = {
     ukThunderballInterval: process.env.UK_THUNDERBALL_CRON_INTERVAL || 'off', // Tue,Wed,Fri,Sat
     ukSetForLifeInterval: process.env.UK_SET_FOR_LIFE_CRON_INTERVAL || 'off', // Mon,Thu
     ukHotPicksInterval: process.env.UK_HOT_PICKS_CRON_INTERVAL || 'off', // Wed,Sat (same as UK Lotto)
+    // Spanish lotteries (draws at 21:30 CET, fetch at 22:00 CET = 21:00 UTC)
+    esLaPrimitivaInterval: process.env.ES_LA_PRIMITIVA_CRON_INTERVAL || 'off', // Mon,Thu,Sat
+    esBonolotoInterval: process.env.ES_BONOLOTO_CRON_INTERVAL || 'off', // Mon-Sat
+    esElGordoInterval: process.env.ES_EL_GORDO_CRON_INTERVAL || 'off', // Sun
   },
   dataNYGov: {
     baseUrl: 'https://data.ny.gov/resource',
