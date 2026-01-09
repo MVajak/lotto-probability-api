@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@types/mocha": "^10.0.10",
     "dotenv": "^17.2.3",
     "node-pg-migrate": "^8.0.3",
     "typescript": "~5.2.2"
