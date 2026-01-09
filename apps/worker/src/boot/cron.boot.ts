@@ -6,7 +6,6 @@ import {schedule, validate} from 'node-cron';
 import {
   type EstonianLottoDrawCronService,
   LOTTERY_CONFIG,
-  type ResetLottoDrawsCronService,
   type SpanishLottoDrawCronService,
   type UKLottoDrawCronService,
   type USLottoDrawCronService,
@@ -17,8 +16,6 @@ export class CronBooter implements Booter {
   constructor(
     @inject('services.EstonianLottoDrawCronService')
     private estonianLottoDrawCronService: EstonianLottoDrawCronService,
-    @inject('services.ResetLottoDrawsCronService')
-    private resetLottoDrawsCronService: ResetLottoDrawsCronService,
     @inject('services.USLottoDrawCronService')
     private usLottoDrawCronService: USLottoDrawCronService,
     @inject('services.UKLottoDrawCronService')
@@ -32,8 +29,6 @@ export class CronBooter implements Booter {
     for (const lottoType of ALL_PROBABILITY_LOTTO) {
       this.scheduleLotteryDraws(lottoType);
     }
-
-    this.scheduleReset();
   }
 
   private scheduleLotteryDraws(lottoType: LottoType): void {
@@ -64,19 +59,5 @@ export class CronBooter implements Booter {
       case 'spanish':
         return this.spanishLottoDrawCronService;
     }
-  }
-
-  private scheduleReset(): void {
-    const cronSchedule = config.crons.resetDrawsInterval;
-
-    if (!cronSchedule || cronSchedule === 'off') return;
-
-    if (!validate(cronSchedule)) {
-      throw new Error(`Invalid cron expression for data reset: ${cronSchedule}`);
-    }
-
-    schedule(cronSchedule, async () => {
-      await this.resetLottoDrawsCronService.resetDraws();
-    });
   }
 }

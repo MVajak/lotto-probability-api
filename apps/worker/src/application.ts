@@ -21,7 +21,6 @@ import {CronBooter} from './boot/cron.boot';
 // Worker crons
 import {
   EstonianLottoDrawCronService,
-  ResetLottoDrawsCronService,
   SpanishLottoDrawCronService,
   UKLottoDrawCronService,
   USLottoDrawCronService,
@@ -62,7 +61,6 @@ export class LottoWorkerApplication extends BootMixin(RepositoryMixin(Applicatio
     this.bind('services.USLottoDrawCronService').toClass(USLottoDrawCronService);
     this.bind('services.UKLottoDrawCronService').toClass(UKLottoDrawCronService);
     this.bind('services.SpanishLottoDrawCronService').toClass(SpanishLottoDrawCronService);
-    this.bind('services.ResetLottoDrawsCronService').toClass(ResetLottoDrawsCronService);
 
     // Booters
     this.booters(CronBooter);

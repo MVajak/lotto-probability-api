@@ -20,7 +20,6 @@ export const config = {
     host: process.env.OPEN_API_SPEC_HOST || 'localhost',
   },
   crons: {
-    resetDrawsInterval: process.env.DRAWS_RESET_CRON_INTERVAL || 'off',
     // Estonian lotteries
     euroJackpotInterval: process.env.EST_EURO_JACKPOT_CRON_INTERVAL || 'off',
     vikingLottoInterval: process.env.EST_VIKING_LOTTO_CRON_INTERVAL || 'off',
