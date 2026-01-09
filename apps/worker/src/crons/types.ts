@@ -80,4 +80,9 @@ export const LOTTERY_CONFIG: Record<
     region: 'uk',
     historyStart: '2020-12-01T00:00:00',
   },
+  [LottoType.UK_HOT_PICKS]: {
+    configKey: 'ukHotPicksInterval',
+    region: 'uk',
+    historyStart: '2020-12-01T00:00:00',
+  },
 };
