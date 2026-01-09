@@ -101,4 +101,10 @@ export const LOTTERY_CONFIG: Record<
     region: 'spanish',
     historyStart: '2020-12-01T00:00:00',
   },
+  // Shared lotteries
+  [LottoType.EURODREAMS]: {
+    configKey: 'euroDreamsInterval',
+    region: 'spanish', // Uses Spanish lottery API
+    historyStart: '2023-11-06T00:00:00', // EuroDreams launched Nov 2023
+  },
 };

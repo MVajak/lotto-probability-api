@@ -169,6 +169,15 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryRange: {min: 0, max: 9}, // Reintegro (called "Número clave" in El Gordo)
     secondaryCount: 1,
   },
+  // Shared Lotteries
+  [LottoType.EURODREAMS]: {
+    type: LottoType.EURODREAMS,
+    name: 'EuroDreams',
+    primaryRange: {min: 1, max: 40},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 5}, // Dream number
+    secondaryCount: 1,
+  },
 };
 
 /**

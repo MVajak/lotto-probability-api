@@ -41,6 +41,8 @@ export const config = {
     esLaPrimitivaInterval: process.env.ES_LA_PRIMITIVA_CRON_INTERVAL || 'off', // Mon,Thu,Sat
     esBonolotoInterval: process.env.ES_BONOLOTO_CRON_INTERVAL || 'off', // Mon-Sat
     esElGordoInterval: process.env.ES_EL_GORDO_CRON_INTERVAL || 'off', // Sun
+    // Shared lotteries
+    euroDreamsInterval: process.env.EURODREAMS_CRON_INTERVAL || 'off', // Mon,Thu
   },
   dataNYGov: {
     baseUrl: 'https://data.ny.gov/resource',

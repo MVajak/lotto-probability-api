@@ -20,6 +20,7 @@ export enum LottoType {
   VIKINGLOTTO = 'VIKINGLOTTO',
   EUROJACKPOT = 'EUROJACKPOT',
   EUROMILLIONS = 'EUROMILLIONS',
+  EURODREAMS = 'EURODREAMS',
 }
 
 /**
@@ -99,6 +100,8 @@ export const OVERALL_PROBABILITY_LOTTO = [
   LottoType.ES_LA_PRIMITIVA,
   LottoType.ES_BONOLOTO,
   LottoType.ES_EL_GORDO,
+  // Shared
+  LottoType.EURODREAMS,
 ];
 
 export const POSITIONAL_PROBABILITY_LOTTO = [LottoType.EST_JOKKER];
