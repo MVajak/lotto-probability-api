@@ -49,35 +49,35 @@ export class User extends Entity {
     required: false,
     postgresql: {columnName: 'first_name'},
   })
-  firstName?: string | null;
+  firstName: string | null;
 
   @property({
     type: 'string',
     required: false,
     postgresql: {columnName: 'last_name'},
   })
-  lastName?: string | null;
+  lastName: string | null;
 
   @property({
     type: 'string',
     required: false,
     postgresql: {columnName: 'avatar_url'},
   })
-  avatarUrl?: string | null;
+  avatarUrl: string | null;
 
   @property({
     type: 'string',
     required: false,
     postgresql: {columnName: 'phone_number'},
   })
-  phoneNumber?: string | null;
+  phoneNumber: string | null;
 
   @property({
     type: 'string',
     required: false,
     postgresql: {columnName: 'country'},
   })
-  country?: string | null;
+  country: string | null;
 
   // Preferences
   @property({
@@ -114,14 +114,14 @@ export class User extends Entity {
     required: false,
     postgresql: {columnName: 'last_login_at'},
   })
-  lastLoginAt?: Date | null;
+  lastLoginAt: Date | null;
 
   @property({
     type: 'string',
     required: false,
     postgresql: {columnName: 'last_login_ip'},
   })
-  lastLoginIp?: string | null;
+  lastLoginIp: string | null;
 
   // Referral
   @property({
@@ -129,14 +129,29 @@ export class User extends Entity {
     required: false,
     postgresql: {columnName: 'referral_code'},
   })
-  referralCode?: string | null;
+  referralCode: string | null;
 
   @property({
     type: 'string',
     required: false,
     postgresql: {columnName: 'referred_by_user_id'},
   })
-  referredByUserId?: string | null;
+  referredByUserId: string | null;
+
+  // Terms
+  @property({
+    type: 'string',
+    required: false,
+    postgresql: {columnName: 'accepted_terms_version'},
+  })
+  acceptedTermsVersion: string | null;
+
+  @property({
+    type: 'date',
+    required: false,
+    postgresql: {columnName: 'accepted_terms_at'},
+  })
+  acceptedTermsAt: Date | null;
 
   // Metadata
   @property({
@@ -158,7 +173,7 @@ export class User extends Entity {
     required: false,
     postgresql: {columnName: 'deleted_at'},
   })
-  deletedAt?: Date | null;
+  deletedAt: Date | null;
 
   // Relations
   @hasOne(() => Subscription, {keyTo: 'userId'})

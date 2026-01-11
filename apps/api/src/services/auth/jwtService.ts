@@ -10,7 +10,7 @@ import {
   verify,
 } from 'jsonwebtoken';
 
-import type {SubscriptionTier} from '@lotto/database';
+import type {SubscriptionTierCode} from '@lotto/shared';
 
 /**
  * Custom JWT payload interface
@@ -19,7 +19,7 @@ import type {SubscriptionTier} from '@lotto/database';
 export interface JWTPayload extends JsonWebTokenPayload {
   userId: string;
   email: string;
-  subscriptionTier: SubscriptionTier;
+  subscriptionTierCode: SubscriptionTierCode;
 }
 
 @injectable({scope: BindingScope.SINGLETON})
@@ -108,7 +108,7 @@ export class JWTService {
     return (
       typeof payload.userId === 'string' &&
       typeof payload.email === 'string' &&
-      typeof payload.subscriptionTier === 'string'
+      typeof payload.subscriptionTierCode === 'string'
     );
   }
 }

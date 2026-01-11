@@ -1,10 +1,8 @@
 import {BindingScope, inject, injectable} from '@loopback/core';
-import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 
-import type {LoggerService} from '@lotto/core';
-import type {Subscription, User} from '@lotto/database';
-import {SubscriptionRepository, SubscriptionTierRepository, UserRepository} from '@lotto/database';
+import type {LoggerService, SubscriptionService, UserService} from '@lotto/core';
+import type {User} from '@lotto/database';
 import type {SubscriptionTierCode} from '@lotto/shared';
 import {
   type AuthSubscriptionResponse,
@@ -23,12 +21,10 @@ export class AuthService {
   constructor(
     @inject('services.LoggerService')
     private loggerService: LoggerService,
-    @repository(UserRepository)
-    private userRepository: UserRepository,
-    @repository(SubscriptionRepository)
-    private subscriptionRepository: SubscriptionRepository,
-    @repository(SubscriptionTierRepository)
-    private subscriptionTierRepository: SubscriptionTierRepository,
+    @inject('services.UserService')
+    private userService: UserService,
+    @inject('services.SubscriptionService')
+    private subscriptionService: SubscriptionService,
     @inject('services.JWTService')
     private jwtService: JWTService,
     @inject('services.OTPService')
@@ -54,15 +50,16 @@ export class AuthService {
     const normalizedEmail = email.toLowerCase();
 
     // Find or create user
-    let user = await this.userRepository.findByEmail(normalizedEmail);
+    let user = await this.userService.findByEmail(normalizedEmail);
     let isNewUser = false;
 
     if (!user) {
-      user = await this.createNewUser(normalizedEmail);
+      user = await this.userService.createUser(normalizedEmail);
+      await this.subscriptionService.createFreeSubscription(user.id);
       isNewUser = true;
-      this.loggerService.log(`✨ New user created: ${normalizedEmail}`);
+      this.loggerService.log(`New user created: ${normalizedEmail}`);
     } else {
-      this.loggerService.log(`👤 Existing user login request: ${normalizedEmail}`);
+      this.loggerService.log(`Existing user login request: ${normalizedEmail}`);
     }
 
     // Generate and send OTP
@@ -87,7 +84,7 @@ export class AuthService {
     const normalizedCode = code.trim();
 
     // Find user by email first
-    const user = await this.userRepository.findByEmail(normalizedEmail);
+    const user = await this.userService.findByEmail(normalizedEmail);
 
     if (!user) {
       throw new HttpErrors.Unauthorized('Invalid email or verification code. Please try again.');
@@ -107,21 +104,21 @@ export class AuthService {
 
     // Activate user on first login
     if (user.userState === 'pending') {
-      await this.activateUser(user.id);
-      this.loggerService.log(`✅ User activated: ${user.email}`);
+      await this.userService.activateUser(user.id);
+      this.loggerService.log(`User activated: ${user.email}`);
     }
 
     // Track login
-    await this.userRepository.trackLogin(user.id, ipAddress);
+    await this.userService.trackLogin(user.id, ipAddress);
 
     // Get subscription with tier
-    const subscription = await this.getOrCreateSubscription(user.id);
-    const tierCode = await this.getTierCode(subscription.tierId);
+    const subscription = await this.subscriptionService.getOrCreateSubscription(user.id);
+    const tierCode = await this.subscriptionService.getTierCode(subscription.tierId);
 
     // Generate JWT tokens
     const tokens = this.generateTokens(user, tierCode);
 
-    this.loggerService.log(`🔐 User logged in: ${user.email} (${tierCode})`);
+    this.loggerService.log(`User logged in: ${user.email} (${tierCode})`);
 
     return tokens;
   }
@@ -133,14 +130,14 @@ export class AuthService {
     user: AuthUserResponse;
     subscription: AuthSubscriptionResponse;
   }> {
-    const user = await this.userRepository.findById(userId);
-    const subscription = await this.subscriptionRepository.findByUserId(user.id);
+    const user = await this.userService.findById(userId);
+    const subscription = await this.subscriptionService.findByUserId(user.id);
 
     if (!subscription) {
       throw new HttpErrors.InternalServerError('User subscription not found');
     }
 
-    const tierCode = await this.getTierCode(subscription.tierId);
+    const tierCode = await this.subscriptionService.getTierCode(subscription.tierId);
 
     return {
       user: toAuthUserResponse(user),
@@ -156,78 +153,28 @@ export class AuthService {
     const payload = this.jwtService.verifyToken(refreshToken);
 
     // Get fresh user data
-    const user = await this.userRepository.findById(payload.userId);
-    const subscription = await this.getOrCreateSubscription(user.id);
-    const tierCode = await this.getTierCode(subscription.tierId);
+    const user = await this.userService.findById(payload.userId);
+    const subscription = await this.subscriptionService.getOrCreateSubscription(user.id);
+    const tierCode = await this.subscriptionService.getTierCode(subscription.tierId);
 
     // Generate new tokens
     return this.generateTokens(user, tierCode);
   }
 
+  /**
+   * Accept terms of service
+   */
+  async acceptTerms(
+    userId: string,
+    acceptedTermsVersion: string,
+  ): Promise<{user: AuthUserResponse; subscription: AuthSubscriptionResponse}> {
+    await this.userService.acceptTerms(userId, acceptedTermsVersion);
+    return this.getCurrentUser(userId);
+  }
+
   // ─────────────────────────────────────────────────────────────────────
   // Private Helper Methods
   // ─────────────────────────────────────────────────────────────────────
-
-  /**
-   * Get tier code by tier ID
-   */
-  private async getTierCode(tierId: string): Promise<SubscriptionTierCode> {
-    const tier = await this.subscriptionTierRepository.findById(tierId);
-    return tier.code;
-  }
-
-  /**
-   * Get tier ID by code
-   */
-  private async getTierIdByCode(code: SubscriptionTierCode): Promise<string> {
-    const tier = await this.subscriptionTierRepository.findByCode(code);
-    if (!tier) {
-      throw new HttpErrors.InternalServerError(`Subscription tier ${code} not found`);
-    }
-    return tier.id;
-  }
-
-  /**
-   * Create new user with pending state
-   */
-  private async createNewUser(email: string): Promise<User> {
-    const user = await this.userRepository.create({
-      email,
-      emailVerified: false,
-      userState: 'pending',
-      language: 'en',
-      timezone: 'UTC',
-      emailNotifications: true,
-      loginCount: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    // Get the FREE tier ID
-    const freeTierId = await this.getTierIdByCode('FREE');
-
-    // Create free subscription for new user
-    await this.subscriptionRepository.create({
-      userId: user.id,
-      tierId: freeTierId,
-      status: 'active',
-      cancelAtPeriodEnd: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    return user;
-  }
-
-  /**
-   * Activate user (change state from pending to active)
-   */
-  private async activateUser(userId: string): Promise<void> {
-    await this.userRepository.updateById(userId, {
-      userState: 'active',
-      emailVerified: true,
-    });
-  }
 
   /**
    * Generate and send OTP email
@@ -249,37 +196,13 @@ export class AuthService {
   }
 
   /**
-   * Get subscription or create default one if missing
-   */
-  private async getOrCreateSubscription(userId: string): Promise<Subscription> {
-    let subscription = await this.subscriptionRepository.findByUserId(userId);
-
-    if (!subscription) {
-      // Get the FREE tier ID
-      const freeTierId = await this.getTierIdByCode('FREE');
-
-      // Create default free subscription if missing
-      subscription = await this.subscriptionRepository.create({
-        userId,
-        tierId: freeTierId,
-        status: 'active',
-        cancelAtPeriodEnd: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-    }
-
-    return subscription;
-  }
-
-  /**
    * Generate JWT access and refresh tokens
    */
-  private generateTokens(user: User, subscriptionTier: SubscriptionTierCode): AuthTokens {
+  private generateTokens(user: User, subscriptionTierCode: SubscriptionTierCode): AuthTokens {
     const payload = {
       userId: user.id,
       email: user.email,
-      subscriptionTier,
+      subscriptionTierCode,
     };
 
     return {

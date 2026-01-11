@@ -46,7 +46,7 @@ import {
   SubscriptionTierController,
   UserController,
 } from './controllers';
-import {TierGatingInterceptor} from './interceptors';
+import {TermsAcceptanceInterceptor, TierGatingInterceptor} from './interceptors';
 import {JWTAuthenticationStrategy} from './middleware';
 import {MySequence} from './sequence';
 import {AuthService, CsrfService, EmailService, JWTService, OTPService} from './services';
@@ -104,6 +104,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     registerAuthenticationStrategy(this, JWTAuthenticationStrategy);
 
     // Global interceptors
+    this.add(createBindingFromClass(TermsAcceptanceInterceptor, {namespace: 'interceptors'}));
     this.add(createBindingFromClass(TierGatingInterceptor, {namespace: 'interceptors'}));
 
     // Clients

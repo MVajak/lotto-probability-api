@@ -138,4 +138,38 @@ export class AuthController {
   ): Promise<{user: AuthUserResponse; subscription: AuthSubscriptionResponse}> {
     return await this.authService.getCurrentUser(currentUser.id);
   }
+
+  /**
+   * Accept terms of service
+   * Requires valid JWT token in Authorization header
+   */
+  @authenticate('jwt')
+  @post('/auth/accept-terms')
+  async acceptTerms(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: AuthenticatedUser,
+    @requestBody({
+      description: 'Accept terms of service',
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['acceptedTermsVersion'],
+            properties: {
+              acceptedTermsVersion: {
+                type: 'string',
+                description: 'Version of terms accepted (e.g. "1.0")',
+              },
+            },
+          },
+        },
+      },
+    })
+    body: {
+      acceptedTermsVersion: string;
+    },
+  ): Promise<{user: AuthUserResponse; subscription: AuthSubscriptionResponse}> {
+    return this.authService.acceptTerms(currentUser.id, body.acceptedTermsVersion);
+  }
 }

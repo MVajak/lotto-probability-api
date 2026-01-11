@@ -1,15 +1,15 @@
-import {
-  type Interceptor,
-  type InvocationContext,
-  type InvocationResult,
-  type Provider,
-  type ValueOrPromise,
-  inject,
+import type {
+  Interceptor,
+  InvocationContext,
+  InvocationResult,
+  Provider,
+  ValueOrPromise,
 } from '@loopback/core';
-import {SecurityBindings, type UserProfile} from '@loopback/security';
+import {SecurityBindings} from '@loopback/security';
 
 import {getTierGatedResponseClass, getTierRequirements} from '@lotto/core';
 import type {SubscriptionTierCode} from '@lotto/shared';
+import type {AuthenticatedUser} from '../types/auth.types';
 
 /**
  * Tier hierarchy for access checks (higher index = more access)
@@ -59,11 +59,6 @@ function stripTierGatedFields<T extends object>(
  * if the user's subscription tier is insufficient.
  */
 export class TierGatingInterceptor implements Provider<Interceptor> {
-  constructor(
-    @inject(SecurityBindings.USER, {optional: true})
-    private currentUser: UserProfile | undefined,
-  ) {}
-
   value() {
     return this.intercept.bind(this);
   }
@@ -89,15 +84,16 @@ export class TierGatingInterceptor implements Provider<Interceptor> {
     }
 
     // Get user's subscription tier from the security context
-    // We need to fetch fresh since it might have been set after constructor
-    const user = await invocationCtx.get<UserProfile>(SecurityBindings.USER, {optional: true});
+    const user = await invocationCtx.get<AuthenticatedUser>(SecurityBindings.USER, {
+      optional: true,
+    });
 
     if (!user) {
       // No authenticated user - return as-is (should be handled by auth)
       return result;
     }
 
-    const userTier = (user as {subscriptionTier?: SubscriptionTierCode}).subscriptionTier;
+    const userTier = user.subscriptionTierCode;
 
     if (!userTier) {
       // No tier info - default to FREE

@@ -3,30 +3,7 @@ import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 
 import {type User, UserRepository} from '@lotto/database';
-
-/**
- * DTO for updating user profile
- */
-export interface UpdateUserProfileDTO {
-  firstName?: string | null;
-  lastName?: string | null;
-  phoneNumber?: string | null;
-  country?: string | null;
-}
-
-/**
- * Response DTO for user profile (excludes sensitive fields)
- */
-export interface UserProfileResponse {
-  id: string;
-  email: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  phoneNumber?: string | null;
-  country?: string | null;
-  emailVerified: boolean;
-  createdAt: Date;
-}
+import type {UpdateUserProfileDto, UserProfileResponseDto} from '../../models';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class UserService {
@@ -39,7 +16,7 @@ export class UserService {
    * Get user profile by ID
    * Throws 404 if user not found or has been deleted
    */
-  async getUserProfile(userId: string): Promise<UserProfileResponse> {
+  async getUserProfile(userId: string): Promise<UserProfileResponseDto> {
     const user = await this.userRepository.findById(userId);
 
     if (!user || user.deletedAt) {
@@ -55,8 +32,8 @@ export class UserService {
    */
   async updateUserProfile(
     userId: string,
-    data: UpdateUserProfileDTO,
-  ): Promise<UserProfileResponse> {
+    data: UpdateUserProfileDto,
+  ): Promise<UserProfileResponseDto> {
     // First verify user exists and is not deleted
     const user = await this.userRepository.findById(userId);
 
@@ -108,10 +85,78 @@ export class UserService {
   }
 
   /**
+   * Check if user has accepted terms of service
+   */
+  async hasAcceptedTerms(userId: string): Promise<boolean> {
+    const user = await this.userRepository.findById(userId);
+    return user.acceptedTermsVersion !== null;
+  }
+
+  /**
+   * Find user by email
+   */
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findByEmail(email);
+  }
+
+  /**
+   * Find user by ID
+   */
+  async findById(userId: string): Promise<User> {
+    return this.userRepository.findById(userId);
+  }
+
+  /**
+   * Create a new user with default settings
+   */
+  async createUser(email: string): Promise<User> {
+    const now = new Date();
+
+    return this.userRepository.create({
+      email,
+      emailVerified: false,
+      userState: 'pending',
+      language: 'en',
+      timezone: 'UTC',
+      emailNotifications: true,
+      loginCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  /**
+   * Activate user (change state from pending to active)
+   */
+  async activateUser(userId: string): Promise<void> {
+    await this.userRepository.updateById(userId, {
+      userState: 'active',
+      emailVerified: true,
+    });
+  }
+
+  /**
+   * Track user login
+   */
+  async trackLogin(userId: string, ipAddress?: string): Promise<void> {
+    await this.userRepository.trackLogin(userId, ipAddress);
+  }
+
+  /**
+   * Accept terms of service
+   */
+  async acceptTerms(userId: string, acceptedTermsVersion: string): Promise<void> {
+    await this.userRepository.updateById(userId, {
+      acceptedTermsVersion,
+      acceptedTermsAt: new Date(),
+    });
+  }
+
+  /**
    * Transform User entity to profile response DTO
    * Excludes sensitive and system fields
    */
-  private toProfileResponse(user: User): UserProfileResponse {
+  private toProfileResponse(user: User): UserProfileResponseDto {
     return {
       id: user.id,
       email: user.email,

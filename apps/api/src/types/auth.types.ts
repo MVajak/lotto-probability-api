@@ -9,7 +9,7 @@ import type {SubscriptionTierCode} from '@lotto/shared';
 export interface AuthenticatedUser extends UserProfile {
   id: string;
   email: string;
-  subscriptionTier: SubscriptionTierCode;
+  subscriptionTierCode: SubscriptionTierCode;
 }
 
 /**
@@ -35,6 +35,8 @@ export interface AuthUserResponse {
   timezone: string;
   loginCount: number;
   createdAt: Date;
+  acceptedTermsVersion: string | null;
+  acceptedTermsAt: Date | null;
 }
 
 /**
@@ -57,15 +59,17 @@ export function toAuthUserResponse(user: User): AuthUserResponse {
   return {
     id: user.id,
     email: user.email,
-    firstName: user.firstName ?? null,
-    lastName: user.lastName ?? null,
-    avatarUrl: user.avatarUrl ?? null,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    avatarUrl: user.avatarUrl,
     userState: user.userState,
     emailVerified: user.emailVerified,
     language: user.language,
     timezone: user.timezone,
     loginCount: user.loginCount,
     createdAt: user.createdAt,
+    acceptedTermsVersion: user.acceptedTermsVersion,
+    acceptedTermsAt: user.acceptedTermsAt,
   };
 }
 

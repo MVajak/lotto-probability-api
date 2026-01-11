@@ -1,9 +1,10 @@
 import type {AuthenticationStrategy} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {HttpErrors, type RedirectRoute, type Request} from '@loopback/rest';
-import {type UserProfile, securityId} from '@loopback/security';
+import {securityId} from '@loopback/security';
 
-import type {JWTService} from '../services/auth';
+import type {JWTService} from '../services';
+import type {AuthenticatedUser} from '../types/auth.types';
 
 /**
  * JWT Authentication Strategy
@@ -20,7 +21,7 @@ export class JWTAuthenticationStrategy implements AuthenticationStrategy {
   /**
    * Authenticate the request by extracting and verifying JWT token
    */
-  async authenticate(request: Request): Promise<UserProfile | RedirectRoute | undefined> {
+  async authenticate(request: Request): Promise<AuthenticatedUser | RedirectRoute | undefined> {
     const token = this.extractToken(request);
 
     if (!token) {
@@ -38,7 +39,7 @@ export class JWTAuthenticationStrategy implements AuthenticationStrategy {
       [securityId]: decoded.userId,
       id: decoded.userId,
       email: decoded.email,
-      subscriptionTier: decoded.subscriptionTier,
+      subscriptionTierCode: decoded.subscriptionTierCode,
     };
   }
 

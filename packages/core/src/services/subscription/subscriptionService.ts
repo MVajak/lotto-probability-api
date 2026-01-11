@@ -48,6 +48,51 @@ export class SubscriptionService {
   // ───────────────────────────────────────────────────────────────────────────
 
   /**
+   * Find subscription by user ID
+   */
+  async findByUserId(userId: string): Promise<Subscription | null> {
+    return this.subscriptionRepository.findByUserId(userId);
+  }
+
+  /**
+   * Create a free subscription for a new user
+   */
+  async createFreeSubscription(userId: string): Promise<Subscription> {
+    const freeTier = await this.subscriptionTierRepository.findByCode('FREE');
+    if (!freeTier) {
+      throw new Error('FREE tier not found');
+    }
+
+    return this.subscriptionRepository.create({
+      userId,
+      tierId: freeTier.id,
+      status: 'active',
+      cancelAtPeriodEnd: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
+  /**
+   * Get or create subscription for user
+   */
+  async getOrCreateSubscription(userId: string): Promise<Subscription> {
+    const subscription = await this.subscriptionRepository.findByUserId(userId);
+    if (subscription) {
+      return subscription;
+    }
+    return this.createFreeSubscription(userId);
+  }
+
+  /**
+   * Get tier code for a subscription
+   */
+  async getTierCode(tierId: string): Promise<SubscriptionTierCode> {
+    const tier = await this.subscriptionTierRepository.findById(tierId);
+    return tier.code;
+  }
+
+  /**
    * Create a Stripe Checkout session for new subscription (FREE → Paid only)
    * For tier changes between paid tiers, use changeTier() instead
    */
