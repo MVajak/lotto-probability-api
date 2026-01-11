@@ -4,9 +4,9 @@ import axios, {type AxiosInstance, type AxiosRequestConfig, type AxiosResponse} 
 
 import {DateFormat} from '@lotto/shared';
 import {formatDate} from '@lotto/shared';
-import type {EstonianLottoDrawDto} from '../models/EstonianLotto/EstonianLottoDrawDto';
-import type {EstonianLottoDrawsResultDto} from '../models/EstonianLotto/EstonianLottoDrawsResultDto';
-import {EstonianLottoPayloadDto} from '../models/EstonianLotto/EstonianLottoPayloadDto';
+import type {EstonianLottoDrawDto} from '../models';
+import type {EstonianLottoDrawsResultDto} from '../models';
+import {EstonianLottoPayloadDto} from '../models';
 import type {LoggerService} from '../services/logger/loggerService';
 
 import {getEstonianLottoHeaders} from './helpers/getEstonianLottoHeaders';
@@ -31,6 +31,7 @@ export class EstonianLottoApiClient {
       this.loggerService.logError({
         message: 'Could not load results view. Issue on eestilotto.ee side.',
         errorConstructor: HttpErrors.BadRequest,
+        data: axios.isAxiosError(error) ? error.response?.data : error,
       });
     }
   }
@@ -57,6 +58,7 @@ export class EstonianLottoApiClient {
       this.loggerService.logError({
         message: 'Could not fetch lotto draws. Issue on eestilotto.ee side.',
         errorConstructor: HttpErrors.BadRequest,
+        data: axios.isAxiosError(error) ? error.response?.data : error,
       });
     }
   }

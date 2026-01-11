@@ -5,9 +5,12 @@ import type {CustomError} from './types';
 @injectable({scope: BindingScope.SINGLETON})
 export class LoggerService {
   logError(error: CustomError): never {
-    const {message, errorConstructor} = error;
+    const {message, errorConstructor, data} = error;
 
     console.error(errorConstructor(message));
+    if (data !== undefined) {
+      console.error('Error data:', JSON.stringify(data, null, 2));
+    }
     throw new errorConstructor(message);
   }
 

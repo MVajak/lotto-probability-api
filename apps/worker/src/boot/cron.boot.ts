@@ -5,7 +5,8 @@ import {schedule, validate} from 'node-cron';
 
 import {
   type EstonianLottoDrawCronService,
-  LOTTERY_CONFIG, LotteryRegion,
+  LOTTERY_CONFIG,
+  type LotteryRegion,
   type SpanishLottoDrawCronService,
   type UKLottoDrawCronService,
   type USLottoDrawCronService,

@@ -83,6 +83,7 @@ export class UKLotteryClient {
       this.loggerService.logError({
         message: `Failed to fetch UK lottery CSV for ${game}`,
         errorConstructor: HttpErrors.BadRequest,
+        data: axios.isAxiosError(error) ? error.response?.data : error,
       });
     }
   }

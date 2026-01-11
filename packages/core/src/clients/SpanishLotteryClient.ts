@@ -67,7 +67,10 @@ export class SpanishLotteryClient {
   /**
    * Fetch raw RSS data from Spanish lottery website
    */
-  private async fetchRSS(game: SpanishLotteryGameSlug, includeResultados = true): Promise<RSSItem[]> {
+  private async fetchRSS(
+    game: SpanishLotteryGameSlug,
+    includeResultados = true,
+  ): Promise<RSSItem[]> {
     const url = includeResultados
       ? `${SPANISH_LOTTERY_BASE_URL}/es/${game}/resultados/.formatoRSS`
       : `${SPANISH_LOTTERY_BASE_URL}/es/${game}/.formatoRSS`;
@@ -85,6 +88,7 @@ export class SpanishLotteryClient {
       this.loggerService.logError({
         message: `Failed to fetch Spanish lottery RSS for ${game}`,
         errorConstructor: HttpErrors.BadRequest,
+        data: axios.isAxiosError(error) ? error.response?.data : error,
       });
     }
   }

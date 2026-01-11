@@ -2,7 +2,7 @@ import {BindingScope, inject, injectable} from '@loopback/core';
 import {HttpErrors} from '@loopback/rest';
 import axios from 'axios';
 
-import type {Cash4LifeDrawDto, MegaMillionsDrawDto, PowerballDrawDto} from '../models/USLotto';
+import type {Cash4LifeDrawDto, MegaMillionsDrawDto, PowerballDrawDto} from '../models';
 import type {LoggerService} from '../services/logger/loggerService';
 
 export const DATA_NY_GOV_BASE_URL = 'https://data.ny.gov/resource';
@@ -43,6 +43,7 @@ export class DataNYGovClient {
       this.loggerService.logError({
         message: `Failed to fetch data from data.ny.gov: ${resourceId}`,
         errorConstructor: HttpErrors.BadRequest,
+        data: axios.isAxiosError(error) ? error.response?.data : error,
       });
     }
   }
