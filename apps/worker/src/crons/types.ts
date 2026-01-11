@@ -2,6 +2,8 @@ import {LottoType, type config} from '@lotto/shared';
 
 type CronConfigKey = keyof typeof config.crons;
 
+export type LotteryRegion = 'estonian' | 'us' | 'uk' | 'ie' | 'spanish';
+
 /**
  * Centralized lottery configuration
  * Single source of truth for all lottery-specific settings:
@@ -12,7 +14,7 @@ export const LOTTERY_CONFIG: Record<
   LottoType,
   {
     configKey: CronConfigKey;
-    region: 'estonian' | 'us' | 'uk' | 'spanish';
+    region: LotteryRegion;
   }
 > = {
   // Lotteries from EE source
@@ -69,6 +71,15 @@ export const LOTTERY_CONFIG: Record<
   [LottoType.UK_HOT_PICKS]: {
     configKey: 'ukHotPicksInterval',
     region: 'uk',
+  },
+  // Lotteries from IE source
+  [LottoType.IE_LOTTO]: {
+    configKey: 'ieLottoInterval',
+    region: 'ie',
+  },
+  [LottoType.IE_DAILY_MILLION]: {
+    configKey: 'ieDailyMillionInterval',
+    region: 'ie',
   },
   // Lotteries from ES source
   [LottoType.ES_LA_PRIMITIVA]: {

@@ -33,6 +33,9 @@ export const config = {
     ukThunderballInterval: process.env.UK_THUNDERBALL_CRON_INTERVAL || 'off',
     ukSetForLifeInterval: process.env.UK_SET_FOR_LIFE_CRON_INTERVAL || 'off',
     ukHotPicksInterval: process.env.UK_HOT_PICKS_CRON_INTERVAL || 'off',
+    // Irish lotteries
+    ieLottoInterval: process.env.IE_LOTTO_CRON_INTERVAL || 'off',
+    ieDailyMillionInterval: process.env.IE_DAILY_MILLION_CRON_INTERVAL || 'off',
     // Spanish lotteries
     esLaPrimitivaInterval: process.env.ES_LA_PRIMITIVA_CRON_INTERVAL || 'off',
     esBonolotoInterval: process.env.ES_BONOLOTO_CRON_INTERVAL || 'off',

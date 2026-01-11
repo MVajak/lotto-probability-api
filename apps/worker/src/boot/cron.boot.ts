@@ -5,7 +5,7 @@ import {schedule, validate} from 'node-cron';
 
 import {
   type EstonianLottoDrawCronService,
-  LOTTERY_CONFIG,
+  LOTTERY_CONFIG, LotteryRegion,
   type SpanishLottoDrawCronService,
   type UKLottoDrawCronService,
   type USLottoDrawCronService,
@@ -48,13 +48,16 @@ export class CronBooter implements Booter {
     });
   }
 
-  private getServiceForRegion(region: 'estonian' | 'us' | 'uk' | 'spanish') {
+  private getServiceForRegion(region: LotteryRegion) {
     switch (region) {
       case 'estonian':
         return this.estonianLottoDrawCronService;
       case 'us':
         return this.usLottoDrawCronService;
       case 'uk':
+        return this.ukLottoDrawCronService;
+      case 'ie':
+        // TODO switch to Irish service
         return this.ukLottoDrawCronService;
       case 'spanish':
         return this.spanishLottoDrawCronService;

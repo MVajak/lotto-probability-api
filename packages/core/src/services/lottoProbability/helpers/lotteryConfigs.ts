@@ -35,22 +35,6 @@ export interface LotteryConfig extends NumberPoolConfig {
  * Lottery configurations for all supported lottery types
  */
 export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
-  [LottoType.EUROJACKPOT]: {
-    type: LottoType.EUROJACKPOT,
-    name: 'EuroJackpot',
-    primaryRange: {min: 1, max: 50},
-    primaryCount: 5,
-    secondaryRange: {min: 1, max: 12},
-    secondaryCount: 2,
-  },
-  [LottoType.VIKINGLOTTO]: {
-    type: LottoType.VIKINGLOTTO,
-    name: 'Viking Lotto',
-    primaryRange: {min: 1, max: 48},
-    primaryCount: 6,
-    secondaryRange: {min: 1, max: 5},
-    secondaryCount: 1,
-  },
   [LottoType.EST_KENO]: {
     type: LottoType.EST_KENO,
     name: 'Keno',
@@ -88,7 +72,7 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     name: 'Mega Millions',
     primaryRange: {min: 1, max: 70},
     primaryCount: 5,
-    secondaryRange: {min: 1, max: 24}, // Changed from 25 to 24 in April 2025
+    secondaryRange: {min: 1, max: 24},
     secondaryCount: 1,
   },
   [LottoType.US_CASH4LIFE]: {
@@ -100,14 +84,6 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryCount: 1,
   },
   // UK Lotteries
-  [LottoType.EUROMILLIONS]: {
-    type: LottoType.EUROMILLIONS,
-    name: 'EuroMillions',
-    primaryRange: {min: 1, max: 50},
-    primaryCount: 5,
-    secondaryRange: {min: 1, max: 12},
-    secondaryCount: 2,
-  },
   [LottoType.UK_LOTTO]: {
     type: LottoType.UK_LOTTO,
     name: 'UK Lotto',
@@ -137,6 +113,23 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     name: 'Lotto HotPicks',
     primaryRange: {min: 1, max: 59},
     primaryCount: 6,
+  },
+  // Irish Lotteries
+  [LottoType.IE_LOTTO]: {
+    type: LottoType.IE_LOTTO,
+    name: 'Irish Lotto',
+    primaryRange: {min: 1, max: 47},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 47},
+    secondaryCount: 1,
+  },
+  [LottoType.IE_DAILY_MILLION]: {
+    type: LottoType.IE_DAILY_MILLION,
+    name: 'Daily Million',
+    primaryRange: {min: 1, max: 39},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 39},
+    secondaryCount: 1,
   },
   // Spanish Lotteries
   [LottoType.ES_LA_PRIMITIVA]: {
@@ -170,6 +163,30 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryCount: 1,
   },
   // Shared Lotteries
+  [LottoType.EUROMILLIONS]: {
+    type: LottoType.EUROMILLIONS,
+    name: 'EuroMillions',
+    primaryRange: {min: 1, max: 50},
+    primaryCount: 5,
+    secondaryRange: {min: 1, max: 12},
+    secondaryCount: 2,
+  },
+  [LottoType.EUROJACKPOT]: {
+    type: LottoType.EUROJACKPOT,
+    name: 'EuroJackpot',
+    primaryRange: {min: 1, max: 50},
+    primaryCount: 5,
+    secondaryRange: {min: 1, max: 12},
+    secondaryCount: 2,
+  },
+  [LottoType.VIKINGLOTTO]: {
+    type: LottoType.VIKINGLOTTO,
+    name: 'Viking Lotto',
+    primaryRange: {min: 1, max: 48},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 5},
+    secondaryCount: 1,
+  },
   [LottoType.EURODREAMS]: {
     type: LottoType.EURODREAMS,
     name: 'EuroDreams',
