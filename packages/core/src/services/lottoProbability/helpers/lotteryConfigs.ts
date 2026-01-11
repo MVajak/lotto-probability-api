@@ -123,6 +123,22 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryRange: {min: 1, max: 47},
     secondaryCount: 1,
   },
+  [LottoType.IE_LOTTO_PLUS_1]: {
+    type: LottoType.IE_LOTTO_PLUS_1,
+    name: 'Irish Lotto Plus 1',
+    primaryRange: {min: 1, max: 47},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 47},
+    secondaryCount: 1,
+  },
+  [LottoType.IE_LOTTO_PLUS_2]: {
+    type: LottoType.IE_LOTTO_PLUS_2,
+    name: 'Irish Lotto Plus 2',
+    primaryRange: {min: 1, max: 47},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 47},
+    secondaryCount: 1,
+  },
   [LottoType.IE_DAILY_MILLION]: {
     type: LottoType.IE_DAILY_MILLION,
     name: 'Daily Million',

@@ -35,6 +35,8 @@ export const config = {
     ukHotPicksInterval: process.env.UK_HOT_PICKS_CRON_INTERVAL || 'off',
     // Irish lotteries
     ieLottoInterval: process.env.IE_LOTTO_CRON_INTERVAL || 'off',
+    ieLottoPlus1Interval: process.env.IE_LOTTO_PLUS_1_CRON_INTERVAL || 'off',
+    ieLottoPlus2Interval: process.env.IE_LOTTO_PLUS_2_CRON_INTERVAL || 'off',
     ieDailyMillionInterval: process.env.IE_DAILY_MILLION_CRON_INTERVAL || 'off',
     // Spanish lotteries
     esLaPrimitivaInterval: process.env.ES_LA_PRIMITIVA_CRON_INTERVAL || 'off',

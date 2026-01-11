@@ -5,6 +5,7 @@ import {schedule, validate} from 'node-cron';
 
 import {
   type EstonianLottoDrawCronService,
+  type IrishLottoDrawCronService,
   LOTTERY_CONFIG,
   type LotteryRegion,
   type SpanishLottoDrawCronService,
@@ -23,6 +24,8 @@ export class CronBooter implements Booter {
     private ukLottoDrawCronService: UKLottoDrawCronService,
     @inject('services.SpanishLottoDrawCronService')
     private spanishLottoDrawCronService: SpanishLottoDrawCronService,
+    @inject('services.IrishLottoDrawCronService')
+    private irishLottoDrawCronService: IrishLottoDrawCronService,
   ) {}
 
   async load(): Promise<void> {
@@ -58,8 +61,7 @@ export class CronBooter implements Booter {
       case 'uk':
         return this.ukLottoDrawCronService;
       case 'ie':
-        // TODO switch to Irish service
-        return this.ukLottoDrawCronService;
+        return this.irishLottoDrawCronService;
       case 'spanish':
         return this.spanishLottoDrawCronService;
     }

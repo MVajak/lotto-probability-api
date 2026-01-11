@@ -16,5 +16,8 @@ export * from './UKLotto';
 // Spanish Lotto DTOs
 export * from './SpanishLotto';
 
+// Irish Lotto DTOs
+export * from './IrishLotto';
+
 // User DTOs
 export * from './User';

@@ -77,6 +77,14 @@ export const LOTTERY_CONFIG: Record<
     configKey: 'ieLottoInterval',
     region: 'ie',
   },
+  [LottoType.IE_LOTTO_PLUS_1]: {
+    configKey: 'ieLottoPlus1Interval',
+    region: 'ie',
+  },
+  [LottoType.IE_LOTTO_PLUS_2]: {
+    configKey: 'ieLottoPlus2Interval',
+    region: 'ie',
+  },
   [LottoType.IE_DAILY_MILLION]: {
     configKey: 'ieDailyMillionInterval',
     region: 'ie',
