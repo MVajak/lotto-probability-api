@@ -1,4 +1,4 @@
-import type {LottoDrawSearchDto} from '../models/LottoNumbers/LottoDrawSearchDto';
+import type {LottoDrawSearchDto} from '../models';
 
 export type EstonianLottoSearchDto = Partial<LottoDrawSearchDto> &
   Pick<LottoDrawSearchDto, 'lottoType'>;
