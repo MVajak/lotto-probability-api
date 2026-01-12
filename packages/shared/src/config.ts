@@ -33,10 +33,8 @@ export const config = {
     ukThunderballInterval: process.env.UK_THUNDERBALL_CRON_INTERVAL || 'off',
     ukSetForLifeInterval: process.env.UK_SET_FOR_LIFE_CRON_INTERVAL || 'off',
     ukHotPicksInterval: process.env.UK_HOT_PICKS_CRON_INTERVAL || 'off',
-    // Irish lotteries
+    // Irish lotteries (each interval triggers main + plus variants)
     ieLottoInterval: process.env.IE_LOTTO_CRON_INTERVAL || 'off',
-    ieLottoPlus1Interval: process.env.IE_LOTTO_PLUS_1_CRON_INTERVAL || 'off',
-    ieLottoPlus2Interval: process.env.IE_LOTTO_PLUS_2_CRON_INTERVAL || 'off',
     ieDailyMillionInterval: process.env.IE_DAILY_MILLION_CRON_INTERVAL || 'off',
     // Spanish lotteries
     esLaPrimitivaInterval: process.env.ES_LA_PRIMITIVA_CRON_INTERVAL || 'off',
@@ -47,12 +45,6 @@ export const config = {
     euroJackpotInterval: process.env.EUROJACKPOT_CRON_INTERVAL || 'off',
     vikingLottoInterval: process.env.VIKINGLOTTO_CRON_INTERVAL || 'off',
     euroDreamsInterval: process.env.EURODREAMS_CRON_INTERVAL || 'off',
-  },
-  dataNYGov: {
-    baseUrl: 'https://data.ny.gov/resource',
-    powerballResourceId: 'd6yy-54nr',
-    megaMillionsResourceId: '5xaw-6ayf',
-    cash4LifeResourceId: 'kwxv-fwze',
   },
   email: {
     resendApiKey: process.env.RESEND_API_KEY || '',

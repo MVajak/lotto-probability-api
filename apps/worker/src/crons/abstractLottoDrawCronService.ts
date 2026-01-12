@@ -58,13 +58,13 @@ export abstract class AbstractLottoDrawCronService {
     const {dateFrom, dateTo} = dateRange ?? this.getDefaultDateRange();
 
     this.loggerService.log(
-      `Getting new ${lottoType} draws between ${dateFrom.toISOString()} - ${dateTo.toISOString()}`,
+      `[${lottoType}] Getting new draws between ${dateFrom.toISOString()} - ${dateTo.toISOString()}`,
     );
 
     const transformedDraws = await this.fetchAndTransformDraws(lottoType, dateFrom, dateTo);
 
     if (!transformedDraws.length) {
-      this.loggerService.log(`No ${lottoType} draws fetched. Closing...`);
+      this.loggerService.log(`[${lottoType}] No draws fetched. Closing...`);
       return;
     }
 
@@ -208,10 +208,10 @@ export abstract class AbstractLottoDrawCronService {
       // Log summary
       if (newDrawsCount > 0 || newResultsCount > 0) {
         this.loggerService.log(
-          `${lottoType}: Inserted ${newDrawsCount} draws, ${newResultsCount} results`,
+          `[${lottoType}] Inserted ${newDrawsCount} draws, ${newResultsCount} results`,
         );
       } else {
-        this.loggerService.log(`${lottoType}: Already up to date`);
+        this.loggerService.log(`[${lottoType}] Already up to date`);
       }
     } catch (error) {
       await transaction.rollback();

@@ -9,14 +9,15 @@ export type LotteryRegion = 'estonian' | 'us' | 'uk' | 'ie' | 'spanish';
  * Single source of truth for all lottery-specific settings:
  * - configKey: Environment variable key for cron schedule
  * - region: Service routing (estonian/us/uk/spanish)
+ * - includes: Sub-lotteries fetched together with this one (e.g., Plus variants)
  */
-export const LOTTERY_CONFIG: Record<
-  LottoType,
-  {
-    configKey: CronConfigKey;
-    region: LotteryRegion;
-  }
-> = {
+export interface LotteryConfigEntry {
+  configKey: CronConfigKey;
+  region: LotteryRegion;
+  includes?: LottoType[];
+}
+
+export const LOTTERY_CONFIG: Partial<Record<LottoType, LotteryConfigEntry>> = {
   // Lotteries from EE source
   [LottoType.EUROJACKPOT]: {
     configKey: 'euroJackpotInterval',
@@ -72,22 +73,16 @@ export const LOTTERY_CONFIG: Record<
     configKey: 'ukHotPicksInterval',
     region: 'uk',
   },
-  // Lotteries from IE source
+  // Lotteries from IE source (Plus variants fetched with parent)
   [LottoType.IE_LOTTO]: {
     configKey: 'ieLottoInterval',
     region: 'ie',
-  },
-  [LottoType.IE_LOTTO_PLUS_1]: {
-    configKey: 'ieLottoPlus1Interval',
-    region: 'ie',
-  },
-  [LottoType.IE_LOTTO_PLUS_2]: {
-    configKey: 'ieLottoPlus2Interval',
-    region: 'ie',
+    includes: [LottoType.IE_LOTTO_PLUS_1, LottoType.IE_LOTTO_PLUS_2],
   },
   [LottoType.IE_DAILY_MILLION]: {
     configKey: 'ieDailyMillionInterval',
     region: 'ie',
+    includes: [LottoType.IE_DAILY_MILLION_PLUS],
   },
   // Lotteries from ES source
   [LottoType.ES_LA_PRIMITIVA]: {

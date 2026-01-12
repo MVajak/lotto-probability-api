@@ -1,12 +1,13 @@
 import type {Booter} from '@loopback/boot';
 import {BindingScope, bind, inject} from '@loopback/core';
-import {ALL_PROBABILITY_LOTTO, type LottoType, config} from '@lotto/shared';
+import {type LottoType, config} from '@lotto/shared';
 import {schedule, validate} from 'node-cron';
 
 import {
   type EstonianLottoDrawCronService,
   type IrishLottoDrawCronService,
   LOTTERY_CONFIG,
+  type LotteryConfigEntry,
   type LotteryRegion,
   type SpanishLottoDrawCronService,
   type UKLottoDrawCronService,
@@ -29,14 +30,14 @@ export class CronBooter implements Booter {
   ) {}
 
   async load(): Promise<void> {
-    // Schedule all lottery crons from single loop
-    for (const lottoType of ALL_PROBABILITY_LOTTO) {
-      this.scheduleLotteryDraws(lottoType);
+    // Schedule crons only for lotteries defined in LOTTERY_CONFIG
+    // (sub-lotteries like Plus variants are handled via 'includes')
+    for (const [lottoType, lotteryConfig] of Object.entries(LOTTERY_CONFIG)) {
+      this.scheduleLotteryDraws(lottoType as LottoType, lotteryConfig);
     }
   }
 
-  private scheduleLotteryDraws(lottoType: LottoType): void {
-    const lotteryConfig = LOTTERY_CONFIG[lottoType];
+  private scheduleLotteryDraws(lottoType: LottoType, lotteryConfig: LotteryConfigEntry): void {
     const cronSchedule = config.crons[lotteryConfig.configKey];
 
     if (!cronSchedule || cronSchedule === 'off') return;
@@ -46,9 +47,12 @@ export class CronBooter implements Booter {
     }
 
     const service = this.getServiceForRegion(lotteryConfig.region);
+    const allTypes = [lottoType, ...(lotteryConfig.includes ?? [])];
 
     schedule(cronSchedule, async () => {
-      await service.saveLatestDraws(lottoType);
+      for (const type of allTypes) {
+        await service.saveLatestDraws(type);
+      }
     });
   }
 

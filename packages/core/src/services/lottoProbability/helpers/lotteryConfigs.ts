@@ -147,6 +147,14 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryRange: {min: 1, max: 39},
     secondaryCount: 1,
   },
+  [LottoType.IE_DAILY_MILLION_PLUS]: {
+    type: LottoType.IE_DAILY_MILLION_PLUS,
+    name: 'Daily Million Plus',
+    primaryRange: {min: 1, max: 39},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 39},
+    secondaryCount: 1,
+  },
   // Spanish Lotteries
   [LottoType.ES_LA_PRIMITIVA]: {
     type: LottoType.ES_LA_PRIMITIVA,

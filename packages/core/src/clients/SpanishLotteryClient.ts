@@ -17,6 +17,12 @@ export const SPANISH_LOTTERY_BASE_URL = 'https://www.loteriasyapuestas.es';
 
 export type SpanishLotteryGameSlug = 'la-primitiva' | 'bonoloto' | 'gordo-primitiva' | 'eurodreams';
 
+type SpanishLotteryGame =
+  | LottoType.ES_LA_PRIMITIVA
+  | LottoType.ES_BONOLOTO
+  | LottoType.ES_EL_GORDO
+  | LottoType.EURODREAMS;
+
 interface RSSItem {
   title: string;
   pubDate: string;
@@ -166,7 +172,7 @@ export class SpanishLotteryClient {
       reintegro?: number;
     },
     expectedCount: number,
-    lotteryName: string,
+    lotteryName: SpanishLotteryGame,
   ): SpanishLotteryDrawDto[] {
     const results: SpanishLotteryDrawDto[] = [];
 

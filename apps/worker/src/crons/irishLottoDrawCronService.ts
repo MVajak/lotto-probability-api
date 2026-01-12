@@ -15,7 +15,7 @@ import {AbstractLottoDrawCronService, type TransformedDraw} from './abstractLott
 
 /**
  * Cron service for fetching and saving Irish lottery draws
- * Handles: IE_LOTTO, IE_LOTTO_PLUS_1, IE_LOTTO_PLUS_2
+ * Handles: IE_LOTTO, IE_LOTTO_PLUS_1, IE_LOTTO_PLUS_2, IE_DAILY_MILLION, IE_DAILY_MILLION_PLUS
  */
 @injectable({scope: BindingScope.SINGLETON})
 export class IrishLottoDrawCronService extends AbstractLottoDrawCronService {
@@ -49,6 +49,10 @@ export class IrishLottoDrawCronService extends AbstractLottoDrawCronService {
         return this.fetchIrishLottoPlus1(dateFrom, dateTo);
       case LottoType.IE_LOTTO_PLUS_2:
         return this.fetchIrishLottoPlus2(dateFrom, dateTo);
+      case LottoType.IE_DAILY_MILLION:
+        return this.fetchDailyMillion(dateFrom, dateTo);
+      case LottoType.IE_DAILY_MILLION_PLUS:
+        return this.fetchDailyMillionPlus(dateFrom, dateTo);
       default:
         this.loggerService.log(`Unsupported Irish lottery type: ${lottoType}`);
         return [];
@@ -92,6 +96,26 @@ export class IrishLottoDrawCronService extends AbstractLottoDrawCronService {
       () => this.irishLotteryClient.fetchIrishLottoPlus2Draws(),
       transformIrishLottoResults,
       LottoType.IE_LOTTO_PLUS_2,
+      dateFrom,
+      dateTo,
+    );
+  }
+
+  private fetchDailyMillion(dateFrom: Date, dateTo: Date): Promise<TransformedDraw[]> {
+    return this.fetchAndTransform(
+      () => this.irishLotteryClient.fetchDailyMillionDraws(),
+      transformIrishLottoResults,
+      LottoType.IE_DAILY_MILLION,
+      dateFrom,
+      dateTo,
+    );
+  }
+
+  private fetchDailyMillionPlus(dateFrom: Date, dateTo: Date): Promise<TransformedDraw[]> {
+    return this.fetchAndTransform(
+      () => this.irishLotteryClient.fetchDailyMillionPlusDraws(),
+      transformIrishLottoResults,
+      LottoType.IE_DAILY_MILLION_PLUS,
       dateFrom,
       dateTo,
     );

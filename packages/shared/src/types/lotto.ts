@@ -17,6 +17,7 @@ export enum LottoType {
   IE_LOTTO_PLUS_1 = 'IE_LOTTO_PLUS_1',
   IE_LOTTO_PLUS_2 = 'IE_LOTTO_PLUS_2',
   IE_DAILY_MILLION = 'IE_DAILY_MILLION',
+  IE_DAILY_MILLION_PLUS = 'IE_DAILY_MILLION_PLUS',
   // Spanish lotteries
   ES_LA_PRIMITIVA = 'ES_LA_PRIMITIVA',
   ES_BONOLOTO = 'ES_BONOLOTO',
@@ -105,6 +106,8 @@ export const OVERALL_PROBABILITY_LOTTO = [
   LottoType.IE_LOTTO,
   LottoType.IE_LOTTO_PLUS_1,
   LottoType.IE_LOTTO_PLUS_2,
+  LottoType.IE_DAILY_MILLION,
+  LottoType.IE_DAILY_MILLION_PLUS,
   // Spanish lotteries
   LottoType.ES_LA_PRIMITIVA,
   LottoType.ES_BONOLOTO,
