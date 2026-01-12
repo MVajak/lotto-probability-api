@@ -77,6 +77,7 @@ interface IrishLotteryEndpoint {
   maxNumber: number;
   logPrefix: LottoType;
   games: Partial<Record<IrishLottoType, GameSource>>;
+  multipleDrawsPerDay?: boolean;
 }
 
 const IRISH_LOTTERY_ENDPOINTS: Record<EndpointKey, IrishLotteryEndpoint> = {
@@ -94,6 +95,7 @@ const IRISH_LOTTERY_ENDPOINTS: Record<EndpointKey, IrishLotteryEndpoint> = {
     urlPath: '/results/daily-million/history',
     maxNumber: 39,
     logPrefix: LottoType.IE_DAILY_MILLION,
+    multipleDrawsPerDay: true, // Draws at 14:00 and 21:00
     games: {
       [LottoType.IE_DAILY_MILLION]: 'standard',
       [LottoType.IE_DAILY_MILLION_PLUS]: 0,
@@ -138,7 +140,7 @@ export class IrishLotteryClient {
       return [];
     }
 
-    return this.parseDrawList(drawList, source, lottoType, endpoint.maxNumber);
+    return this.parseDrawList(drawList, source, lottoType, endpoint.maxNumber, endpoint.multipleDrawsPerDay);
   }
 
   // Convenience methods for backward compatibility
@@ -229,6 +231,7 @@ export class IrishLotteryClient {
     source: GameSource,
     lottoType: IrishLottoType,
     maxNumber: number,
+    multipleDrawsPerDay?: boolean,
   ): IrishLottoDrawDto[] {
     const results: IrishLottoDrawDto[] = [];
 
@@ -248,7 +251,12 @@ export class IrishLotteryClient {
       }
 
       const drawDate = new Date(drawDates[0]);
-      const drawLabel = drawDate.toISOString().split('T')[0];
+      // For lotteries with multiple draws per day (e.g., Daily Million at 14:00 and 21:00),
+      // include the hour in drawLabel to distinguish draws
+      const dateStr = drawDate.toISOString().split('T')[0];
+      const drawLabel = multipleDrawsPerDay
+        ? `${dateStr}-${String(drawDate.getUTCHours()).padStart(2, '0')}:00`
+        : dateStr;
 
       // Extract numbers from grids
       const grids = gameData.grids;
