@@ -22,6 +22,11 @@ export enum LottoType {
   ES_LA_PRIMITIVA = 'ES_LA_PRIMITIVA',
   ES_BONOLOTO = 'ES_BONOLOTO',
   ES_EL_GORDO = 'ES_EL_GORDO',
+  // German lotteries
+  DE_LOTTO_6AUS49 = 'DE_LOTTO_6AUS49',
+  DE_KENO = 'DE_KENO',
+  DE_SPIEL77 = 'DE_SPIEL77',
+  DE_SUPER6 = 'DE_SUPER6',
   // Shared
   VIKINGLOTTO = 'VIKINGLOTTO',
   EUROJACKPOT = 'EUROJACKPOT',
@@ -112,11 +117,18 @@ export const OVERALL_PROBABILITY_LOTTO = [
   LottoType.ES_LA_PRIMITIVA,
   LottoType.ES_BONOLOTO,
   LottoType.ES_EL_GORDO,
+  // German lotteries
+  LottoType.DE_LOTTO_6AUS49,
+  LottoType.DE_KENO,
   // Shared
   LottoType.EURODREAMS,
 ];
 
-export const POSITIONAL_PROBABILITY_LOTTO = [LottoType.EST_JOKKER];
+export const POSITIONAL_PROBABILITY_LOTTO = [
+  LottoType.EST_JOKKER,
+  LottoType.DE_SPIEL77,
+  LottoType.DE_SUPER6,
+];
 
 export const ALL_PROBABILITY_LOTTO = [
   ...OVERALL_PROBABILITY_LOTTO,

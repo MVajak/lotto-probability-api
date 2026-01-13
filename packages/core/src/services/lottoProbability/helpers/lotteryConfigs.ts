@@ -186,6 +186,33 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryRange: {min: 0, max: 9}, // Reintegro (called "Número clave" in El Gordo)
     secondaryCount: 1,
   },
+  // German Lotteries
+  [LottoType.DE_LOTTO_6AUS49]: {
+    type: LottoType.DE_LOTTO_6AUS49,
+    name: 'Lotto 6aus49',
+    primaryRange: {min: 1, max: 49},
+    primaryCount: 6,
+    secondaryRange: {min: 0, max: 9}, // Superzahl
+    secondaryCount: 1,
+  },
+  [LottoType.DE_KENO]: {
+    type: LottoType.DE_KENO,
+    name: 'Keno',
+    primaryRange: {min: 1, max: 70},
+    primaryCount: 20,
+  },
+  [LottoType.DE_SPIEL77]: {
+    type: LottoType.DE_SPIEL77,
+    name: 'Spiel 77',
+    primaryRange: {min: 0, max: 9}, // Digits 0-9
+    primaryCount: 7, // 7-digit number
+  },
+  [LottoType.DE_SUPER6]: {
+    type: LottoType.DE_SUPER6,
+    name: 'Super 6',
+    primaryRange: {min: 0, max: 9}, // Digits 0-9
+    primaryCount: 6, // 6-digit number
+  },
   // Shared Lotteries
   [LottoType.EUROMILLIONS]: {
     type: LottoType.EUROMILLIONS,

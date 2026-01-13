@@ -2,7 +2,7 @@ import {LottoType, type config} from '@lotto/shared';
 
 type CronConfigKey = keyof typeof config.crons;
 
-export type LotteryRegion = 'estonian' | 'us' | 'uk' | 'ie' | 'spanish';
+export type LotteryRegion = 'est' | 'us' | 'uk' | 'ie' | 'es' | 'de';
 
 /**
  * Centralized lottery configuration
@@ -21,23 +21,23 @@ export const LOTTERY_CONFIG: Partial<Record<LottoType, LotteryConfigEntry>> = {
   // Lotteries from EE source
   [LottoType.EUROJACKPOT]: {
     configKey: 'euroJackpotInterval',
-    region: 'estonian',
+    region: 'est',
   },
   [LottoType.VIKINGLOTTO]: {
     configKey: 'vikingLottoInterval',
-    region: 'estonian',
+    region: 'est',
   },
   [LottoType.EST_BINGO]: {
     configKey: 'estBingoLottoInterval',
-    region: 'estonian',
+    region: 'est',
   },
   [LottoType.EST_JOKKER]: {
     configKey: 'estJokkerLottoInterval',
-    region: 'estonian',
+    region: 'est',
   },
   [LottoType.EST_KENO]: {
     configKey: 'estKenoLottoInterval',
-    region: 'estonian',
+    region: 'est',
   },
   // Lotteries from US source
   [LottoType.US_POWERBALL]: {
@@ -87,18 +87,35 @@ export const LOTTERY_CONFIG: Partial<Record<LottoType, LotteryConfigEntry>> = {
   // Lotteries from ES source
   [LottoType.ES_LA_PRIMITIVA]: {
     configKey: 'esLaPrimitivaInterval',
-    region: 'spanish',
+    region: 'es',
   },
   [LottoType.ES_BONOLOTO]: {
     configKey: 'esBonolotoInterval',
-    region: 'spanish',
+    region: 'es',
   },
   [LottoType.ES_EL_GORDO]: {
     configKey: 'esElGordoInterval',
-    region: 'spanish',
+    region: 'es',
   },
   [LottoType.EURODREAMS]: {
     configKey: 'euroDreamsInterval',
-    region: 'spanish',
+    region: 'es',
+  },
+  // German lotteries
+  [LottoType.DE_LOTTO_6AUS49]: {
+    configKey: 'deLotto6aus49Interval',
+    region: 'de',
+  },
+  [LottoType.DE_KENO]: {
+    configKey: 'deKenoInterval',
+    region: 'de',
+  },
+  [LottoType.DE_SPIEL77]: {
+    configKey: 'deSpiel77Interval',
+    region: 'de',
+  },
+  [LottoType.DE_SUPER6]: {
+    configKey: 'deSuper6Interval',
+    region: 'de',
   },
 };
