@@ -84,8 +84,8 @@ export abstract class AbstractLottoDrawCronService {
 
   protected getDefaultDateRange(): {dateFrom: Date; dateTo: Date} {
     const now = new Date();
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    return {dateFrom: twentyFourHoursAgo, dateTo: now};
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    return {dateFrom: oneWeekAgo, dateTo: now};
   }
 
   /**

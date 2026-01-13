@@ -2,7 +2,7 @@ import {BindingScope, inject, injectable} from '@loopback/core';
 import {HttpErrors} from '@loopback/rest';
 import axios, {type AxiosInstance, type AxiosRequestConfig, type AxiosResponse} from 'axios';
 
-import {DateFormat} from '@lotto/shared';
+import {DateFormat, LottoType} from '@lotto/shared';
 import {formatDate} from '@lotto/shared';
 import type {EstonianLottoDrawDto} from '../models';
 import type {EstonianLottoDrawsResultDto} from '../models';
@@ -11,6 +11,27 @@ import type {LoggerService} from '../services/logger/loggerService';
 
 import {getEstonianLottoHeaders} from './helpers/getEstonianLottoHeaders';
 import type {EstonianLottoSearchDto, PageableEstonianLottoSearchDto} from './types';
+
+/**
+ * Maps internal LottoType enum values to Estonian Lotto API game type names.
+ * The API expects: KENO, JOKKER, BINGO, VIKINGLOTTO, EURO
+ * But our enum uses: EST_KENO, EST_JOKKER, EST_BINGO for Estonian-specific games
+ */
+const LOTTO_TYPE_TO_API_GAME_TYPE: Record<string, string> = {
+  [LottoType.EST_KENO]: 'KENO',
+  [LottoType.EST_JOKKER]: 'JOKKER',
+  [LottoType.EST_BINGO]: 'BINGO',
+  [LottoType.VIKINGLOTTO]: 'VIKINGLOTTO',
+  [LottoType.EUROJACKPOT]: 'EURO',
+};
+
+/**
+ * Converts a LottoType to the Estonian API's expected game type string.
+ * Falls back to the original value if no mapping exists.
+ */
+function toApiGameType(lottoType: LottoType): string {
+  return LOTTO_TYPE_TO_API_GAME_TYPE[lottoType] ?? lottoType;
+}
 
 export const ESTONIAN_LOTTO_DRAWS_URL = 'https://www.eestiloto.ee/app/ajaxDrawStatistic';
 export const ESTONIAN_LOTTO_RESULT_URL = 'https://www.eestiloto.ee/et/results/';
@@ -56,7 +77,7 @@ export class EstonianLottoApiClient {
       return response.data;
     } catch (error) {
       this.loggerService.logError({
-        message: 'Could not fetch lotto draws. Issue on eestilotto.ee side.',
+        message: `[${payload.gameTypes}] Could not fetch lotto draws. Issue on eestilotto.ee side.`,
         errorConstructor: HttpErrors.BadRequest,
         data: axios.isAxiosError(error) ? error.response?.data : error,
       });
@@ -119,7 +140,7 @@ export class EstonianLottoApiClient {
     const dateFrom = data.dateFrom ? formatDate(data.dateFrom, DateFormat.European) : '';
 
     return new EstonianLottoPayloadDto({
-      gameTypes: data.lottoType,
+      gameTypes: toApiGameType(data.lottoType),
       dateFrom,
       dateTo,
       drawLabelFrom: '',

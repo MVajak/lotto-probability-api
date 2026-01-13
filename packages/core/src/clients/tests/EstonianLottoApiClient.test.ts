@@ -70,7 +70,7 @@ describe('EstonianLottoApiClient', () => {
 
   describe('getEstonianLottoDraws', () => {
     const fakePayload = createStubInstance<EstonianLottoPayloadDto>({
-      gameTypes: LottoType.EUROJACKPOT,
+      gameTypes: 'EURO',
       dateFrom: '2024-01-01',
     });
 

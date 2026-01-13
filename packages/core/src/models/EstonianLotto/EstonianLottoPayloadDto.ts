@@ -1,14 +1,16 @@
 import {model, property} from '@loopback/repository';
 
-import type {LottoType} from '@lotto/shared';
-
 @model()
 export class EstonianLottoPayloadDto {
+  /**
+   * Game type for the Estonian Lotto API.
+   * Expected values: KENO, JOKKER, BINGO, VIKINGLOTTO, EURO
+   */
   @property({
     type: 'string',
     required: true,
   })
-  gameTypes: LottoType;
+  gameTypes: string;
 
   @property({
     type: 'string',
