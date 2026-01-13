@@ -49,7 +49,7 @@ export class LottoProbabilityController {
     this.loggerService.log(
       `Probability request: user=${currentUser.id} lottery=${data.lottoType} range=${data.dateFrom}..${data.dateTo}`,
     );
-    return this.lottoProbabilityService.calculateProbability(data, currentUser.subscriptionTier);
+    return this.lottoProbabilityService.calculateProbability(data, currentUser.subscriptionTierCode);
   }
 
   @authenticate('jwt')
@@ -77,6 +77,6 @@ export class LottoProbabilityController {
     this.loggerService.log(
       `Number detail request: user=${currentUser.id} lottery=${data.lottoType} number=${data.number}`,
     );
-    return this.numberDetailService.getNumberDetail(data, currentUser.subscriptionTier);
+    return this.numberDetailService.getNumberDetail(data, currentUser.subscriptionTierCode);
   }
 }
