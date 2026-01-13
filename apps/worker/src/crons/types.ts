@@ -101,21 +101,14 @@ export const LOTTERY_CONFIG: Partial<Record<LottoType, LotteryConfigEntry>> = {
     configKey: 'euroDreamsInterval',
     region: 'es',
   },
-  // German lotteries
+  // German lotteries (Spiel77 and Super6 drawn with 6aus49)
   [LottoType.DE_LOTTO_6AUS49]: {
     configKey: 'deLotto6aus49Interval',
     region: 'de',
+    includes: [LottoType.DE_SPIEL77, LottoType.DE_SUPER6],
   },
   [LottoType.DE_KENO]: {
     configKey: 'deKenoInterval',
-    region: 'de',
-  },
-  [LottoType.DE_SPIEL77]: {
-    configKey: 'deSpiel77Interval',
-    region: 'de',
-  },
-  [LottoType.DE_SUPER6]: {
-    configKey: 'deSuper6Interval',
     region: 'de',
   },
 };
