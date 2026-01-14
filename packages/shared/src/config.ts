@@ -40,6 +40,9 @@ export const config = {
     esLaPrimitivaInterval: process.env.ES_LA_PRIMITIVA_CRON_INTERVAL || 'off',
     esBonolotoInterval: process.env.ES_BONOLOTO_CRON_INTERVAL || 'off',
     esElGordoInterval: process.env.ES_EL_GORDO_CRON_INTERVAL || 'off',
+    // French lotteries (Loto 2nd and Joker fetched with Loto)
+    frLotoInterval: process.env.FR_LOTO_CRON_INTERVAL || 'off',
+    frKenoInterval: process.env.FR_KENO_CRON_INTERVAL || 'off',
     // German lotteries (Spiel77 and Super6 fetched with 6aus49)
     deLotto6aus49Interval: process.env.DE_LOTTO_6AUS49_CRON_INTERVAL || 'off',
     deKenoInterval: process.env.DE_KENO_CRON_INTERVAL || 'off',

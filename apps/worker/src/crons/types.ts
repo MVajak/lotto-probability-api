@@ -2,7 +2,7 @@ import {LottoType, type config} from '@lotto/shared';
 
 type CronConfigKey = keyof typeof config.crons;
 
-export type LotteryRegion = 'est' | 'us' | 'uk' | 'ie' | 'es' | 'de';
+export type LotteryRegion = 'est' | 'us' | 'uk' | 'ie' | 'es' | 'fr' | 'de';
 
 /**
  * Centralized lottery configuration
@@ -100,6 +100,16 @@ export const LOTTERY_CONFIG: Partial<Record<LottoType, LotteryConfigEntry>> = {
   [LottoType.EURODREAMS]: {
     configKey: 'euroDreamsInterval',
     region: 'es',
+  },
+  // French lotteries
+  [LottoType.FR_LOTO]: {
+    configKey: 'frLotoInterval',
+    region: 'fr',
+  },
+  [LottoType.FR_KENO]: {
+    configKey: 'frKenoInterval',
+    region: 'fr',
+    includes: [LottoType.FR_JOKER],
   },
   // German lotteries (Spiel77 and Super6 drawn with 6aus49)
   [LottoType.DE_LOTTO_6AUS49]: {

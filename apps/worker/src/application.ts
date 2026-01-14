@@ -10,6 +10,7 @@ import {
   CsrfService,
   DataNYGovClient,
   EstonianLottoApiClient,
+  FrenchLotteryClient,
   GermanLotteryClient,
   IrishLotteryClient,
   LoggerService,
@@ -23,6 +24,7 @@ import {CronBooter} from './boot/cron.boot';
 // Worker crons
 import {
   EstonianLottoDrawCronService,
+  FrenchLottoDrawCronService,
   GermanLottoDrawCronService,
   IrishLottoDrawCronService,
   SpanishLottoDrawCronService,
@@ -60,6 +62,7 @@ export class LottoWorkerApplication extends BootMixin(RepositoryMixin(Applicatio
     this.bind('clients.UKLotteryClient').toClass(UKLotteryClient);
     this.bind('clients.SpanishLotteryClient').toClass(SpanishLotteryClient);
     this.bind('clients.IrishLotteryClient').toClass(IrishLotteryClient);
+    this.bind('clients.FrenchLotteryClient').toClass(FrenchLotteryClient);
     this.bind('clients.GermanLotteryClient').toClass(GermanLotteryClient);
 
     // Cron services
@@ -68,6 +71,7 @@ export class LottoWorkerApplication extends BootMixin(RepositoryMixin(Applicatio
     this.bind('services.UKLottoDrawCronService').toClass(UKLottoDrawCronService);
     this.bind('services.SpanishLottoDrawCronService').toClass(SpanishLottoDrawCronService);
     this.bind('services.IrishLottoDrawCronService').toClass(IrishLottoDrawCronService);
+    this.bind('services.FrenchLottoDrawCronService').toClass(FrenchLottoDrawCronService);
     this.bind('services.GermanLottoDrawCronService').toClass(GermanLottoDrawCronService);
 
     // Booters

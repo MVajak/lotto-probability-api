@@ -1,5 +1,6 @@
 export * from './abstractLottoDrawCronService';
 export * from './estonianLottoDrawCronService';
+export * from './frenchLottoDrawCronService';
 export * from './germanLottoDrawCronService';
 export * from './irishLottoDrawCronService';
 export * from './spanishLottoDrawCronService';

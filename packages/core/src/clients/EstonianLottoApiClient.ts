@@ -26,11 +26,31 @@ const LOTTO_TYPE_TO_API_GAME_TYPE: Record<string, string> = {
 };
 
 /**
+ * Reverse mapping: Estonian Lotto API game type names to internal LottoType.
+ * Used to convert API responses back to our enum values.
+ */
+const API_GAME_TYPE_TO_LOTTO_TYPE: Record<string, LottoType> = {
+  KENO: LottoType.EST_KENO,
+  JOKKER: LottoType.EST_JOKKER,
+  BINGO: LottoType.EST_BINGO,
+  VIKINGLOTTO: LottoType.VIKINGLOTTO,
+  EURO: LottoType.EUROJACKPOT,
+};
+
+/**
  * Converts a LottoType to the Estonian API's expected game type string.
  * Falls back to the original value if no mapping exists.
  */
 function toApiGameType(lottoType: LottoType): string {
   return LOTTO_TYPE_TO_API_GAME_TYPE[lottoType] ?? lottoType;
+}
+
+/**
+ * Converts an Estonian API game type string back to internal LottoType.
+ * Falls back to the original value if no mapping exists.
+ */
+export function fromApiGameType(apiGameType: string): LottoType {
+  return API_GAME_TYPE_TO_LOTTO_TYPE[apiGameType] ?? (apiGameType as LottoType);
 }
 
 export const ESTONIAN_LOTTO_DRAWS_URL = 'https://www.eestiloto.ee/app/ajaxDrawStatistic';

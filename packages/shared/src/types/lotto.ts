@@ -22,6 +22,10 @@ export enum LottoType {
   ES_LA_PRIMITIVA = 'ES_LA_PRIMITIVA',
   ES_BONOLOTO = 'ES_BONOLOTO',
   ES_EL_GORDO = 'ES_EL_GORDO',
+  // French lotteries
+  FR_LOTO = 'FR_LOTO',
+  FR_JOKER = 'FR_JOKER',
+  FR_KENO = 'FR_KENO',
   // German lotteries
   DE_LOTTO_6AUS49 = 'DE_LOTTO_6AUS49',
   DE_KENO = 'DE_KENO',
@@ -117,6 +121,9 @@ export const OVERALL_PROBABILITY_LOTTO = [
   LottoType.ES_LA_PRIMITIVA,
   LottoType.ES_BONOLOTO,
   LottoType.ES_EL_GORDO,
+  // French lotteries
+  LottoType.FR_LOTO,
+  LottoType.FR_KENO,
   // German lotteries
   LottoType.DE_LOTTO_6AUS49,
   LottoType.DE_KENO,
@@ -126,6 +133,7 @@ export const OVERALL_PROBABILITY_LOTTO = [
 
 export const POSITIONAL_PROBABILITY_LOTTO = [
   LottoType.EST_JOKKER,
+  LottoType.FR_JOKER,
   LottoType.DE_SPIEL77,
   LottoType.DE_SUPER6,
 ];

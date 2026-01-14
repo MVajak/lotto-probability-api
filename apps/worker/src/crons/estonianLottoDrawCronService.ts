@@ -1,11 +1,12 @@
 import {BindingScope, inject, injectable} from '@loopback/core';
-import type {
-  CsrfService,
-  EstonianLottoApiClient,
-  LoggerService,
-  LottoDrawResultService,
-  LottoDrawSearchDto,
-  LottoDrawService,
+import {
+  fromApiGameType,
+  type CsrfService,
+  type EstonianLottoApiClient,
+  type LoggerService,
+  type LottoDrawResultService,
+  type LottoDrawSearchDto,
+  type LottoDrawService,
 } from '@lotto/core';
 import type {PostgresDataSource} from '@lotto/database';
 import type {LottoType} from '@lotto/shared';
@@ -59,10 +60,11 @@ export class EstonianLottoDrawCronService extends AbstractLottoDrawCronService {
     );
 
     // Transform Estonian API response to common format
+    // Map API game types (KENO, EURO, etc.) back to our LottoType enum (EST_KENO, EUROJACKPOT, etc.)
     return estonianDraws.map(draw => ({
       drawDate: new Date(draw.drawDate),
       drawLabel: draw.drawLabel,
-      gameTypeName: draw.gameTypeName,
+      gameTypeName: fromApiGameType(draw.gameTypeName),
       externalDrawId: draw.externalDrawId,
       results:
         draw.results?.map(result => ({

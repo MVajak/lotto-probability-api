@@ -186,6 +186,27 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryRange: {min: 0, max: 9}, // Reintegro (called "Número clave" in El Gordo)
     secondaryCount: 1,
   },
+  // French Lotteries
+  [LottoType.FR_LOTO]: {
+    type: LottoType.FR_LOTO,
+    name: 'Loto',
+    primaryRange: {min: 1, max: 49},
+    primaryCount: 5,
+    secondaryRange: {min: 1, max: 10}, // Numéro Chance
+    secondaryCount: 1,
+  },
+  [LottoType.FR_JOKER]: {
+    type: LottoType.FR_JOKER,
+    name: 'Joker+',
+    primaryRange: {min: 0, max: 9}, // Digits 0-9
+    primaryCount: 7, // 7-digit number
+  },
+  [LottoType.FR_KENO]: {
+    type: LottoType.FR_KENO,
+    name: 'Keno',
+    primaryRange: {min: 1, max: 56},
+    primaryCount: 16, // Changed Nov 2025: was 20/70, now 16/56
+  },
   // German Lotteries
   [LottoType.DE_LOTTO_6AUS49]: {
     type: LottoType.DE_LOTTO_6AUS49,
