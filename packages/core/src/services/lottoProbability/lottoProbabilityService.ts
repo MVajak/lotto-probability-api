@@ -43,19 +43,19 @@ export class LottoProbabilityService {
     subscriptionTier: SubscriptionTierCode,
   ): Promise<LottoProbabilityDto> {
     this.validatePayload(data);
-    let lottoDraws: LottoDrawRelations[] = await this.lottoDrawService.findDraws(data);
 
-    // Limit draws based on subscription tier
+    // Pass draw limit to query (database-level LIMIT)
     const drawLimit = getDrawLimit(subscriptionTier);
-    if (drawLimit !== null && lottoDraws.length > drawLimit) {
-      lottoDraws = lottoDraws.slice(0, drawLimit);
-    }
+    const [lottoDraws, totalDrawsInRange] = await Promise.all([
+      this.lottoDrawService.findDraws(data, drawLimit),
+      this.lottoDrawService.countDraws(data),
+    ]);
 
     const totalDraws = lottoDraws.length;
     const {lottoType} = data;
     const result = this.calculateProbabilityByType(lottoDraws, lottoType);
 
-    return this.buildLottoProbabilityDto(result, lottoType, totalDraws);
+    return this.buildLottoProbabilityDto(result, lottoType, totalDraws, totalDrawsInRange);
   }
 
   private calculateProbabilityByType(
@@ -159,7 +159,8 @@ export class LottoProbabilityService {
     probabilityNumbers: LottoProbabilityNumbersDto[],
     lottoType: LottoType,
     totalDraws: number,
+    totalDrawsInRange: number,
   ) {
-    return new LottoProbabilityDto({lottoType, probabilityNumbers, totalDraws});
+    return new LottoProbabilityDto({lottoType, probabilityNumbers, totalDraws, totalDrawsInRange});
   }
 }

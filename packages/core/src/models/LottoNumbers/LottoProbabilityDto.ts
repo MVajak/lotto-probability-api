@@ -18,6 +18,12 @@ export class LottoProbabilityDto {
   })
   totalDraws: number;
 
+  @property({
+    type: 'number',
+    required: true,
+  })
+  totalDrawsInRange: number;
+
   @property.array(LottoProbabilityNumbersDto)
   probabilityNumbers: LottoProbabilityNumbersDto[];
 

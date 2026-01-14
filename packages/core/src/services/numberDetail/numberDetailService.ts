@@ -69,7 +69,10 @@ export class NumberDetailService {
     const startDate = new Date(dateFrom);
     const endDate = new Date(dateTo);
 
-    // Fetch all required data in parallel
+    // Get draw limit based on subscription tier
+    const drawLimit = getDrawLimit(subscriptionTier);
+
+    // Fetch all required data in parallel (with limit applied to allDrawsInPeriod query)
     let [drawsWithNumber, totalDraws, allDrawsInPeriod] = await this.fetchDrawData(
       lottoType,
       startDate,
@@ -78,14 +81,11 @@ export class NumberDetailService {
       position,
       useSecondaryNumbers,
       winClass,
+      drawLimit,
     );
 
-    // Limit draws based on subscription tier
-    const drawLimit = getDrawLimit(subscriptionTier);
-    if (drawLimit !== null && allDrawsInPeriod.length > drawLimit) {
-      // Keep only the most recent N draws (allDrawsInPeriod is ordered ASC, so slice from end)
-      allDrawsInPeriod = allDrawsInPeriod.slice(-drawLimit);
-      // Filter drawsWithNumber to only include draws in the limited set
+    // Filter drawsWithNumber to only include draws in the limited set (if limit was applied)
+    if (drawLimit !== null) {
       const limitedDrawIds = new Set(allDrawsInPeriod.map(d => d.id));
       drawsWithNumber = drawsWithNumber.filter(d => limitedDrawIds.has(d.id));
       totalDraws = {count: allDrawsInPeriod.length};
@@ -230,9 +230,10 @@ export class NumberDetailService {
     position?: number,
     useSecondaryNumbers?: boolean,
     winClass?: number,
+    limit?: number | null,
   ) {
     return Promise.all([
-      // Draws containing this number
+      // Draws containing this number (with limit)
       this.lottoDrawRepository.findDrawsWithNumber(
         number.toString(),
         lottoType,
@@ -241,12 +242,13 @@ export class NumberDetailService {
         position,
         useSecondaryNumbers,
         winClass,
+        limit,
       ),
-      // Total draws in period
+      // Total draws in period (without limit for reference)
       this.lottoDrawRepository.count({
         and: [{gameTypeName: lottoType}, {drawDate: {gte: startDate}}, {drawDate: {lte: endDate}}],
       }),
-      // All draws in period (for statistical analysis)
+      // All draws in period (with limit for tier restriction)
       this.lottoDrawRepository.find({
         where: {
           and: [
@@ -255,7 +257,8 @@ export class NumberDetailService {
             {drawDate: {lte: endDate}},
           ],
         },
-        order: ['drawDate ASC'],
+        order: ['drawDate DESC'], // Most recent first when using limit
+        ...(limit !== null && limit !== undefined && {limit}),
       }),
     ]);
   }

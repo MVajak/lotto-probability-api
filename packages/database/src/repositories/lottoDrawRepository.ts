@@ -39,6 +39,7 @@ export class LottoDrawRepository extends BaseRepository<
    * @param position - Optional position (for positional games like Jokker)
    * @param useSecondaryNumbers - If true, search in sec_winning_number; if false, search in winning_number
    * @param winClass - Optional win class filter (for games like BINGO with multiple prize tiers)
+   * @param limit - Optional limit for number of results (null = no limit)
    * @param options - Query options
    * @returns Array of draws with their results
    */
@@ -50,6 +51,7 @@ export class LottoDrawRepository extends BaseRepository<
     position?: number,
     useSecondaryNumbers?: boolean,
     winClass?: number,
+    limit?: number | null,
     options?: Options,
   ): Promise<LottoDraw[]> {
     const connector = this.dataSource.connector;
@@ -103,6 +105,12 @@ export class LottoDrawRepository extends BaseRepository<
     }
 
     sql += ' ORDER BY ld.draw_date DESC';
+
+    // Add limit if specified
+    if (limit !== undefined && limit !== null) {
+      sql += ` LIMIT $${paramIndex}`;
+      params.push(limit);
+    }
 
     return new Promise<LottoDraw[]>((resolve, reject) => {
       const executeFn = connector.execute!.bind(connector);

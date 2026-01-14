@@ -16,7 +16,11 @@ export class LottoDrawService {
     private lottoDrawRepository: LottoDrawRepository,
   ) {}
 
-  async findDraws(data: LottoDrawSearchDto, options?: Options): Promise<LottoDrawRelations[]> {
+  async findDraws(
+    data: LottoDrawSearchDto,
+    limit?: number | null,
+    options?: Options,
+  ): Promise<LottoDrawRelations[]> {
     const {lottoType, dateFrom, dateTo} = data;
     const filter: Filter<LottoDrawRelations> = {
       where: {
@@ -27,9 +31,26 @@ export class LottoDrawService {
         ],
       },
       include: [{relation: 'results'}],
+      order: ['drawDate DESC'],
+      ...(limit !== null && limit !== undefined && {limit}),
     };
 
     return this.lottoDrawRepository.find(filter, options);
+  }
+
+  async countDraws(data: LottoDrawSearchDto, options?: Options): Promise<number> {
+    const {lottoType, dateFrom, dateTo} = data;
+    const count = await this.lottoDrawRepository.count(
+      {
+        and: [
+          {drawDate: {gte: new Date(dateFrom)}},
+          {drawDate: {lte: new Date(dateTo)}},
+          {gameTypeName: lottoType},
+        ],
+      },
+      options,
+    );
+    return count.count;
   }
 
   async find(filter: Filter<LottoDraw>, options?: Options): Promise<LottoDraw[]> {
