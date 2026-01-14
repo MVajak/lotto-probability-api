@@ -48,7 +48,7 @@ export const TIER_FEATURES: Record<SubscriptionTierCode, SubscriptionFeature[]> 
  */
 export const TIER_DRAW_LIMITS: Record<SubscriptionTierCode, number | null> = {
   FREE: 5,
-  PRO: 200,
+  PRO: 100,
   PREMIUM: null, // unlimited
 };
 

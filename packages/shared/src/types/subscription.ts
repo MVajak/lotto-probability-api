@@ -13,7 +13,7 @@ export type SubscriptionFeature =
   | 'BASIC_FREQUENCY'
   | 'AD_SUPPORTED'
   // PRO tier analysis features
-  | 'STATS_200_DRAWS'
+  | 'STATS_100_DRAWS'
   | 'NO_ADS'
   | 'TIMELINE'
   | 'TRENDS'
