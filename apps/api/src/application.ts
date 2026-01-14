@@ -9,6 +9,8 @@ import {ServiceMixin} from '@loopback/service-proxy';
 
 // Import from workspace packages
 import {
+  FeatureFlagOverrideRepository,
+  FeatureFlagRepository,
   LottoDrawRepository,
   LottoDrawResultRepository,
   OTPTokenRepository,
@@ -22,6 +24,7 @@ import {
 import {
   DataNYGovClient,
   EstonianLottoApiClient,
+  FeatureFlagService,
   LoggerService,
   LottoDrawResultService,
   LottoDrawService,
@@ -39,6 +42,7 @@ import {
 // Local imports (API-specific)
 import {
   AuthController,
+  FeatureFlagController,
   LottoProbabilityController,
   PingController,
   SubscriptionAdminController,
@@ -79,6 +83,8 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.repository(SubscriptionTierRepository);
     this.repository(SubscriptionHistoryRepository);
     this.repository(OTPTokenRepository);
+    this.repository(FeatureFlagRepository);
+    this.repository(FeatureFlagOverrideRepository);
 
     // Services - MUST be bound before authentication strategy
     this.bind('services.LottoProbabilityService').toClass(LottoProbabilityService);
@@ -97,6 +103,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.bind('services.SubscriptionService').toClass(SubscriptionService);
     this.bind('services.SubscriptionAdminService').toClass(SubscriptionAdminService);
     this.bind('services.UserService').toClass(UserService);
+    this.bind('services.FeatureFlagService').toClass(FeatureFlagService);
 
     // Authentication - AFTER services are bound
     this.component(AuthenticationComponent);
@@ -120,6 +127,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     this.controller(SubscriptionAdminController);
     this.controller(SubscriptionTierController);
     this.controller(UserController);
+    this.controller(FeatureFlagController);
 
     this.projectRoot = __dirname;
     this.bootOptions = {

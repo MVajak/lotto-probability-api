@@ -6,3 +6,5 @@ export * from './subscriptionRepository';
 export * from './subscriptionTierRepository';
 export * from './subscriptionHistoryRepository';
 export * from './otpTokenRepository';
+export * from './featureFlagRepository';
+export * from './featureFlagOverrideRepository';

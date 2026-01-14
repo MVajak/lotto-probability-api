@@ -13,3 +13,7 @@ export * from './OTPToken';
 export * from './Subscription';
 export * from './SubscriptionTier';
 export * from './SubscriptionHistory';
+
+// Feature Flag models
+export * from './FeatureFlag';
+export * from './FeatureFlagOverride';

@@ -26,6 +26,7 @@ export * from './services/numberDetail/numberDetailService';
 export * from './services/stripe/stripeService';
 export * from './services/subscription';
 export * from './services/subscriptionTier/subscriptionTierService';
+export * from './services/featureFlag/featureFlagService';
 export * from './services/user';
 
 // Models (DTOs)
