@@ -9,18 +9,18 @@ export type SubscriptionTierCode = 'FREE' | 'PRO' | 'PREMIUM';
  */
 export type SubscriptionFeature =
   // FREE tier features
-  | 'STATS_2_MONTHS'
+  | 'STATS_5_DRAWS'
   | 'BASIC_FREQUENCY'
   | 'AD_SUPPORTED'
   // PRO tier analysis features
-  | 'STATS_2_YEARS'
+  | 'STATS_200_DRAWS'
   | 'NO_ADS'
   | 'TIMELINE'
   | 'TRENDS'
   | 'WILSON_CI'
   | 'STD_DEVIATION'
   // PREMIUM tier analysis features
-  | 'STATS_5_YEARS'
+  | 'STATS_UNLIMITED'
   | 'MARKOV_CHAIN'
   | 'AUTOCORRELATION'
   | 'PAIR_ANALYSIS'

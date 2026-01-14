@@ -44,12 +44,12 @@ export const TIER_FEATURES: Record<SubscriptionTierCode, SubscriptionFeature[]> 
 };
 
 /**
- * Maximum date range in months for each tier
+ * Maximum number of draws for each tier (null = unlimited)
  */
-export const TIER_DATE_RANGE_MONTHS: Record<SubscriptionTierCode, number> = {
-  FREE: 2,
-  PRO: 24, // 2 years
-  PREMIUM: 60, // 5 years
+export const TIER_DRAW_LIMITS: Record<SubscriptionTierCode, number | null> = {
+  FREE: 5,
+  PRO: 200,
+  PREMIUM: null, // unlimited
 };
 
 /**
@@ -73,26 +73,8 @@ export function getFeatureRequirements(
 }
 
 /**
- * Get the maximum date range in months for a tier
+ * Get the maximum number of draws allowed for a tier (null = unlimited)
  */
-export function getMaxDateRangeMonths(tier: SubscriptionTierCode): number {
-  return TIER_DATE_RANGE_MONTHS[tier];
-}
-
-/**
- * Enforce the minimum allowed date based on tier's max range
- * If the requested dateFrom is older than allowed, returns the earliest allowed date
- */
-export function enforceMinDate(dateFrom: string, tier: SubscriptionTierCode): string {
-  const maxMonths = getMaxDateRangeMonths(tier);
-  const now = new Date();
-  const minAllowedDate = new Date(now.getFullYear(), now.getMonth() - maxMonths, now.getDate());
-
-  const requestedDate = new Date(dateFrom);
-
-  if (requestedDate < minAllowedDate) {
-    return minAllowedDate.toISOString().split('T')[0];
-  }
-
-  return dateFrom;
+export function getDrawLimit(tier: SubscriptionTierCode): number | null {
+  return TIER_DRAW_LIMITS[tier];
 }

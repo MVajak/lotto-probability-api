@@ -13,7 +13,7 @@ import type {LottoType, SubscriptionTierCode} from '@lotto/shared';
 import {
   MIN_DRAWS_FOR_STATISTICS,
   calculateWilsonConfidenceInterval,
-  enforceMinDate,
+  getDrawLimit,
   hasFeature,
 } from '@lotto/shared';
 import type {
@@ -65,17 +65,12 @@ export class NumberDetailService {
     // Validate inputs
     this.validateRequest(request);
 
-    // Enforce date range based on subscription tier
-    const enforcedDateFrom = enforceMinDate(dateFrom, subscriptionTier);
-
     // Convert dates once and cache timestamps
-    const startDate = new Date(enforcedDateFrom);
+    const startDate = new Date(dateFrom);
     const endDate = new Date(dateTo);
-    const startTime = startDate.getTime();
-    const endTime = endDate.getTime();
 
     // Fetch all required data in parallel
-    const [drawsWithNumber, totalDraws, allDrawsInPeriod] = await this.fetchDrawData(
+    let [drawsWithNumber, totalDraws, allDrawsInPeriod] = await this.fetchDrawData(
       lottoType,
       startDate,
       endDate,
@@ -84,6 +79,20 @@ export class NumberDetailService {
       useSecondaryNumbers,
       winClass,
     );
+
+    // Limit draws based on subscription tier
+    const drawLimit = getDrawLimit(subscriptionTier);
+    if (drawLimit !== null && allDrawsInPeriod.length > drawLimit) {
+      // Keep only the most recent N draws (allDrawsInPeriod is ordered ASC, so slice from end)
+      allDrawsInPeriod = allDrawsInPeriod.slice(-drawLimit);
+      // Filter drawsWithNumber to only include draws in the limited set
+      const limitedDrawIds = new Set(allDrawsInPeriod.map(d => d.id));
+      drawsWithNumber = drawsWithNumber.filter(d => limitedDrawIds.has(d.id));
+      totalDraws = {count: allDrawsInPeriod.length};
+    }
+
+    const startTime = allDrawsInPeriod.length > 0 ? allDrawsInPeriod[0].drawDate.getTime() : startDate.getTime();
+    const endTime = endDate.getTime();
 
     // Build occurrences with parsed numbers
     const occurrences = await this.buildOccurrences(drawsWithNumber, number);
@@ -205,7 +214,7 @@ export class NumberDetailService {
       seasonalPatterns,
       occurrences,
       timeline,
-      periodStart: enforcedDateFrom,
+      periodStart: dateFrom,
       periodEnd: dateTo,
     };
   }

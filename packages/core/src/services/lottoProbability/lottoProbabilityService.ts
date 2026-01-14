@@ -10,7 +10,7 @@ import {
   POSITIONAL_PROBABILITY_LOTTO,
   type SubscriptionTierCode,
   convertToNumbers,
-  enforceMinDate,
+  getDrawLimit,
   safeBig,
 } from '@lotto/shared';
 
@@ -42,13 +42,14 @@ export class LottoProbabilityService {
     data: LottoDrawSearchDto,
     subscriptionTier: SubscriptionTierCode,
   ): Promise<LottoProbabilityDto> {
-    // Enforce date range based on subscription tier
-    if (data.dateFrom) {
-      data.dateFrom = enforceMinDate(data.dateFrom, subscriptionTier);
-    }
-
     this.validatePayload(data);
-    const lottoDraws: LottoDrawRelations[] = await this.lottoDrawService.findDraws(data);
+    let lottoDraws: LottoDrawRelations[] = await this.lottoDrawService.findDraws(data);
+
+    // Limit draws based on subscription tier
+    const drawLimit = getDrawLimit(subscriptionTier);
+    if (drawLimit !== null && lottoDraws.length > drawLimit) {
+      lottoDraws = lottoDraws.slice(0, drawLimit);
+    }
 
     const totalDraws = lottoDraws.length;
     const {lottoType} = data;
