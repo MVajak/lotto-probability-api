@@ -32,7 +32,7 @@ type CanadianLottoType =
   | LottoType.CA_LOTTO_649
   | LottoType.CA_DAILY_GRAND
   | LottoType.CA_LOTTARIO
-  | LottoType.CA_BC49
+  | LottoType.CA_BC_49
   | LottoType.CA_QUEBEC_49
   | LottoType.CA_ATLANTIC_49;
 
@@ -65,7 +65,7 @@ const CANADIAN_LOTTERY_ENDPOINTS: Record<CanadianLottoType, CanadianLotteryEndpo
     hasGrand: false,
     extraGames: ['earlyBird', 'encore'],
   },
-  [LottoType.CA_BC49]: {
+  [LottoType.CA_BC_49]: {
     urlPath: '/british-columbia/lotto-49/numbers',
     mainCount: 6,
     hasBonus: true,
@@ -486,7 +486,7 @@ export class CanadianLotteryClient {
   }
 
   async fetchBC49Draws(): Promise<CanadianLottoDrawDto[]> {
-    return this.fetchDraws(LottoType.CA_BC49);
+    return this.fetchDraws(LottoType.CA_BC_49);
   }
 
   async fetchQuebec49Draws(): Promise<CanadianLottoDrawDto[]> {

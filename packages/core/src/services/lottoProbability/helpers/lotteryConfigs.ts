@@ -300,8 +300,8 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryRange: {min: 1, max: 45}, // Bonus ball from same pool
     secondaryCount: 1,
   },
-  [LottoType.CA_BC49]: {
-    type: LottoType.CA_BC49,
+  [LottoType.CA_BC_49]: {
+    type: LottoType.CA_BC_49,
     name: 'BC/49',
     primaryRange: {min: 1, max: 49},
     primaryCount: 6,

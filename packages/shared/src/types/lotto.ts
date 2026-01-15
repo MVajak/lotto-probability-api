@@ -36,7 +36,7 @@ export enum LottoType {
   CA_LOTTO_649 = 'CA_LOTTO_649',
   CA_DAILY_GRAND = 'CA_DAILY_GRAND',
   CA_LOTTARIO = 'CA_LOTTARIO',
-  CA_BC49 = 'CA_BC49',
+  CA_BC_49 = 'CA_BC_49',
   CA_QUEBEC_49 = 'CA_QUEBEC_49',
   CA_ATLANTIC_49 = 'CA_ATLANTIC_49',
   // Shared
@@ -140,7 +140,7 @@ export const OVERALL_PROBABILITY_LOTTO = [
   LottoType.CA_LOTTO_649,
   LottoType.CA_DAILY_GRAND,
   LottoType.CA_LOTTARIO,
-  LottoType.CA_BC49,
+  LottoType.CA_BC_49,
   LottoType.CA_QUEBEC_49,
   LottoType.CA_ATLANTIC_49,
   // Shared

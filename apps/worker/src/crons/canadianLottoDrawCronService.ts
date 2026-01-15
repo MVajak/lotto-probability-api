@@ -21,7 +21,7 @@ import {AbstractLottoDrawCronService, type TransformedDraw} from './abstractLott
 
 /**
  * Cron service for fetching and saving Canadian lottery draws
- * Handles: CA_LOTTO_MAX, CA_LOTTO_649, CA_DAILY_GRAND, CA_LOTTARIO, CA_BC49, CA_QUEBEC_49, CA_ATLANTIC_49
+ * Handles: CA_LOTTO_MAX, CA_LOTTO_649, CA_DAILY_GRAND, CA_LOTTARIO, CA_BC_49, CA_QUEBEC_49, CA_ATLANTIC_49
  */
 @injectable({scope: BindingScope.SINGLETON})
 export class CanadianLottoDrawCronService extends AbstractLottoDrawCronService {
@@ -57,7 +57,7 @@ export class CanadianLottoDrawCronService extends AbstractLottoDrawCronService {
         return this.fetchDailyGrand(dateFrom, dateTo);
       case LottoType.CA_LOTTARIO:
         return this.fetchLottario(dateFrom, dateTo);
-      case LottoType.CA_BC49:
+      case LottoType.CA_BC_49:
         return this.fetchBC49(dateFrom, dateTo);
       case LottoType.CA_QUEBEC_49:
         return this.fetchQuebec49(dateFrom, dateTo);
@@ -125,7 +125,7 @@ export class CanadianLottoDrawCronService extends AbstractLottoDrawCronService {
     return this.fetchAndTransform(
       () => this.canadianLotteryClient.fetchBC49Draws(),
       transformBC49Results,
-      LottoType.CA_BC49,
+      LottoType.CA_BC_49,
       dateFrom,
       dateTo,
     );

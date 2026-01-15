@@ -138,7 +138,7 @@ export const LOTTERY_CONFIG: Partial<Record<LottoType, LotteryConfigEntry>> = {
     configKey: 'caLotteryInterval',
     region: 'ca',
   },
-  [LottoType.CA_BC49]: {
+  [LottoType.CA_BC_49]: {
     configKey: 'caLotteryInterval',
     region: 'ca',
   },
