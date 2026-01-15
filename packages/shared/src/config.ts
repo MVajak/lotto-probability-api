@@ -51,8 +51,23 @@ export const config = {
     euroJackpotInterval: process.env.EUROJACKPOT_CRON_INTERVAL || 'off',
     vikingLottoInterval: process.env.VIKINGLOTTO_CRON_INTERVAL || 'off',
     euroDreamsInterval: process.env.EURODREAMS_CRON_INTERVAL || 'off',
-    // Canadian lotteries (single cron for all 7 lotteries)
-    caLotteryInterval: process.env.CA_LOTTERY_CRON_INTERVAL || 'off',
+    // Canadian lotteries
+    caLottoMaxInterval: process.env.CA_LOTTO_MAX_CRON_INTERVAL || 'off',
+    caLotto649Interval: process.env.CA_LOTTO_649_CRON_INTERVAL || 'off',
+    caDailyGrandInterval: process.env.CA_DAILY_GRAND_CRON_INTERVAL || 'off',
+    caLottarioInterval: process.env.CA_LOTTARIO_CRON_INTERVAL || 'off',
+    caBc49Interval: process.env.CA_BC_49_CRON_INTERVAL || 'off',
+    caQuebec49Interval: process.env.CA_QUEBEC_49_CRON_INTERVAL || 'off',
+    caAtlantic49Interval: process.env.CA_ATLANTIC_49_CRON_INTERVAL || 'off',
+    // Australian lotteries
+    auPowerballInterval: process.env.AU_POWERBALL_CRON_INTERVAL || 'off',
+    auSaturdayLottoInterval: process.env.AU_SATURDAY_LOTTO_CRON_INTERVAL || 'off',
+    auOzLottoInterval: process.env.AU_OZ_LOTTO_CRON_INTERVAL || 'off',
+    auSetForLifeInterval: process.env.AU_SET_FOR_LIFE_CRON_INTERVAL || 'off',
+    auWeekdayWindfallInterval: process.env.AU_WEEKDAY_WINDFALL_CRON_INTERVAL || 'off',
+    auCash3Interval: process.env.AU_CASH3_CRON_INTERVAL || 'off',
+    auSuper66Interval: process.env.AU_SUPER66_CRON_INTERVAL || 'off',
+    auLottoStrikeInterval: process.env.AU_LOTTO_STRIKE_CRON_INTERVAL || 'off',
   },
   email: {
     resendApiKey: process.env.RESEND_API_KEY || '',

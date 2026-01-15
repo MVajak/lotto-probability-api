@@ -4,6 +4,7 @@ import {type LottoType, config} from '@lotto/shared';
 import {schedule, validate} from 'node-cron';
 
 import {
+  type AustralianLottoDrawCronService,
   type CanadianLottoDrawCronService,
   type EstonianLottoDrawCronService,
   type FrenchLottoDrawCronService,
@@ -36,6 +37,8 @@ export class CronBooter implements Booter {
     private germanLottoDrawCronService: GermanLottoDrawCronService,
     @inject('services.CanadianLottoDrawCronService')
     private canadianLottoDrawCronService: CanadianLottoDrawCronService,
+    @inject('services.AustralianLottoDrawCronService')
+    private australianLottoDrawCronService: AustralianLottoDrawCronService,
   ) {}
 
   async load(): Promise<void> {
@@ -83,6 +86,8 @@ export class CronBooter implements Booter {
         return this.germanLottoDrawCronService;
       case 'ca':
         return this.canadianLottoDrawCronService;
+      case 'au':
+        return this.australianLottoDrawCronService;
     }
   }
 }

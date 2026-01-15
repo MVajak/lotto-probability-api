@@ -324,6 +324,71 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryRange: {min: 1, max: 49}, // Bonus ball from same pool
     secondaryCount: 1,
   },
+  // Australian lotteries
+  [LottoType.AU_POWERBALL]: {
+    type: LottoType.AU_POWERBALL,
+    name: 'AU Powerball',
+    primaryRange: {min: 1, max: 35},
+    primaryCount: 7,
+    secondaryRange: {min: 1, max: 20}, // Powerball from separate pool
+    secondaryCount: 1,
+  },
+  [LottoType.AU_SATURDAY_LOTTO]: {
+    type: LottoType.AU_SATURDAY_LOTTO,
+    name: 'Saturday Lotto',
+    primaryRange: {min: 1, max: 45},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 45}, // Supplementary from same pool
+    secondaryCount: 2,
+  },
+  [LottoType.AU_OZ_LOTTO]: {
+    type: LottoType.AU_OZ_LOTTO,
+    name: 'Oz Lotto',
+    primaryRange: {min: 1, max: 47},
+    primaryCount: 7,
+    secondaryRange: {min: 1, max: 47}, // Supplementary from same pool
+    secondaryCount: 3,
+  },
+  [LottoType.AU_SET_FOR_LIFE]: {
+    type: LottoType.AU_SET_FOR_LIFE,
+    name: 'AU Set for Life',
+    primaryRange: {min: 1, max: 47},
+    primaryCount: 7,
+    secondaryRange: {min: 1, max: 47}, // Supplementary from same pool
+    secondaryCount: 2,
+  },
+  [LottoType.AU_WEEKDAY_WINDFALL]: {
+    type: LottoType.AU_WEEKDAY_WINDFALL,
+    name: 'Weekday Windfall',
+    primaryRange: {min: 1, max: 43},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 43}, // Supplementary from same pool
+    secondaryCount: 2,
+  },
+  [LottoType.AU_CASH_3]: {
+    type: LottoType.AU_CASH_3,
+    name: 'Cash 3',
+    primaryRange: {min: 0, max: 9}, // Single digits
+    primaryCount: 3,
+    secondaryRange: undefined,
+    secondaryCount: 0,
+  },
+  [LottoType.AU_SUPER_66]: {
+    type: LottoType.AU_SUPER_66,
+    name: 'Super 66',
+    primaryRange: {min: 0, max: 9}, // Single digits
+    primaryCount: 6,
+    secondaryRange: undefined,
+    secondaryCount: 0,
+  },
+  [LottoType.AU_LOTTO_STRIKE]: {
+    type: LottoType.AU_LOTTO_STRIKE,
+    name: 'Lotto Strike',
+    primaryRange: {min: 1, max: 45},
+    primaryCount: 4,
+    secondaryRange: undefined,
+    secondaryCount: 0,
+  },
 };
 
 /**

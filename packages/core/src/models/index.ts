@@ -22,5 +22,8 @@ export * from './IrishLotto';
 // Canadian Lotto DTOs
 export * from './CanadianLotto';
 
+// Australian Lotto DTOs
+export * from './AustralianLotto';
+
 // User DTOs
 export * from './User';

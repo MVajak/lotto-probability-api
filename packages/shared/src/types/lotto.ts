@@ -39,6 +39,15 @@ export enum LottoType {
   CA_BC_49 = 'CA_BC_49',
   CA_QUEBEC_49 = 'CA_QUEBEC_49',
   CA_ATLANTIC_49 = 'CA_ATLANTIC_49',
+  // Australian lotteries
+  AU_POWERBALL = 'AU_POWERBALL',
+  AU_SATURDAY_LOTTO = 'AU_SATURDAY_LOTTO',
+  AU_OZ_LOTTO = 'AU_OZ_LOTTO',
+  AU_SET_FOR_LIFE = 'AU_SET_FOR_LIFE',
+  AU_WEEKDAY_WINDFALL = 'AU_WEEKDAY_WINDFALL',
+  AU_CASH_3 = 'AU_CASH_3',
+  AU_SUPER_66 = 'AU_SUPER_66',
+  AU_LOTTO_STRIKE = 'AU_LOTTO_STRIKE',
   // Shared
   VIKINGLOTTO = 'VIKINGLOTTO',
   EUROJACKPOT = 'EUROJACKPOT',
@@ -143,6 +152,15 @@ export const OVERALL_PROBABILITY_LOTTO = [
   LottoType.CA_BC_49,
   LottoType.CA_QUEBEC_49,
   LottoType.CA_ATLANTIC_49,
+  // Australian lotteries
+  LottoType.AU_POWERBALL,
+  LottoType.AU_SATURDAY_LOTTO,
+  LottoType.AU_OZ_LOTTO,
+  LottoType.AU_SET_FOR_LIFE,
+  LottoType.AU_WEEKDAY_WINDFALL,
+  LottoType.AU_CASH_3,
+  LottoType.AU_SUPER_66,
+  LottoType.AU_LOTTO_STRIKE,
   // Shared
   LottoType.EURODREAMS,
 ];

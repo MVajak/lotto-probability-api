@@ -2,7 +2,7 @@ import {LottoType, type config} from '@lotto/shared';
 
 type CronConfigKey = keyof typeof config.crons;
 
-export type LotteryRegion = 'est' | 'us' | 'uk' | 'ie' | 'es' | 'fr' | 'de' | 'ca';
+export type LotteryRegion = 'est' | 'us' | 'uk' | 'ie' | 'es' | 'fr' | 'de' | 'ca' | 'au';
 
 /**
  * Centralized lottery configuration
@@ -121,33 +121,66 @@ export const LOTTERY_CONFIG: Partial<Record<LottoType, LotteryConfigEntry>> = {
     configKey: 'deKenoInterval',
     region: 'de',
   },
-  // Canadian lotteries (all 7 share one cron interval)
+  // Canadian lotteries
   [LottoType.CA_LOTTO_MAX]: {
-    configKey: 'caLotteryInterval',
+    configKey: 'caLottoMaxInterval',
     region: 'ca',
   },
   [LottoType.CA_LOTTO_649]: {
-    configKey: 'caLotteryInterval',
+    configKey: 'caLotto649Interval',
     region: 'ca',
   },
   [LottoType.CA_DAILY_GRAND]: {
-    configKey: 'caLotteryInterval',
+    configKey: 'caDailyGrandInterval',
     region: 'ca',
   },
   [LottoType.CA_LOTTARIO]: {
-    configKey: 'caLotteryInterval',
+    configKey: 'caLottarioInterval',
     region: 'ca',
   },
   [LottoType.CA_BC_49]: {
-    configKey: 'caLotteryInterval',
+    configKey: 'caBc49Interval',
     region: 'ca',
   },
   [LottoType.CA_QUEBEC_49]: {
-    configKey: 'caLotteryInterval',
+    configKey: 'caQuebec49Interval',
     region: 'ca',
   },
   [LottoType.CA_ATLANTIC_49]: {
-    configKey: 'caLotteryInterval',
+    configKey: 'caAtlantic49Interval',
     region: 'ca',
+  },
+  // Australian lotteries
+  [LottoType.AU_POWERBALL]: {
+    configKey: 'auPowerballInterval',
+    region: 'au',
+  },
+  [LottoType.AU_SATURDAY_LOTTO]: {
+    configKey: 'auSaturdayLottoInterval',
+    region: 'au',
+  },
+  [LottoType.AU_OZ_LOTTO]: {
+    configKey: 'auOzLottoInterval',
+    region: 'au',
+  },
+  [LottoType.AU_SET_FOR_LIFE]: {
+    configKey: 'auSetForLifeInterval',
+    region: 'au',
+  },
+  [LottoType.AU_WEEKDAY_WINDFALL]: {
+    configKey: 'auWeekdayWindfallInterval',
+    region: 'au',
+  },
+  [LottoType.AU_CASH_3]: {
+    configKey: 'auCash3Interval',
+    region: 'au',
+  },
+  [LottoType.AU_SUPER_66]: {
+    configKey: 'auSuper66Interval',
+    region: 'au',
+  },
+  [LottoType.AU_LOTTO_STRIKE]: {
+    configKey: 'auLottoStrikeInterval',
+    region: 'au',
   },
 };
