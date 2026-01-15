@@ -2,7 +2,7 @@ import {LottoType, type config} from '@lotto/shared';
 
 type CronConfigKey = keyof typeof config.crons;
 
-export type LotteryRegion = 'est' | 'us' | 'uk' | 'ie' | 'es' | 'fr' | 'de';
+export type LotteryRegion = 'est' | 'us' | 'uk' | 'ie' | 'es' | 'fr' | 'de' | 'ca';
 
 /**
  * Centralized lottery configuration
@@ -120,5 +120,34 @@ export const LOTTERY_CONFIG: Partial<Record<LottoType, LotteryConfigEntry>> = {
   [LottoType.DE_KENO]: {
     configKey: 'deKenoInterval',
     region: 'de',
+  },
+  // Canadian lotteries (all 7 share one cron interval)
+  [LottoType.CA_LOTTO_MAX]: {
+    configKey: 'caLotteryInterval',
+    region: 'ca',
+  },
+  [LottoType.CA_LOTTO_649]: {
+    configKey: 'caLotteryInterval',
+    region: 'ca',
+  },
+  [LottoType.CA_DAILY_GRAND]: {
+    configKey: 'caLotteryInterval',
+    region: 'ca',
+  },
+  [LottoType.CA_LOTTARIO]: {
+    configKey: 'caLotteryInterval',
+    region: 'ca',
+  },
+  [LottoType.CA_BC49]: {
+    configKey: 'caLotteryInterval',
+    region: 'ca',
+  },
+  [LottoType.CA_QUEBEC_49]: {
+    configKey: 'caLotteryInterval',
+    region: 'ca',
+  },
+  [LottoType.CA_ATLANTIC_49]: {
+    configKey: 'caLotteryInterval',
+    region: 'ca',
   },
 };

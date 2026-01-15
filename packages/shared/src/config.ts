@@ -51,6 +51,8 @@ export const config = {
     euroJackpotInterval: process.env.EUROJACKPOT_CRON_INTERVAL || 'off',
     vikingLottoInterval: process.env.VIKINGLOTTO_CRON_INTERVAL || 'off',
     euroDreamsInterval: process.env.EURODREAMS_CRON_INTERVAL || 'off',
+    // Canadian lotteries (single cron for all 7 lotteries)
+    caLotteryInterval: process.env.CA_LOTTERY_CRON_INTERVAL || 'off',
   },
   email: {
     resendApiKey: process.env.RESEND_API_KEY || '',

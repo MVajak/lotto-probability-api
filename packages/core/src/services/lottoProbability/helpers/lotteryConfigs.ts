@@ -267,6 +267,63 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryRange: {min: 1, max: 5}, // Dream number
     secondaryCount: 1,
   },
+  // Canadian Lotteries
+  [LottoType.CA_LOTTO_MAX]: {
+    type: LottoType.CA_LOTTO_MAX,
+    name: 'Lotto Max',
+    primaryRange: {min: 1, max: 50},
+    primaryCount: 7,
+    secondaryRange: {min: 1, max: 50}, // Bonus ball from same pool
+    secondaryCount: 1,
+  },
+  [LottoType.CA_LOTTO_649]: {
+    type: LottoType.CA_LOTTO_649,
+    name: 'Lotto 6/49',
+    primaryRange: {min: 1, max: 49},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 49}, // Bonus ball from same pool
+    secondaryCount: 1,
+  },
+  [LottoType.CA_DAILY_GRAND]: {
+    type: LottoType.CA_DAILY_GRAND,
+    name: 'Daily Grand',
+    primaryRange: {min: 1, max: 49},
+    primaryCount: 5,
+    secondaryRange: {min: 1, max: 7}, // Grand Number
+    secondaryCount: 1,
+  },
+  [LottoType.CA_LOTTARIO]: {
+    type: LottoType.CA_LOTTARIO,
+    name: 'Lottario',
+    primaryRange: {min: 1, max: 45},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 45}, // Bonus ball from same pool
+    secondaryCount: 1,
+  },
+  [LottoType.CA_BC49]: {
+    type: LottoType.CA_BC49,
+    name: 'BC/49',
+    primaryRange: {min: 1, max: 49},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 49}, // Bonus ball from same pool
+    secondaryCount: 1,
+  },
+  [LottoType.CA_QUEBEC_49]: {
+    type: LottoType.CA_QUEBEC_49,
+    name: 'Quebec 49',
+    primaryRange: {min: 1, max: 49},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 49}, // Bonus ball from same pool
+    secondaryCount: 1,
+  },
+  [LottoType.CA_ATLANTIC_49]: {
+    type: LottoType.CA_ATLANTIC_49,
+    name: 'Atlantic 49',
+    primaryRange: {min: 1, max: 49},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 49}, // Bonus ball from same pool
+    secondaryCount: 1,
+  },
 };
 
 /**

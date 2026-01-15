@@ -6,6 +6,7 @@ export * from './clients/SpanishLotteryClient';
 export * from './clients/IrishLotteryClient';
 export * from './clients/FrenchLotteryClient';
 export * from './clients/GermanLotteryClient';
+export * from './clients/CanadianLotteryClient';
 export * from './clients/types';
 
 // Client helpers (transformers)
@@ -15,6 +16,7 @@ export * from './clients/helpers/spanishLottoTransformers';
 export * from './clients/helpers/irishLottoTransformers';
 export * from './clients/helpers/frenchLottoTransformers';
 export * from './clients/helpers/germanLottoTransformers';
+export * from './clients/helpers/canadianLottoTransformers';
 
 // Services
 export * from './services/csrf';

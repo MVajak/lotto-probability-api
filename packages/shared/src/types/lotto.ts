@@ -31,6 +31,14 @@ export enum LottoType {
   DE_KENO = 'DE_KENO',
   DE_SPIEL77 = 'DE_SPIEL77',
   DE_SUPER6 = 'DE_SUPER6',
+  // Canadian lotteries
+  CA_LOTTO_MAX = 'CA_LOTTO_MAX',
+  CA_LOTTO_649 = 'CA_LOTTO_649',
+  CA_DAILY_GRAND = 'CA_DAILY_GRAND',
+  CA_LOTTARIO = 'CA_LOTTARIO',
+  CA_BC49 = 'CA_BC49',
+  CA_QUEBEC_49 = 'CA_QUEBEC_49',
+  CA_ATLANTIC_49 = 'CA_ATLANTIC_49',
   // Shared
   VIKINGLOTTO = 'VIKINGLOTTO',
   EUROJACKPOT = 'EUROJACKPOT',
@@ -127,6 +135,14 @@ export const OVERALL_PROBABILITY_LOTTO = [
   // German lotteries
   LottoType.DE_LOTTO_6AUS49,
   LottoType.DE_KENO,
+  // Canadian lotteries
+  LottoType.CA_LOTTO_MAX,
+  LottoType.CA_LOTTO_649,
+  LottoType.CA_DAILY_GRAND,
+  LottoType.CA_LOTTARIO,
+  LottoType.CA_BC49,
+  LottoType.CA_QUEBEC_49,
+  LottoType.CA_ATLANTIC_49,
   // Shared
   LottoType.EURODREAMS,
 ];
