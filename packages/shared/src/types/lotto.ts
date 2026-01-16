@@ -17,6 +17,8 @@ export enum LottoType {
   UK_THUNDERBALL = 'UK_THUNDERBALL',
   UK_SET_FOR_LIFE = 'UK_SET_FOR_LIFE',
   UK_HOT_PICKS = 'UK_HOT_PICKS',
+  UK_49S_LUNCHTIME = 'UK_49S_LUNCHTIME',
+  UK_49S_TEATIME = 'UK_49S_TEATIME',
   // Irish lotteries
   IE_LOTTO = 'IE_LOTTO',
   IE_LOTTO_PLUS_1 = 'IE_LOTTO_PLUS_1',
@@ -138,6 +140,8 @@ export const OVERALL_PROBABILITY_LOTTO = [
   LottoType.UK_THUNDERBALL,
   LottoType.UK_SET_FOR_LIFE,
   LottoType.UK_HOT_PICKS,
+  LottoType.UK_49S_LUNCHTIME,
+  LottoType.UK_49S_TEATIME,
   // Irish lotteries
   LottoType.IE_LOTTO,
   LottoType.IE_LOTTO_PLUS_1,

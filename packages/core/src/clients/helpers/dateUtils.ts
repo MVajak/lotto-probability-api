@@ -73,3 +73,32 @@ export function findAUFormatDates(html: string): DateMatch[] {
 
   return dateMatches;
 }
+
+/**
+ * Find UK ordinal format dates in HTML
+ * Example: "Wednesday 14th January, 2026" or "14th January 2026"
+ * Handles ordinal suffixes: 1st, 2nd, 3rd, 4th, etc.
+ */
+export function findUKFormatDates(html: string): DateMatch[] {
+  const dateMatches: DateMatch[] = [];
+  const ukDatePattern = new RegExp(
+    `(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)?\\s*(\\d{1,2})(?:st|nd|rd|th)\\s+(${MONTH_NAMES}),?\\s+(\\d{4})`,
+    'gi',
+  );
+  let match;
+
+  while ((match = ukDatePattern.exec(html)) !== null) {
+    const day = Number.parseInt(match[1], 10);
+    const monthName = match[2].toLowerCase();
+    const year = Number.parseInt(match[3], 10);
+    const month = MONTH_MAP[monthName];
+
+    if (month !== undefined) {
+      const date = new Date(Date.UTC(year, month, day));
+      const dateStr = date.toISOString().split('T')[0];
+      dateMatches.push({index: match.index, date, dateStr});
+    }
+  }
+
+  return dateMatches;
+}

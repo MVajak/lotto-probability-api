@@ -1,35 +1,27 @@
 import {model, property} from '@loopback/repository';
 
 /**
- * DTO for UK Lotto draw data from national-lottery.co.uk CSV
- * CSV columns: DrawDate,Ball 1-6,Bonus Ball,Ball Set,Machine,Raffles,DrawNumber
+ * Unified DTO for UK Lotto draw data parsed from uk.lottonumbers.com
+ * Supports multiple lottery formats:
+ * - EuroMillions: 5 main + 2 lucky stars
+ * - UK Lotto: 6 main + 1 bonus
+ * - Thunderball: 5 main + 1 thunderball
+ * - Set For Life: 5 main + 1 life ball
+ * - Hot Picks: 6 main (no bonus)
+ * - UK49s Lunchtime: 6 main + 1 bonus
+ * - UK49s Teatime: 6 main + 1 bonus
  */
 @model()
 export class UKLottoDrawDto {
+  @property({type: 'date', required: true})
+  drawDate: Date;
+
   @property({type: 'string', required: true})
-  drawDate: string; // DD-MMM-YYYY format
+  drawLabel: string; // YYYY-MM-DD format
 
-  @property({type: 'number', required: true})
-  ball1: number;
+  @property({type: 'array', itemType: 'number', required: true})
+  mainNumbers: number[];
 
-  @property({type: 'number', required: true})
-  ball2: number;
-
-  @property({type: 'number', required: true})
-  ball3: number;
-
-  @property({type: 'number', required: true})
-  ball4: number;
-
-  @property({type: 'number', required: true})
-  ball5: number;
-
-  @property({type: 'number', required: true})
-  ball6: number;
-
-  @property({type: 'number', required: true})
-  bonusBall: number;
-
-  @property({type: 'number', required: true})
-  drawNumber: number;
+  @property({type: 'array', itemType: 'number', required: true})
+  supplementaryNumbers: number[]; // 0-2 bonus/lucky star numbers
 }

@@ -152,6 +152,22 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     primaryRange: {min: 1, max: 59},
     primaryCount: 6,
   },
+  [LottoType.UK_49S_LUNCHTIME]: {
+    type: LottoType.UK_49S_LUNCHTIME,
+    name: 'UK 49s Lunchtime',
+    primaryRange: {min: 1, max: 49},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 49}, // Bonus ball from same pool
+    secondaryCount: 1,
+  },
+  [LottoType.UK_49S_TEATIME]: {
+    type: LottoType.UK_49S_TEATIME,
+    name: 'UK 49s Teatime',
+    primaryRange: {min: 1, max: 49},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 49}, // Bonus ball from same pool
+    secondaryCount: 1,
+  },
   // Irish Lotteries
   [LottoType.IE_LOTTO]: {
     type: LottoType.IE_LOTTO,

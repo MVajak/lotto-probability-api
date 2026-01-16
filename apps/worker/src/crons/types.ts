@@ -93,6 +93,14 @@ export const LOTTERY_CONFIG: Partial<Record<LottoType, LotteryConfigEntry>> = {
     configKey: 'ukHotPicksInterval',
     region: 'uk',
   },
+  [LottoType.UK_49S_LUNCHTIME]: {
+    configKey: 'uk49sLunchtimeInterval',
+    region: 'uk',
+  },
+  [LottoType.UK_49S_TEATIME]: {
+    configKey: 'uk49sTeatimeInterval',
+    region: 'uk',
+  },
   // Lotteries from IE source (Plus variants fetched with parent)
   [LottoType.IE_LOTTO]: {
     configKey: 'ieLottoInterval',

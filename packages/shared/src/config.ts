@@ -38,6 +38,9 @@ export const config = {
     ukThunderballInterval: process.env.UK_THUNDERBALL_CRON_INTERVAL || 'off',
     ukSetForLifeInterval: process.env.UK_SET_FOR_LIFE_CRON_INTERVAL || 'off',
     ukHotPicksInterval: process.env.UK_HOT_PICKS_CRON_INTERVAL || 'off',
+    // UK49s draws daily: Lunchtime at 12:49 UK, Teatime at 17:49 UK (~2-3 hours after draws)
+    uk49sLunchtimeInterval: process.env.UK_49S_LUNCHTIME_CRON_INTERVAL || 'off',
+    uk49sTeatimeInterval: process.env.UK_49S_TEATIME_CRON_INTERVAL || 'off',
     // Irish lotteries (each interval triggers main + plus variants)
     ieLottoInterval: process.env.IE_LOTTO_CRON_INTERVAL || 'off',
     ieDailyMillionInterval: process.env.IE_DAILY_MILLION_CRON_INTERVAL || 'off',

@@ -1,17 +1,12 @@
 import {BindingScope, inject, injectable} from '@loopback/core';
 import {
+  type UKLotteryClient,
+  type UKLottoDrawDto,
   type LoggerService,
   type LottoDrawResultService,
   type LottoDrawService,
-  type UKLotteryClient,
-  generateUKLottoDrawLabel,
   isInDateRange,
-  parseUKLottoDrawDate,
-  transformEuroMillionsNumbers,
-  transformHotPicksNumbers,
-  transformSetForLifeNumbers,
-  transformThunderballNumbers,
-  transformUKLottoNumbers,
+  transformUKLotteryResults,
 } from '@lotto/core';
 import type {PostgresDataSource} from '@lotto/database';
 import {LottoType} from '@lotto/shared';
@@ -19,17 +14,9 @@ import {LottoType} from '@lotto/shared';
 import {AbstractLottoDrawCronService, type TransformedDraw} from './abstractLottoDrawCronService';
 
 /**
- * Base interface for UK lottery draw DTOs
- * All UK DTOs share these common properties
- */
-interface UKDrawDto {
-  drawDate: string;
-  drawNumber: number;
-}
-
-/**
  * Cron service for fetching and saving UK lottery draws
- * Handles: EUROMILLIONS, UK_LOTTO, UK_THUNDERBALL, UK_SET_FOR_LIFE, UK_HOT_PICKS
+ * Handles: EUROMILLIONS, UK_LOTTO, UK_THUNDERBALL, UK_SET_FOR_LIFE, UK_HOT_PICKS,
+ *          UK_49S_LUNCHTIME, UK_49S_TEATIME
  */
 @injectable({scope: BindingScope.SINGLETON})
 export class UKLottoDrawCronService extends AbstractLottoDrawCronService {
@@ -49,7 +36,7 @@ export class UKLottoDrawCronService extends AbstractLottoDrawCronService {
   }
 
   /**
-   * Fetch draws from UK National Lottery CSV and transform to common format
+   * Fetch draws from uk.lottonumbers.com and transform to common format
    */
   protected async fetchAndTransformDraws(
     lottoType: LottoType,
@@ -60,40 +47,49 @@ export class UKLottoDrawCronService extends AbstractLottoDrawCronService {
       case LottoType.EUROMILLIONS:
         return this.fetchAndTransform(
           () => this.ukLotteryClient.fetchEuroMillionsDraws(),
-          transformEuroMillionsNumbers,
-          LottoType.EUROMILLIONS,
+          lottoType,
           dateFrom,
           dateTo,
         );
       case LottoType.UK_LOTTO:
         return this.fetchAndTransform(
           () => this.ukLotteryClient.fetchLottoDraws(),
-          transformUKLottoNumbers,
-          LottoType.UK_LOTTO,
+          lottoType,
           dateFrom,
           dateTo,
         );
       case LottoType.UK_THUNDERBALL:
         return this.fetchAndTransform(
           () => this.ukLotteryClient.fetchThunderballDraws(),
-          transformThunderballNumbers,
-          LottoType.UK_THUNDERBALL,
+          lottoType,
           dateFrom,
           dateTo,
         );
       case LottoType.UK_SET_FOR_LIFE:
         return this.fetchAndTransform(
           () => this.ukLotteryClient.fetchSetForLifeDraws(),
-          transformSetForLifeNumbers,
-          LottoType.UK_SET_FOR_LIFE,
+          lottoType,
           dateFrom,
           dateTo,
         );
       case LottoType.UK_HOT_PICKS:
         return this.fetchAndTransform(
           () => this.ukLotteryClient.fetchHotPicksDraws(),
-          transformHotPicksNumbers,
-          LottoType.UK_HOT_PICKS,
+          lottoType,
+          dateFrom,
+          dateTo,
+        );
+      case LottoType.UK_49S_LUNCHTIME:
+        return this.fetchAndTransform(
+          () => this.ukLotteryClient.fetchUK49sLunchtimeDraws(),
+          lottoType,
+          dateFrom,
+          dateTo,
+        );
+      case LottoType.UK_49S_TEATIME:
+        return this.fetchAndTransform(
+          () => this.ukLotteryClient.fetchUK49sTeatimeDraws(),
+          lottoType,
           dateFrom,
           dateTo,
         );
@@ -105,7 +101,7 @@ export class UKLottoDrawCronService extends AbstractLottoDrawCronService {
 
   /**
    * UK lotteries use drawLabel + gameTypeName as unique key
-   * drawLabel is the draw number (e.g., "1902")
+   * drawLabel is the date in YYYY-MM-DD format
    */
   protected buildLookupKey(draw: {
     drawLabel: string | null;
@@ -116,12 +112,11 @@ export class UKLottoDrawCronService extends AbstractLottoDrawCronService {
   }
 
   /**
-   * Generic fetch and transform method for all UK lottery types
-   * Eliminates code duplication across the 4 lottery-specific methods
+   * Generic fetch and transform for all UK lotteries
+   * All UK lotteries use the same transformer
    */
-  private async fetchAndTransform<T extends UKDrawDto>(
-    fetchFn: () => Promise<T[]>,
-    transformFn: (draw: T) => {main: string; secondary: string},
+  private async fetchAndTransform(
+    fetchFn: () => Promise<UKLottoDrawDto[]>,
     lottoType: LottoType,
     dateFrom: Date,
     dateTo: Date,
@@ -129,27 +124,13 @@ export class UKLottoDrawCronService extends AbstractLottoDrawCronService {
     const draws = await fetchFn();
 
     return draws
-      .filter(draw => {
-        const drawDate = parseUKLottoDrawDate(draw.drawDate);
-        return isInDateRange(drawDate, dateFrom, dateTo);
-      })
-      .map(draw => {
-        const drawDate = parseUKLottoDrawDate(draw.drawDate);
-        const {main, secondary} = transformFn(draw);
-
-        return {
-          drawDate,
-          drawLabel: generateUKLottoDrawLabel(draw.drawNumber),
-          gameTypeName: lottoType,
-          externalDrawId: null,
-          results: [
-            {
-              winClass: null,
-              winningNumber: main,
-              secWinningNumber: secondary,
-            },
-          ],
-        };
-      });
+      .filter(draw => isInDateRange(draw.drawDate, dateFrom, dateTo))
+      .map(draw => ({
+        drawDate: draw.drawDate,
+        drawLabel: draw.drawLabel,
+        gameTypeName: lottoType,
+        externalDrawId: null,
+        results: transformUKLotteryResults(draw),
+      }));
   }
 }
