@@ -1,6 +1,5 @@
 // Clients
 export * from './clients/EstonianLottoApiClient';
-export * from './clients/DataNYGovClient';
 export * from './clients/UKLotteryClient';
 export * from './clients/SpanishLotteryClient';
 export * from './clients/IrishLotteryClient';
@@ -9,6 +8,7 @@ export * from './clients/GermanLotteryClient';
 export * from './clients/CanadianLotteryClient';
 export * from './clients/LottoNumbersBaseClient';
 export * from './clients/AustralianLotteryClient';
+export * from './clients/USLotteryClient';
 export * from './clients/types';
 
 // Client helpers (transformers)

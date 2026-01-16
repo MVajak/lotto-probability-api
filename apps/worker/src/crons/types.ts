@@ -52,6 +52,26 @@ export const LOTTERY_CONFIG: Partial<Record<LottoType, LotteryConfigEntry>> = {
     configKey: 'usCash4LifeInterval',
     region: 'us',
   },
+  [LottoType.US_LOTTO_AMERICA]: {
+    configKey: 'usLottoAmericaInterval',
+    region: 'us',
+  },
+  [LottoType.US_LUCKY_FOR_LIFE]: {
+    configKey: 'usLuckyForLifeInterval',
+    region: 'us',
+  },
+  [LottoType.US_CA_SUPERLOTTO]: {
+    configKey: 'usCaSuperLottoInterval',
+    region: 'us',
+  },
+  [LottoType.US_NY_LOTTO]: {
+    configKey: 'usNyLottoInterval',
+    region: 'us',
+  },
+  [LottoType.US_TX_LOTTO]: {
+    configKey: 'usTxLottoInterval',
+    region: 'us',
+  },
   // Lotteries from UK source
   [LottoType.EUROMILLIONS]: {
     configKey: 'euroMillionsInterval',

@@ -23,11 +23,11 @@ const MONTH_NAMES =
 
 /**
  * Find US/Canada format dates (Month Day Year) in HTML
- * Example: "January 15 2026"
+ * Example: "January 15, 2026" or "January 15 2026"
  */
 export function findUSFormatDates(html: string): DateMatch[] {
   const dateMatches: DateMatch[] = [];
-  const usDatePattern = new RegExp(`(${MONTH_NAMES})\\s+(\\d{1,2})\\s+(\\d{4})`, 'gi');
+  const usDatePattern = new RegExp(`(${MONTH_NAMES})\\s+(\\d{1,2}),?\\s+(\\d{4})`, 'gi');
   let match;
 
   while ((match = usDatePattern.exec(html)) !== null) {

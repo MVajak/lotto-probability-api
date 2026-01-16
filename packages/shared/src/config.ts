@@ -28,6 +28,11 @@ export const config = {
     usPowerballInterval: process.env.US_POWERBALL_CRON_INTERVAL || 'off',
     usMegaMillionsInterval: process.env.US_MEGA_MILLIONS_CRON_INTERVAL || 'off',
     usCash4LifeInterval: process.env.US_CASH4LIFE_CRON_INTERVAL || 'off',
+    usLottoAmericaInterval: process.env.US_LOTTO_AMERICA_CRON_INTERVAL || 'off',
+    usLuckyForLifeInterval: process.env.US_LUCKY_FOR_LIFE_CRON_INTERVAL || 'off',
+    usCaSuperLottoInterval: process.env.US_CA_SUPERLOTTO_CRON_INTERVAL || 'off',
+    usNyLottoInterval: process.env.US_NY_LOTTO_CRON_INTERVAL || 'off',
+    usTxLottoInterval: process.env.US_TX_LOTTO_CRON_INTERVAL || 'off',
     // UK lotteries
     ukLottoInterval: process.env.UK_LOTTO_CRON_INTERVAL || 'off',
     ukThunderballInterval: process.env.UK_THUNDERBALL_CRON_INTERVAL || 'off',

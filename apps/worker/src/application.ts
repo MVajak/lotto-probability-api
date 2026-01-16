@@ -10,7 +10,7 @@ import {
   AustralianLotteryClient,
   CanadianLotteryClient,
   CsrfService,
-  DataNYGovClient,
+  USLotteryClient,
   EstonianLottoApiClient,
   FrenchLotteryClient,
   GermanLotteryClient,
@@ -62,7 +62,7 @@ export class LottoWorkerApplication extends BootMixin(RepositoryMixin(Applicatio
 
     // Clients
     this.bind('clients.EstonianLottoApiClient').toClass(EstonianLottoApiClient);
-    this.bind('clients.DataNYGovClient').toClass(DataNYGovClient);
+    this.bind('clients.USLotteryClient').toClass(USLotteryClient);
     this.bind('clients.UKLotteryClient').toClass(UKLotteryClient);
     this.bind('clients.SpanishLotteryClient').toClass(SpanishLotteryClient);
     this.bind('clients.IrishLotteryClient').toClass(IrishLotteryClient);

@@ -22,7 +22,6 @@ import {
 } from '@lotto/database';
 
 import {
-  DataNYGovClient,
   EstonianLottoApiClient,
   FeatureFlagService,
   LoggerService,
@@ -116,7 +115,6 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
 
     // Clients
     this.bind('clients.EstonianLottoApiClient').toClass(EstonianLottoApiClient);
-    this.bind('clients.DataNYGovClient').toClass(DataNYGovClient);
     this.bind('clients.UKLotteryClient').toClass(UKLotteryClient);
 
     // Controllers
