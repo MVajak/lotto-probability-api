@@ -5,29 +5,14 @@ import * as cheerio from 'cheerio';
 import type {LoggerService} from '../services/logger/loggerService';
 import {LottoType} from '@lotto/shared';
 
+// Re-export for backwards compatibility
+export {MONTH_MAP} from './helpers/dateUtils';
+
 const DEFAULT_HEADERS = {
   'User-Agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
   'Accept-Language': 'en-US,en;q=0.5',
-};
-
-/**
- * Month name to number mapping for parsing lottery dates
- */
-const MONTH_MAP: Record<string, number> = {
-  january: 0,
-  february: 1,
-  march: 2,
-  april: 3,
-  may: 4,
-  june: 5,
-  july: 6,
-  august: 7,
-  september: 8,
-  october: 9,
-  november: 10,
-  december: 11,
 };
 
 /**
@@ -37,6 +22,10 @@ export interface LotteryEndpointConfig {
   urlPath: string;
   mainCount: number;
   supplementaryCount: number; // Number of bonus/supplementary numbers after main
+  // Optional Canadian-specific extensions
+  hasBonus?: boolean;
+  hasGrand?: boolean;
+  extraGames?: string[];
 }
 
 /**
@@ -47,6 +36,15 @@ export interface ParsedLottoDraw {
   drawLabel: string;
   mainNumbers: number[];
   supplementaryNumbers: number[];
+}
+
+/**
+ * Date match result from HTML parsing
+ */
+export interface DateMatch {
+  index: number;
+  date: Date;
+  dateStr: string;
 }
 
 interface CacheEntry<T> {
@@ -83,6 +81,11 @@ export abstract class LottoNumbersBaseClient<TDraw> {
    * Transform parsed draw data to region-specific DTO
    */
   protected abstract transformParsedDraw(parsed: ParsedLottoDraw, lottoType: LottoType): TDraw;
+
+  /**
+   * Find dates in HTML - each region implements its own date format
+   */
+  protected abstract findDatesInHtml(html: string): DateMatch[];
 
   /**
    * Fetch draws for a lottery type
@@ -127,8 +130,9 @@ export abstract class LottoNumbersBaseClient<TDraw> {
 
   /**
    * Parse draws from HTML page
+   * Can be overridden by subclasses for complex parsing (e.g., Canadian extra games)
    */
-  private parseDrawsFromHtml(
+  protected parseDrawsFromHtml(
     html: string,
     lottoType: LottoType,
     endpoint: LotteryEndpointConfig,
@@ -137,53 +141,8 @@ export abstract class LottoNumbersBaseClient<TDraw> {
     const results: TDraw[] = [];
     const fullHtml = $.html();
 
-    // Date patterns:
-    // - US/Canada format: "Month Day Year" (e.g., "January 15 2026")
-    // - AU/UK format: "Day Month Year" or "DayOfWeek Day Month Year" (e.g., "Thursday 15 January 2026")
-    const monthNames =
-      'January|February|March|April|May|June|July|August|September|October|November|December';
-
-    // Pattern 1: "Month Day Year" (US/Canada)
-    const usDatePattern = new RegExp(`(${monthNames})\\s+(\\d{1,2})\\s+(\\d{4})`, 'gi');
-
-    // Pattern 2: "Day Month Year" (AU/UK) - with optional day of week
-    const auDatePattern = new RegExp(
-      `(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)?\\s*(\\d{1,2})\\s+(${monthNames})\\s+(\\d{4})`,
-      'gi',
-    );
-
-    const dateMatches: {index: number; date: Date; dateStr: string}[] = [];
-    let match;
-
-    // Try US format first
-    while ((match = usDatePattern.exec(fullHtml)) !== null) {
-      const monthName = match[1].toLowerCase();
-      const day = Number.parseInt(match[2], 10);
-      const year = Number.parseInt(match[3], 10);
-      const month = MONTH_MAP[monthName];
-
-      if (month !== undefined) {
-        const date = new Date(Date.UTC(year, month, day));
-        const dateStr = date.toISOString().split('T')[0];
-        dateMatches.push({index: match.index, date, dateStr});
-      }
-    }
-
-    // Try AU/UK format if no US format found
-    if (dateMatches.length === 0) {
-      while ((match = auDatePattern.exec(fullHtml)) !== null) {
-        const day = Number.parseInt(match[1], 10);
-        const monthName = match[2].toLowerCase();
-        const year = Number.parseInt(match[3], 10);
-        const month = MONTH_MAP[monthName];
-
-        if (month !== undefined) {
-          const date = new Date(Date.UTC(year, month, day));
-          const dateStr = date.toISOString().split('T')[0];
-          dateMatches.push({index: match.index, date, dateStr});
-        }
-      }
-    }
+    // Find dates using region-specific implementation
+    const dateMatches = this.findDatesInHtml(fullHtml);
 
     // Parse each draw section
     for (let i = 0; i < dateMatches.length; i++) {
@@ -220,8 +179,9 @@ export abstract class LottoNumbersBaseClient<TDraw> {
 
   /**
    * Parse a draw from a section of HTML
+   * Can be overridden by subclasses for complex parsing
    */
-  private parseDrawFromSection(
+  protected parseDrawFromSection(
     sectionHtml: string,
     drawDate: Date,
     drawLabel: string,

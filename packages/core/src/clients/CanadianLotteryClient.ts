@@ -1,31 +1,13 @@
 import {BindingScope, inject, injectable} from '@loopback/core';
-import {HttpErrors} from '@loopback/rest';
-import axios from 'axios';
 import * as cheerio from 'cheerio';
 
 import type {CanadianExtraGameDto, CanadianLottoDrawDto} from '../models';
 import type {LoggerService} from '../services/logger/loggerService';
 import {LottoType} from '@lotto/shared';
+import {LottoNumbersBaseClient, type DateMatch, type LotteryEndpointConfig, type ParsedLottoDraw} from './LottoNumbersBaseClient';
+import {findUSFormatDates, MONTH_MAP} from './helpers/dateUtils';
 
 const CANADIAN_LOTTERY_BASE_URL = 'https://ca.lottonumbers.com';
-
-const DEFAULT_HEADERS = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-  'Accept-Language': 'en-US,en;q=0.5',
-};
-
-/**
- * Endpoint configuration for Canadian lotteries
- */
-interface CanadianLotteryEndpoint {
-  urlPath: string;
-  mainCount: number; // Number of main numbers (before bonus)
-  hasBonus: boolean; // Most lotteries have bonus, Daily Grand has "Grand Number"
-  hasGrand: boolean; // Only Daily Grand
-  extraGames: string[]; // Extra game labels to look for
-}
 
 type CanadianLottoType =
   | LottoType.CA_LOTTO_MAX
@@ -36,10 +18,11 @@ type CanadianLottoType =
   | LottoType.CA_QUEBEC_49
   | LottoType.CA_ATLANTIC_49;
 
-const CANADIAN_LOTTERY_ENDPOINTS: Record<CanadianLottoType, CanadianLotteryEndpoint> = {
+const CANADIAN_LOTTERY_ENDPOINTS: Record<CanadianLottoType, LotteryEndpointConfig> = {
   [LottoType.CA_LOTTO_MAX]: {
     urlPath: '/lotto-max/numbers',
     mainCount: 7,
+    supplementaryCount: 1,
     hasBonus: true,
     hasGrand: false,
     extraGames: [],
@@ -47,13 +30,15 @@ const CANADIAN_LOTTERY_ENDPOINTS: Record<CanadianLottoType, CanadianLotteryEndpo
   [LottoType.CA_LOTTO_649]: {
     urlPath: '/lotto-649/numbers',
     mainCount: 6,
+    supplementaryCount: 1,
     hasBonus: true,
     hasGrand: false,
-    extraGames: ['goldBall'],
+    extraGames: [],
   },
   [LottoType.CA_DAILY_GRAND]: {
     urlPath: '/daily-grand/numbers',
     mainCount: 5,
+    supplementaryCount: 1,
     hasBonus: false,
     hasGrand: true,
     extraGames: [],
@@ -61,6 +46,7 @@ const CANADIAN_LOTTERY_ENDPOINTS: Record<CanadianLottoType, CanadianLotteryEndpo
   [LottoType.CA_LOTTARIO]: {
     urlPath: '/ontario/lottario/numbers',
     mainCount: 6,
+    supplementaryCount: 1,
     hasBonus: true,
     hasGrand: false,
     extraGames: ['earlyBird', 'encore'],
@@ -68,6 +54,7 @@ const CANADIAN_LOTTERY_ENDPOINTS: Record<CanadianLottoType, CanadianLotteryEndpo
   [LottoType.CA_BC_49]: {
     urlPath: '/british-columbia/lotto-49/numbers',
     mainCount: 6,
+    supplementaryCount: 1,
     hasBonus: true,
     hasGrand: false,
     extraGames: ['extra'],
@@ -75,6 +62,7 @@ const CANADIAN_LOTTERY_ENDPOINTS: Record<CanadianLottoType, CanadianLotteryEndpo
   [LottoType.CA_QUEBEC_49]: {
     urlPath: '/quebec/lotto-49/numbers',
     mainCount: 6,
+    supplementaryCount: 1,
     hasBonus: true,
     hasGrand: false,
     extraGames: ['extra'],
@@ -82,111 +70,90 @@ const CANADIAN_LOTTERY_ENDPOINTS: Record<CanadianLottoType, CanadianLotteryEndpo
   [LottoType.CA_ATLANTIC_49]: {
     urlPath: '/atlantic/lotto-49/numbers',
     mainCount: 6,
+    supplementaryCount: 1,
     hasBonus: true,
     hasGrand: false,
-    extraGames: ['guaranteedPrize', 'tag'],
+    extraGames: ['tag'],
   },
 };
 
-interface CacheEntry {
-  data: CanadianLottoDrawDto[];
-  timestamp: number;
-}
-
 /**
- * Month name to number mapping for parsing Canadian lottery dates
+ * Client for fetching Canadian lottery draws from ca.lottonumbers.com
+ * Extends LottoNumbersBaseClient for shared HTTP fetching and caching
+ *
+ * Handles extra complexity:
+ * - Extra games: Encore, Early Bird, Extra, Tag, Gold Ball, Guaranteed Prize
+ * - Bonus vs Grand: Some have bonus numbers, Daily Grand has "Grand Number"
  */
-const MONTH_MAP: Record<string, number> = {
-  january: 0,
-  february: 1,
-  march: 2,
-  april: 3,
-  may: 4,
-  june: 5,
-  july: 6,
-  august: 7,
-  september: 8,
-  october: 9,
-  november: 10,
-  december: 11,
-};
-
 @injectable({scope: BindingScope.SINGLETON})
-export class CanadianLotteryClient {
-  private cache = new Map<LottoType, CacheEntry>();
-  private readonly CACHE_TTL_MS = 60000; // 1 minute
-
+export class CanadianLotteryClient extends LottoNumbersBaseClient<CanadianLottoDrawDto> {
   constructor(
     @inject('services.LoggerService')
-    protected loggerService: LoggerService,
-  ) {}
+    loggerService: LoggerService,
+  ) {
+    super(loggerService);
+  }
 
-  /**
-   * Fetch draws for any Canadian lottery type
-   */
-  async fetchDraws(lottoType: LottoType): Promise<CanadianLottoDrawDto[]> {
-    const endpoint = CANADIAN_LOTTERY_ENDPOINTS[lottoType as CanadianLottoType];
-    if (!endpoint) {
-      this.loggerService.log(`[${lottoType}] Unknown Canadian lottery type`);
-      return [];
-    }
+  protected getBaseUrl(): string {
+    return CANADIAN_LOTTERY_BASE_URL;
+  }
 
-    const now = Date.now();
-    const cached = this.cache.get(lottoType);
+  protected getEndpoints(): Record<string, LotteryEndpointConfig> {
+    return CANADIAN_LOTTERY_ENDPOINTS;
+  }
 
-    // Return cached data if still valid
-    if (cached && now - cached.timestamp < this.CACHE_TTL_MS) {
-      return cached.data;
-    }
-
-    const url = `${CANADIAN_LOTTERY_BASE_URL}${endpoint.urlPath}`;
-
-    try {
-      const response = await axios.get<string>(url, {
-        responseType: 'text',
-        headers: DEFAULT_HEADERS,
-        timeout: 30000,
-      });
-
-      const draws = this.parseDrawsFromHtml(response.data, lottoType, endpoint);
-      this.loggerService.log(`[${lottoType}] Found ${draws.length} draws`);
-
-      // Cache the result
-      this.cache.set(lottoType, {data: draws, timestamp: now});
-      return draws;
-    } catch (error) {
-      this.loggerService.logError({
-        message: `[${lottoType}] Failed to fetch draws`,
-        errorConstructor: HttpErrors.BadRequest,
-        data: axios.isAxiosError(error) ? error.response?.data : error,
-      });
-      return [];
-    }
+  protected getSupportedLottoTypes(): LottoType[] {
+    return [
+      LottoType.CA_LOTTO_MAX,
+      LottoType.CA_LOTTO_649,
+      LottoType.CA_DAILY_GRAND,
+      LottoType.CA_LOTTARIO,
+      LottoType.CA_BC_49,
+      LottoType.CA_QUEBEC_49,
+      LottoType.CA_ATLANTIC_49,
+    ];
   }
 
   /**
-   * Parse draws from HTML page
+   * Transform parsed draw to Canadian DTO
+   * Note: This is not used because we override parseDrawsFromHtml entirely
    */
-  private parseDrawsFromHtml(
+  protected transformParsedDraw(parsed: ParsedLottoDraw, _lottoType: LottoType): CanadianLottoDrawDto {
+    return {
+      drawDate: parsed.drawDate,
+      drawLabel: parsed.drawLabel,
+      mainNumbers: parsed.mainNumbers,
+      bonusNumber: parsed.supplementaryNumbers[0],
+      grandNumber: undefined,
+      extraGames: undefined,
+    };
+  }
+
+  protected findDatesInHtml(html: string): DateMatch[] {
+    return findUSFormatDates(html);
+  }
+
+  /**
+   * Override parseDrawsFromHtml to handle complex Canadian parsing with extra games
+   */
+  protected parseDrawsFromHtml(
     html: string,
-    lottoType: LottoType,
-    endpoint: CanadianLotteryEndpoint,
+    _lottoType: LottoType,
+    endpoint: LotteryEndpointConfig,
   ): CanadianLottoDrawDto[] {
     const $ = cheerio.load(html);
     const results: CanadianLottoDrawDto[] = [];
 
     // Find all draw blocks - they are typically in a results container
-    // The structure shows each draw as a block with date, numbers, and extras
     const drawBlocks = $('div.resultsitem, div.result-item, article.draw, .draw-result').toArray();
 
     // If no specific containers found, try to find draw patterns in the page
     if (drawBlocks.length === 0) {
-      // Try alternative parsing - look for date patterns followed by numbers
-      return this.parseDrawsAlternative($, lottoType, endpoint);
+      return this.parseDrawsAlternative($, endpoint);
     }
 
     for (const block of drawBlocks) {
-      const draw = this.parseDrawBlock($, block, lottoType, endpoint);
+      const draw = this.parseDrawBlock($, block, endpoint);
       if (draw) {
         results.push(draw);
       }
@@ -200,46 +167,25 @@ export class CanadianLotteryClient {
 
   /**
    * Alternative parsing when specific containers aren't found
-   * Parses based on the text patterns observed in the HTML
    */
   private parseDrawsAlternative(
     $: cheerio.CheerioAPI,
-    lottoType: LottoType,
-    endpoint: CanadianLotteryEndpoint,
+    endpoint: LotteryEndpointConfig,
   ): CanadianLottoDrawDto[] {
     const results: CanadianLottoDrawDto[] = [];
-
-    // Get the full HTML and work with it
     const fullHtml = $.html();
 
-    // Date pattern: just find "Month Day Year" patterns directly
-    // The day name before it doesn't matter for parsing
-    const datePattern = /(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})\s+(\d{4})/gi;
-
-    let match;
-    const dateMatches: {index: number; date: Date; dateStr: string}[] = [];
-
-    while ((match = datePattern.exec(fullHtml)) !== null) {
-      const monthName = match[1].toLowerCase();
-      const day = Number.parseInt(match[2], 10);
-      const year = Number.parseInt(match[3], 10);
-      const month = MONTH_MAP[monthName];
-
-      if (month !== undefined) {
-        const date = new Date(Date.UTC(year, month, day));
-        const dateStr = date.toISOString().split('T')[0];
-        dateMatches.push({index: match.index, date, dateStr});
-      }
-    }
+    // Find dates using region-specific format
+    const dateMatches = this.findDatesInHtml(fullHtml);
 
     // For each date found, try to extract the numbers that follow
     for (let i = 0; i < dateMatches.length; i++) {
       const {date, dateStr} = dateMatches[i];
       const startIndex = dateMatches[i].index;
       const endIndex = dateMatches[i + 1]?.index ?? fullHtml.length;
-      const drawSection = fullHtml.substring(startIndex, Math.min(endIndex, startIndex + 3000)); // Limit section size
+      const drawSection = fullHtml.substring(startIndex, Math.min(endIndex, startIndex + 3000));
 
-      const draw = this.parseDrawFromSection($, drawSection, date, dateStr, lottoType, endpoint);
+      const draw = this.parseCanadianDrawFromSection(drawSection, date, dateStr, endpoint);
       if (draw) {
         results.push(draw);
       }
@@ -260,18 +206,15 @@ export class CanadianLotteryClient {
   }
 
   /**
-   * Parse a draw from a section of HTML
+   * Parse a Canadian draw from a section of HTML
+   * Note: Named differently from base class method to avoid signature conflict
    */
-  private parseDrawFromSection(
-    $: cheerio.CheerioAPI,
+  private parseCanadianDrawFromSection(
     sectionHtml: string,
     drawDate: Date,
     drawLabel: string,
-    lottoType: LottoType,
-    endpoint: CanadianLotteryEndpoint,
+    endpoint: LotteryEndpointConfig,
   ): CanadianLottoDrawDto | null {
-    // Extract all numbers from the section
-    // Numbers appear in <span> elements (primary method)
     const $section = cheerio.load(sectionHtml);
 
     // Find all numbers in span elements (main lottery numbers)
@@ -326,16 +269,8 @@ export class CanadianLotteryClient {
     // Parse extra games
     const extraGames: CanadianExtraGameDto[] = [];
 
-    // Gold Ball - look for code pattern like "39221902-01"
-    if (endpoint.extraGames.includes('goldBall')) {
-      const goldBallMatch = sectionHtml.match(/Gold\s*Ball\s*(?:Number)?:?\s*\*?\*?\s*([0-9-]+)/i);
-      if (goldBallMatch) {
-        extraGames.push({type: 'goldBall', value: goldBallMatch[1].trim()});
-      }
-    }
-
     // Early Bird - 4 numbers
-    if (endpoint.extraGames.includes('earlyBird')) {
+    if (endpoint.extraGames?.includes('earlyBird')) {
       const earlyBirdMatch = sectionHtml.match(/Early\s*Bird:?\s*([\s\S]*?)(?:Encore:|$)/i);
       if (earlyBirdMatch) {
         const ebNumbers = this.extractNumbersFromText(earlyBirdMatch[1]);
@@ -346,10 +281,9 @@ export class CanadianLotteryClient {
     }
 
     // Encore - 7 single digits (0-9) in <li> elements
-    if (endpoint.extraGames.includes('encore')) {
+    if (endpoint.extraGames?.includes('encore')) {
       const afterEncore = sectionHtml.split(/Encore:?\s*/i)[1];
       if (afterEncore) {
-        // Extract single digits from <li> tags only
         const singleDigits: number[] = [];
         const digitPattern = /<li[^>]*>\s*(\d)\s*<\/li>/gi;
         let digitMatch;
@@ -363,10 +297,9 @@ export class CanadianLotteryClient {
     }
 
     // Extra - varies by province (4 nums for BC, 7 digits for Quebec)
-    if (endpoint.extraGames.includes('extra')) {
+    if (endpoint.extraGames?.includes('extra')) {
       const afterExtra = sectionHtml.split(/Extra:?\s*/i)[1];
       if (afterExtra) {
-        // Extract numbers from <li> elements
         const extraNumbers: number[] = [];
         const numPattern = /<li[^>]*>\s*(\d+)\s*<\/li>/gi;
         let numMatch;
@@ -379,16 +312,8 @@ export class CanadianLotteryClient {
       }
     }
 
-    // Guaranteed Prize - code
-    if (endpoint.extraGames.includes('guaranteedPrize')) {
-      const gpMatch = sectionHtml.match(/Guaranteed\s*(?:Prize)?:?\s*\*?\*?\s*([A-Z0-9-]+)/i);
-      if (gpMatch) {
-        extraGames.push({type: 'guaranteedPrize', value: gpMatch[1].trim()});
-      }
-    }
-
     // Tag - 6 single digits in <li> elements
-    if (endpoint.extraGames.includes('tag')) {
+    if (endpoint.extraGames?.includes('tag')) {
       const afterTag = sectionHtml.split(/Tag:?\s*/i)[1];
       if (afterTag) {
         const tagDigits: number[] = [];
@@ -414,11 +339,10 @@ export class CanadianLotteryClient {
   }
 
   /**
-   * Extract numbers from a text string (handles li elements, asterisks, etc.)
+   * Extract numbers from a text string
    */
   private extractNumbersFromText(text: string): number[] {
     const numbers: number[] = [];
-    // Match numbers that appear after asterisks, in li tags, or standalone
     const pattern = /(?:\*\s*)?(\d+)/g;
     let match;
     while ((match = pattern.exec(text)) !== null) {
@@ -436,8 +360,7 @@ export class CanadianLotteryClient {
   private parseDrawBlock(
     $: cheerio.CheerioAPI,
     block: Parameters<cheerio.CheerioAPI>[0],
-    lottoType: LottoType,
-    endpoint: CanadianLotteryEndpoint,
+    endpoint: LotteryEndpointConfig,
   ): CanadianLottoDrawDto | null {
     const $block = $(block);
     const blockHtml = $block.html() || '';
@@ -464,7 +387,7 @@ export class CanadianLotteryClient {
     const drawDate = new Date(Date.UTC(year, month, day));
     const drawLabel = drawDate.toISOString().split('T')[0];
 
-    return this.parseDrawFromSection($, blockHtml, drawDate, drawLabel, lottoType, endpoint);
+    return this.parseCanadianDrawFromSection(blockHtml, drawDate, drawLabel, endpoint);
   }
 
   // Convenience methods for each lottery type

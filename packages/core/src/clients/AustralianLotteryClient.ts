@@ -3,7 +3,8 @@ import {BindingScope, inject, injectable} from '@loopback/core';
 import type {AustralianLottoDrawDto} from '../models';
 import type {LoggerService} from '../services/logger/loggerService';
 import {LottoType} from '@lotto/shared';
-import {LottoNumbersBaseClient, type LotteryEndpointConfig, type ParsedLottoDraw} from './LottoNumbersBaseClient';
+import {LottoNumbersBaseClient, type DateMatch, type LotteryEndpointConfig, type ParsedLottoDraw} from './LottoNumbersBaseClient';
+import {findAUFormatDates} from './helpers/dateUtils';
 
 const AUSTRALIAN_LOTTERY_BASE_URL = 'https://au.lottonumbers.com';
 
@@ -101,6 +102,10 @@ export class AustralianLotteryClient extends LottoNumbersBaseClient<AustralianLo
       mainNumbers: parsed.mainNumbers,
       supplementaryNumbers: parsed.supplementaryNumbers,
     };
+  }
+
+  protected findDatesInHtml(html: string): DateMatch[] {
+    return findAUFormatDates(html);
   }
 
   // Convenience methods for each lottery type
