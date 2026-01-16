@@ -101,16 +101,17 @@ export class FrenchLottoDrawCronService extends AbstractLottoDrawCronService {
   }
 
   private async fetchJoker(dateFrom: Date, dateTo: Date): Promise<TransformedDraw[]> {
-    // Try Loto page first (Mon/Wed/Sat), then Keno page (daily)
-    const lotoData = await this.frenchLotteryClient.fetchLotoDraws();
-    if (lotoData?.jokerNumber) {
-      return this.transformJokerDraw(lotoData, dateFrom, dateTo);
-    }
-
-    // Fallback to Keno page for non-Loto days
+    // Try Keno page first (daily), then Loto page (Mon/Wed/Sat)
+    // Keno is daily so it always has the latest Joker number
     const kenoData = await this.frenchLotteryClient.fetchKenoDraws();
     if (kenoData?.jokerNumber) {
       return this.transformJokerFromKeno(kenoData, dateFrom, dateTo);
+    }
+
+    // Fallback to Loto page
+    const lotoData = await this.frenchLotteryClient.fetchLotoDraws();
+    if (lotoData?.jokerNumber) {
+      return this.transformJokerDraw(lotoData, dateFrom, dateTo);
     }
 
     this.loggerService.log('[FR_JOKER] No Joker number found');
