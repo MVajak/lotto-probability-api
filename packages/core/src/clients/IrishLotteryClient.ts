@@ -178,7 +178,6 @@ export class IrishLotteryClient {
     }
 
     const url = `${IRISH_LOTTERY_BASE_URL}${endpoint.urlPath}`;
-    this.loggerService.log(`[${endpoint.logPrefix}] Fetching from ${url}...`);
 
     try {
       const response = await axios.get<string>(url, {

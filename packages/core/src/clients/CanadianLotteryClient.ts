@@ -140,7 +140,6 @@ export class CanadianLotteryClient {
     }
 
     const url = `${CANADIAN_LOTTERY_BASE_URL}${endpoint.urlPath}`;
-    this.loggerService.log(`[${lottoType}] Fetching from ${url}...`);
 
     try {
       const response = await axios.get<string>(url, {

@@ -103,7 +103,6 @@ export abstract class LottoNumbersBaseClient<TDraw> {
     }
 
     const url = `${this.getBaseUrl()}${endpoint.urlPath}`;
-    this.loggerService.log(`[${lottoType}] Fetching from ${url}...`);
 
     try {
       const response = await axios.get<string>(url, {
