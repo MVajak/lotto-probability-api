@@ -5,6 +5,7 @@ export * from './estonianLottoDrawCronService';
 export * from './frenchLottoDrawCronService';
 export * from './germanLottoDrawCronService';
 export * from './irishLottoDrawCronService';
+export * from './southAfricanLottoDrawCronService';
 export * from './spanishLottoDrawCronService';
 export * from './types';
 export * from './ukLottoDrawCronService';

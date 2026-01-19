@@ -84,8 +84,13 @@ export abstract class AbstractLottoDrawCronService {
 
   protected getDefaultDateRange(): {dateFrom: Date; dateTo: Date} {
     const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    return {dateFrom: oneWeekAgo, dateTo: now};
+    // Use UTC day boundaries to avoid timezone edge cases where draw dates at midnight UTC
+    // might fall outside a 7-day window that starts mid-day
+    const dateTo = new Date(now);
+    dateTo.setUTCHours(23, 59, 59, 999);
+    const dateFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    dateFrom.setUTCHours(0, 0, 0, 0);
+    return {dateFrom, dateTo};
   }
 
   /**

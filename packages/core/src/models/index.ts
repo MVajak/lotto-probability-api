@@ -25,5 +25,8 @@ export * from './CanadianLotto';
 // Australian Lotto DTOs
 export * from './AustralianLotto';
 
+// South African Lotto DTOs
+export * from './SouthAfricanLotto';
+
 // User DTOs
 export * from './User';

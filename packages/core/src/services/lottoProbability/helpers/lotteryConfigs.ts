@@ -443,6 +443,40 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     secondaryRange: undefined,
     secondaryCount: 0,
   },
+  // South African lotteries
+  [LottoType.ZA_DAILY_LOTTO]: {
+    type: LottoType.ZA_DAILY_LOTTO,
+    name: 'Daily Lotto',
+    primaryRange: {min: 1, max: 36},
+    primaryCount: 5,
+  },
+  [LottoType.ZA_LOTTO]: {
+    type: LottoType.ZA_LOTTO,
+    name: 'SA Lotto',
+    primaryRange: {min: 1, max: 58},
+    primaryCount: 6,
+    secondaryRange: {min: 1, max: 58}, // Bonus ball from same pool
+    secondaryCount: 1,
+    // winClass 1: Main Lotto, winClass 2: Plus 1, winClass 3: Plus 2
+    // All share the same number ranges
+    winClassConfig: {
+      2: {primaryRange: {min: 1, max: 58}, primaryCount: 6, secondaryRange: {min: 1, max: 58}, secondaryCount: 1},
+      3: {primaryRange: {min: 1, max: 58}, primaryCount: 6, secondaryRange: {min: 1, max: 58}, secondaryCount: 1},
+    },
+  },
+  [LottoType.ZA_POWERBALL]: {
+    type: LottoType.ZA_POWERBALL,
+    name: 'SA Powerball',
+    primaryRange: {min: 1, max: 50},
+    primaryCount: 5,
+    secondaryRange: {min: 1, max: 20}, // Powerball from separate pool
+    secondaryCount: 1,
+    // winClass 1: Main Powerball, winClass 2: Powerball Plus
+    // Both share the same number ranges
+    winClassConfig: {
+      2: {primaryRange: {min: 1, max: 50}, primaryCount: 5, secondaryRange: {min: 1, max: 20}, secondaryCount: 1},
+    },
+  },
 };
 
 /**

@@ -76,6 +76,10 @@ export const config = {
     auCash3Interval: process.env.AU_CASH3_CRON_INTERVAL || 'off',
     auSuper66Interval: process.env.AU_SUPER66_CRON_INTERVAL || 'off',
     auLottoStrikeInterval: process.env.AU_LOTTO_STRIKE_CRON_INTERVAL || 'off',
+    // South African lotteries (Daily Lotto daily, Lotto/Powerball Tue+Fri)
+    zaDailyLottoInterval: process.env.ZA_DAILY_LOTTO_CRON_INTERVAL || 'off',
+    zaLottoInterval: process.env.ZA_LOTTO_CRON_INTERVAL || 'off',
+    zaPowerballInterval: process.env.ZA_POWERBALL_CRON_INTERVAL || 'off',
   },
   email: {
     resendApiKey: process.env.RESEND_API_KEY || '',

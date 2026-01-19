@@ -2,7 +2,7 @@ import {LottoType, type config} from '@lotto/shared';
 
 type CronConfigKey = keyof typeof config.crons;
 
-export type LotteryRegion = 'est' | 'us' | 'uk' | 'ie' | 'es' | 'fr' | 'de' | 'ca' | 'au';
+export type LotteryRegion = 'est' | 'us' | 'uk' | 'ie' | 'es' | 'fr' | 'de' | 'ca' | 'au' | 'za';
 
 /**
  * Centralized lottery configuration
@@ -210,5 +210,18 @@ export const LOTTERY_CONFIG: Partial<Record<LottoType, LotteryConfigEntry>> = {
   [LottoType.AU_LOTTO_STRIKE]: {
     configKey: 'auLottoStrikeInterval',
     region: 'au',
+  },
+  // South African lotteries
+  [LottoType.ZA_DAILY_LOTTO]: {
+    configKey: 'zaDailyLottoInterval',
+    region: 'za',
+  },
+  [LottoType.ZA_LOTTO]: {
+    configKey: 'zaLottoInterval',
+    region: 'za',
+  },
+  [LottoType.ZA_POWERBALL]: {
+    configKey: 'zaPowerballInterval',
+    region: 'za',
   },
 };

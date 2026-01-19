@@ -29,6 +29,7 @@ import {
   LottoDrawService,
   LottoProbabilityService,
   NumberDetailService,
+  SouthAfricanLotteryClient,
   StripeService,
   SubscriptionAdminService,
   SubscriptionHistoryService,
@@ -116,6 +117,7 @@ export class LottoApiApplication extends BootMixin(ServiceMixin(RepositoryMixin(
     // Clients
     this.bind('clients.EstonianLottoApiClient').toClass(EstonianLottoApiClient);
     this.bind('clients.UKLotteryClient').toClass(UKLotteryClient);
+    this.bind('clients.SouthAfricanLotteryClient').toClass(SouthAfricanLotteryClient);
 
     // Controllers
     this.controller(PingController);

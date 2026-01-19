@@ -8,6 +8,7 @@ export * from './clients/GermanLotteryClient';
 export * from './clients/CanadianLotteryClient';
 export * from './clients/LottoNumbersBaseClient';
 export * from './clients/AustralianLotteryClient';
+export * from './clients/SouthAfricanLotteryClient';
 export * from './clients/USLotteryClient';
 export * from './clients/types';
 
@@ -20,6 +21,7 @@ export * from './clients/helpers/frenchLottoTransformers';
 export * from './clients/helpers/germanLottoTransformers';
 export * from './clients/helpers/canadianLottoTransformers';
 export * from './clients/helpers/australianLottoTransformers';
+export * from './clients/helpers/southAfricanLottoTransformers';
 
 // Services
 export * from './services/csrf';

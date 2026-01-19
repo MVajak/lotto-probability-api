@@ -55,6 +55,10 @@ export enum LottoType {
   AU_CASH_3 = 'AU_CASH_3',
   AU_SUPER_66 = 'AU_SUPER_66',
   AU_LOTTO_STRIKE = 'AU_LOTTO_STRIKE',
+  // South African lotteries
+  ZA_DAILY_LOTTO = 'ZA_DAILY_LOTTO',
+  ZA_LOTTO = 'ZA_LOTTO',
+  ZA_POWERBALL = 'ZA_POWERBALL',
   // Shared
   VIKINGLOTTO = 'VIKINGLOTTO',
   EUROJACKPOT = 'EUROJACKPOT',
@@ -175,6 +179,10 @@ export const OVERALL_PROBABILITY_LOTTO = [
   LottoType.AU_CASH_3,
   LottoType.AU_SUPER_66,
   LottoType.AU_LOTTO_STRIKE,
+  // South African lotteries
+  LottoType.ZA_DAILY_LOTTO,
+  LottoType.ZA_LOTTO,
+  LottoType.ZA_POWERBALL,
   // Shared
   LottoType.EURODREAMS,
 ];

@@ -13,6 +13,7 @@ import {
   LOTTERY_CONFIG,
   type LotteryConfigEntry,
   type LotteryRegion,
+  type SouthAfricanLottoDrawCronService,
   type SpanishLottoDrawCronService,
   type UKLottoDrawCronService,
   type USLottoDrawCronService,
@@ -39,6 +40,8 @@ export class CronBooter implements Booter {
     private canadianLottoDrawCronService: CanadianLottoDrawCronService,
     @inject('services.AustralianLottoDrawCronService')
     private australianLottoDrawCronService: AustralianLottoDrawCronService,
+    @inject('services.SouthAfricanLottoDrawCronService')
+    private southAfricanLottoDrawCronService: SouthAfricanLottoDrawCronService,
   ) {}
 
   async load(): Promise<void> {
@@ -88,6 +91,8 @@ export class CronBooter implements Booter {
         return this.canadianLottoDrawCronService;
       case 'au':
         return this.australianLottoDrawCronService;
+      case 'za':
+        return this.southAfricanLottoDrawCronService;
     }
   }
 }
