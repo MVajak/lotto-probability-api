@@ -139,8 +139,8 @@ export class SouthAfricanLotteryClient extends LottoNumbersBaseClient<SouthAfric
     const expectedPerGroup = endpoint.mainCount + endpoint.supplementaryCount;
 
     // Try specific selectors first, then fall back to generic ul.balls
-    const mainSelectors = ['ul.lotto-main', 'ul.balls:first'];
-    const plus1Selectors = ['ul.plus-1', 'ul.pb-plus'];
+    const mainSelectors = ['ul.lotto-main', 'ul.balls:not(.dl-plus):first'];
+    const plus1Selectors = ['ul.plus-1', 'ul.pb-plus', 'ul.dl-plus'];
     const plus2Selectors = ['ul.plus-2'];
 
     // Find main numbers

@@ -449,6 +449,11 @@ export const LOTTERY_CONFIGS: Record<LottoType, LotteryConfig> = {
     name: 'Daily Lotto',
     primaryRange: {min: 1, max: 36},
     primaryCount: 5,
+    // winClass 1: Main Daily Lotto, winClass 2: Daily Lotto Plus
+    // Both share the same number ranges
+    winClassConfig: {
+      2: {primaryRange: {min: 1, max: 36}, primaryCount: 5},
+    },
   },
   [LottoType.ZA_LOTTO]: {
     type: LottoType.ZA_LOTTO,

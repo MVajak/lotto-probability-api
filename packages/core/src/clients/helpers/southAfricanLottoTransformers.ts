@@ -5,17 +5,29 @@ import type {SouthAfricanLottoDrawDto} from '../../models';
 type DrawResult = Pick<LottoDrawResultCreateDto, 'winClass' | 'winningNumber' | 'secWinningNumber'>;
 
 /**
- * Transform Daily Lotto draw
- * Single result row: 5 main numbers, no bonus, no Plus variants
+ * Transform Daily Lotto draw with Plus variant
+ * - winClass 1: Main Daily Lotto (5 main numbers)
+ * - winClass 2: Daily Lotto Plus (5 main numbers)
  */
 export function transformDailyLottoResults(draw: SouthAfricanLottoDrawDto): DrawResult[] {
-  return [
+  const results: DrawResult[] = [
     {
-      winClass: null,
+      winClass: 1,
       winningNumber: draw.mainNumbers.join(','),
       secWinningNumber: null,
     },
   ];
+
+  // Add Plus if available
+  if (draw.plus1Numbers && draw.plus1Numbers.length > 0) {
+    results.push({
+      winClass: 2,
+      winningNumber: draw.plus1Numbers.join(','),
+      secWinningNumber: null,
+    });
+  }
+
+  return results;
 }
 
 /**
