@@ -91,10 +91,13 @@ export class LottoDrawRepository extends BaseRepository<
     let paramIndex = 5;
 
     // Add position filter for positional games (like Jokker)
+    // For positional games, check if the number is at the specific index within the comma-separated string
+    // PostgreSQL arrays are 1-indexed, so position 0 = index 1
     if (position !== undefined) {
-      sql += ` AND ldr.win_class = $${paramIndex}`;
-      params.push(position);
-      paramIndex++;
+      sql += ` AND (string_to_array(ldr.${numberColumn}, ','))[$${paramIndex}] = $${paramIndex + 1}`;
+      params.push(position + 1); // Convert 0-indexed position to 1-indexed PostgreSQL array
+      params.push(number);
+      paramIndex += 2;
     }
 
     // Add win class filter for games with multiple prize tiers (like BINGO)
